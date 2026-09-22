@@ -6,12 +6,15 @@ export function initAutoLoan(){
  const start=document.querySelector("#autoStart"); if(!start.value){const d=new Date();start.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`}
  const defaultStart=start.value;
  const defaults={vehiclePrice:45000,autoDown:5000,tradeValue:10000,tradeOwed:0,autoFees:500,autoTaxRate:6.25,autoApr:6.5,autoMonths:60};
- const v=id=>id.startsWith("#autoTax")||id==="#autoApr"||id==="#autoMonths"?Math.max(0,parseFloat(document.querySelector(id).value)||0):pm(document.querySelector(id).value);
+ const v=id=>id==="#autoTaxRate"||id==="#autoApr"||id==="#autoMonths"?Math.max(0,parseFloat(document.querySelector(id).value)||0):pm(document.querySelector(id).value);
  function fmt(el){el.value=m0(pm(el.value))}
- els.forEach(el=>{el.addEventListener("focus",()=>el.value=String(pm(el.value)));el.addEventListener("blur",()=>{fmt(el);calc()});el.addEventListener("input",calc)});
+ els.forEach(el=>{el.addEventListener("focus",()=>{el.value=String(pm(el.value));setTimeout(()=>el.select(),0)});el.addEventListener("blur",()=>{fmt(el);calc()});el.addEventListener("input",calc)});
  function calc(){
-  const price=v("#vehiclePrice"),down=Math.min(v("#autoDown"),price),tv=v("#tradeValue"),owed=v("#tradeOwed"),equity=tv-owed,taxRate=v("#autoTaxRate")/100,fees=v("#autoFees");
-  // General estimate: sales tax is applied to vehicle price less positive trade value, floored at zero.
+  const price=v("#vehiclePrice"),down=Math.min(v("#autoDown"),price),tv=v("#tradeValue"),owed=v("#tradeOwed"),equity=tv-owed,fees=v("#autoFees");
+  const mode=document.querySelector("#autoTaxMode").value;
+  const taxRate=(mode==="texas"?6.25:v("#autoTaxRate"))/100;
+  // Texas dealer-sale estimate: 6.25% of selling price less the motor-vehicle trade-in allowance.
+  // Texas uses trade-in VALUE for the tax deduction, not trade equity/payoff.
   const taxable=Math.max(0,price-tv),tax=taxable*taxRate;
   const financed=Math.max(0,price-down-equity+tax+fees),months=Math.round(v("#autoMonths")),r=v("#autoApr")/1200;
   const pay=months?(r===0?financed/months:financed*r*Math.pow(1+r,months)/(Math.pow(1+r,months)-1)):0,total=pay*months,interest=total-financed;
@@ -25,6 +28,8 @@ export function initAutoLoan(){
   document.querySelector("#autoAmortBody").innerHTML=body;
  }
  ["#autoTaxRate","#autoApr","#autoMonths","#autoStart"].forEach(id=>document.querySelector(id).addEventListener("input",calc));
+ document.querySelector("#autoTaxMode").addEventListener("change",()=>{document.querySelector("#autoTaxRateWrap").classList.toggle("hidden",document.querySelector("#autoTaxMode").value!=="custom");calc()});
+ ["#autoTaxRate","#autoApr"].forEach(id=>document.querySelector(id).addEventListener("focus",e=>setTimeout(()=>e.target.select(),0)));
  document.querySelector("#resetAuto").addEventListener("click",()=>{for(const [k,val] of Object.entries(defaults)){const el=document.querySelector("#"+k);el.value=["vehiclePrice","autoDown","tradeValue","tradeOwed","autoFees"].includes(k)?m0(val):val}start.value=defaultStart;calc()});
  els.forEach(fmt);calc();
 }

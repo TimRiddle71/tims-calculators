@@ -1,5 +1,12 @@
 # Tim's Calculators
 
+## V5.1
+- Auto Loan defaults to Texas motor-vehicle tax mode: 6.25% of vehicle selling price less eligible motor-vehicle trade-in value
+- Trade payoff/negative equity affects financing but does not reduce the Texas trade-in tax allowance
+- Custom tax-rate mode remains available
+- Renamed Total Out-of-Pocket to Cash Paid + Loan Payments
+- Numeric/default fields select their existing value on focus for faster PC and phone entry
+
 ## V5
 - Auto Loan calculator
 - Trade-in equity including negative equity

@@ -13,3 +13,7 @@ document.querySelector('[data-open="auto"]').addEventListener("click",()=>{home.
 document.querySelector("[data-auto-home]").addEventListener("click",()=>{document.querySelector("#autoView").classList.add("hidden");home.classList.remove("hidden");window.scrollTo(0,0)});
 initPercentages(); initDaysUntil(); initMortgage(); initAutoLoan();
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+// Toolbox-wide quick entry: tapping/clicking a numeric field selects its current value.
+document.querySelectorAll('input[type="number"]').forEach(el=>{
+  el.addEventListener("focus",()=>setTimeout(()=>el.select(),0));
+});

@@ -11,7 +11,7 @@ export function initMortgage(){
  const defaultStart=start.value;
  let syncing=false;
  function formatField(el){el.value=money0(parseMoney(el.value))}
- moneyIds.forEach(id=>{const el=document.querySelector(id);el.addEventListener("focus",()=>{el.value=String(parseMoney(el.value))});el.addEventListener("blur",()=>{formatField(el);calc()})});
+ moneyIds.forEach(id=>{const el=document.querySelector(id);el.addEventListener("focus",()=>{el.value=String(parseMoney(el.value));setTimeout(()=>el.select(),0)});el.addEventListener("blur",()=>{formatField(el);calc()})});
  function calc(){
   const P0=val("#homePrice"),down=Math.min(val("#downDollars"),P0),P=Math.max(0,P0-down),annual=val("#interestRate"),years=val("#loanYears"),n=Math.round(years*12),r=annual/1200;
   const pi=n?(r===0?P/n:P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1)):0;

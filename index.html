@@ -123,7 +123,8 @@
 <label>Down Payment ($)<input id="autoDown" type="text" inputmode="decimal" value="$5,000"></label>
 <label>Trade-In Value ($)<input id="tradeValue" type="text" inputmode="decimal" value="$10,000"></label>
 <label>Amount Owed on Trade ($)<input id="tradeOwed" type="text" inputmode="decimal" value="$0"></label>
-<label>Sales Tax (%)<input id="autoTaxRate" type="number" inputmode="decimal" value="6.25" min="0" step=".01"></label>
+<label>Vehicle Tax Mode<select id="autoTaxMode"><option value="texas" selected>Texas — 6.25%</option><option value="custom">Custom rate</option></select></label>
+<label id="autoTaxRateWrap" class="hidden">Custom Tax Rate (%)<input id="autoTaxRate" type="number" inputmode="decimal" value="6.25" min="0" step=".01"></label>
 <label>Dealer / Other Fees ($)<input id="autoFees" type="text" inputmode="decimal" value="$500"></label>
 <label>Interest Rate (APR %)<input id="autoApr" type="number" inputmode="decimal" value="6.5" min="0" step=".01"></label>
 <label>Loan Term (months)<select id="autoMonths"><option>36</option><option>48</option><option selected>60</option><option>72</option><option>84</option></select></label>
@@ -143,13 +144,13 @@
 <div class="stat-grid mortgage-stats">
 <div class="mini-answer"><small>TOTAL INTEREST</small><b id="autoInterest">$—</b></div>
 <div class="mini-answer"><small>TOTAL LOAN PAYMENTS</small><b id="autoPayments">$—</b></div>
-<div class="mini-answer"><small>TOTAL OUT-OF-POCKET*</small><b id="autoTotalCost">$—</b></div>
+<div class="mini-answer"><small>CASH PAID + LOAN PAYMENTS*</small><b id="autoTotalCost">$—</b></div>
 <div class="mini-answer"><small>PAYOFF</small><b id="autoPayoff">—</b></div>
 </div>
-<p class="calc-note">*Down payment + total loan payments. Trade-in value is shown separately and is not counted as cash out-of-pocket.</p>
+<p class="calc-note">*Down payment + total loan payments. Trade-in value is shown separately and is not counted as cash paid.</p>
 <details class="amort-details"><summary>Year-by-Year Amortization</summary><div class="table-wrap"><table><thead><tr><th>Year</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead><tbody id="autoAmortBody"></tbody></table></div></details>
 </div></section>
-<footer>V5 • Built for quick everyday use</footer>
+<footer>V5.1 • Built for quick everyday use</footer>
 </main>
 <script type="module" src="js/app.js"></script>
 </body></html>
