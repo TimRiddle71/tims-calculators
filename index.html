@@ -50,39 +50,39 @@
     <button class="cm-key roof" data-cm-roof="pitch">Pitch</button>
     <button class="cm-key roof" data-cm-roof="rise">Rise</button>
     <button class="cm-key roof" data-cm-roof="run">Run</button>
-    <div class="cm-labeled-key"><small>R/Wall</small><button class="cm-key roof" data-cm-roof="diag">Diag</button></div>
-    <div class="cm-labeled-key"><button class="cm-secondary" data-cm="irpitch">Ir/Pitch</button><button class="cm-key roof" data-cm-roof="hipv">Hip/V</button></div>
+    <div class="cm-labeled-key"><small>R/Wall</small><button class="cm-key roof" data-cm-roof="diag" data-cm-secondary="rwall">Diag</button></div>
+    <div class="cm-labeled-key"><small>Ir/Pitch</small><button class="cm-key roof" data-cm-roof="hipv" data-cm-secondary="irpitch">Hip/V</button></div>
 
     <button class="cm-key future" disabled>Sine</button><button class="cm-key future" disabled>Cos</button><button class="cm-key future" disabled>Tan</button>
-    <div class="cm-labeled-key"><small>Arc</small><button class="cm-key future" disabled>Circ</button></div>
-    <div class="cm-labeled-key"><button class="cm-secondary" data-cm="irjack">Ir/Jack</button><button class="cm-key roof" data-cm="jack">Jack</button></div>
+    <div class="cm-labeled-key"><small>Arc</small><button class="cm-key future" data-cm-primary="circ" data-cm-secondary="arc">Circ</button></div>
+    <div class="cm-labeled-key"><small>Ir/Jack</small><button class="cm-key roof" data-cm="jack" data-cm-secondary="irjack">Jack</button></div>
 
     <button class="cm-key future" disabled>Cu</button><button class="cm-key future" disabled>Sq</button><button class="cm-key future" disabled>m</button><button class="cm-key future" disabled>mm</button>
-    <div class="cm-labeled-key"><small>x²</small><button class="cm-key future" disabled>√</button></div>
+    <div class="cm-labeled-key"><small>x²</small><button class="cm-key future" data-cm-primary="sqrt" data-cm-secondary="square">√</button></div>
 
     <button class="cm-key future" disabled>Yds</button>
-    <div class="cm-labeled-key"><small>Ft-In</small><button class="cm-key unit" data-cm="feet">Feet</button></div>
+    <div class="cm-labeled-key"><small>Ft-In</small><button class="cm-key unit" data-cm="feet" data-cm-secondary="ftin">Feet</button></div>
     <button class="cm-key unit" data-cm="inch">Inch</button>
-    <div class="cm-labeled-key"><small>EXP</small><button class="cm-key fraction" data-cm="fraction">/</button></div>
+    <div class="cm-labeled-key"><small>EXP</small><button class="cm-key fraction" data-cm="fraction" data-cm-secondary="exp">/</button></div>
     <button class="cm-key future" disabled>d:m:s</button>
 
     <button class="cm-key conv" data-cm="conv">Conv</button><button class="cm-key number" data-cm-digit="7">7</button><button class="cm-key number" data-cm-digit="8">8</button><button class="cm-key number" data-cm-digit="9">9</button>
-    <div class="cm-labeled-key"><small>1/x</small><button class="cm-key operator" data-cm-op="divide">÷</button></div>
+    <div class="cm-labeled-key"><small>1/x</small><button class="cm-key operator" data-cm-op="divide" data-cm-secondary="reciprocal">÷</button></div>
 
     <button class="cm-key" data-cm="stor">Stor</button><button class="cm-key number" data-cm-digit="4">4</button><button class="cm-key number" data-cm-digit="5">5</button><button class="cm-key number" data-cm-digit="6">6</button>
-    <div class="cm-labeled-key"><small>AC</small><button class="cm-key operator" data-cm-op="multiply">×</button></div>
+    <div class="cm-labeled-key"><small>AC</small><button class="cm-key operator" data-cm-op="multiply" data-cm-secondary="ac">×</button></div>
 
     <button class="cm-key future" disabled>Rcl</button><button class="cm-key number" data-cm-digit="1">1</button><button class="cm-key number" data-cm-digit="2">2</button><button class="cm-key number" data-cm-digit="3">3</button>
-    <div class="cm-labeled-key"><small>π</small><button class="cm-key operator" data-cm-op="add">+</button></div>
+    <div class="cm-labeled-key"><small>π</small><button class="cm-key operator" data-cm-op="add" data-cm-secondary="pi">+</button></div>
 
     <button class="cm-key future" disabled>%</button><button class="cm-key number" data-cm-digit="0">0</button><button class="cm-key number" data-cm="decimal">.</button><button class="cm-key equals" data-cm="equals">=</button>
-    <div class="cm-labeled-key"><small>+/−</small><button class="cm-key operator" data-cm-op="subtract">−</button></div>
+    <div class="cm-labeled-key"><small>+/−</small><button class="cm-key operator" data-cm-op="subtract" data-cm-secondary="sign">−</button></div>
   </div>
 <div class="cm-status-grid">
     <div><small>EXACT INCHES</small><b id="cmExact">0 in</b></div>
     <div><small>DECIMAL FEET</small><b id="cmFeet">0 ft</b></div>
   </div>
-  <p class="calc-note">V9.4.2 • Jack / Irregular Jack enabled with stored O.C. spacing. Dimmed keys are reserved for functions not yet validated.</p>
+  <p class="calc-note">V9.5 • Conv gold-key layer enabled; Jack / Irregular Jack retain stored O.C. spacing. Dimmed keys are reserved for functions not yet validated.</p>
 </div>
 </section>
 

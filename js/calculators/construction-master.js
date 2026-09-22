@@ -375,6 +375,11 @@ function solveRoof(){
   }
 }
 function roofKey(which){
+  if(convArmed){
+    const secondary={diag:"rwall",hipv:"irpitch"}[which];
+    if(secondary){ secondaryKey(secondary); return; }
+    convArmed=false; // no gold function on Pitch/Rise/Run
+  }
   // If a dimension is currently entered, store it under the selected roof key.
   if(hasOperand()){
     if(!hasUnits) return; // roof dimensions must be dimensional entries
@@ -516,28 +521,39 @@ function back(){
   }else if(entry) entry=entry.slice(0,-1);
   render();
 }
+function secondaryNotValidated(name){
+  convArmed=false;
+  $("#cmAlt").textContent=`${name} recognized — function not yet validated.`;
+}
+function secondaryKey(name){
+  // Conv is the physical calculator's gold-function modifier.
+  // Execute only behavior already mapped against Tim's Trig Plus II.
+  if(name==="irpitch"){ convArmed=false; storeIrregularPitch(); return true; }
+  if(name==="irjack"){ convArmed=false; jackKey(true); return true; }
+  const labels={rwall:"R/Wall",arc:"Arc",square:"x²",ftin:"Ft-In",exp:"EXP",reciprocal:"1/x",ac:"AC",pi:"π",sign:"+/−"};
+  secondaryNotValidated(labels[name]||name); return true;
+}
 function conv(){
-  // Construction Master behavior: Conv modifies the NEXT unit key.
-  if(!hasOperand() && !justEquals) return;
+  // Conv arms the gold secondary layer. Feet/Inch still perform the validated
+  // conversion behavior when selected next.
   convArmed=true;
   render();
 }
 
 export function initConstruction(){
   document.querySelectorAll("[data-cm-digit]").forEach(b=>b.addEventListener("click",()=>digit(b.dataset.cmDigit)));
-  document.querySelectorAll("[data-cm-op]").forEach(b=>b.addEventListener("click",()=>setOp(b.dataset.cmOp)));
+  document.querySelectorAll("[data-cm-op]").forEach(b=>b.addEventListener("click",()=>{ if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else setOp(b.dataset.cmOp); }));
   document.querySelector('[data-cm="decimal"]').addEventListener("click",decimal);
   document.querySelector('[data-cm="feet"]').addEventListener("click",feet);
   document.querySelector('[data-cm="inch"]').addEventListener("click",inches);
-  document.querySelector('[data-cm="fraction"]').addEventListener("click",fraction);
+  document.querySelector('[data-cm="fraction"]').addEventListener("click",e=>{ const b=e.currentTarget; if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else fraction(); });
   document.querySelector('[data-cm="equals"]').addEventListener("click",equals);
   document.querySelector('[data-cm="clear"]').addEventListener("click",clearAll);
   document.querySelector('[data-cm="back"]').addEventListener("click",back);
   document.querySelector('[data-cm="conv"]').addEventListener("click",conv);
   document.querySelectorAll("[data-cm-roof]").forEach(b=>b.addEventListener("click",()=>roofKey(b.dataset.cmRoof)));
   document.querySelector('[data-cm="stor"]').addEventListener("click",storeKey);
-  document.querySelector('[data-cm="jack"]').addEventListener("click",()=>jackKey(false));
-  document.querySelector('[data-cm="irjack"]').addEventListener("click",()=>jackKey(true));
-  document.querySelector('[data-cm="irpitch"]').addEventListener("click",storeIrregularPitch);
+  document.querySelectorAll("[data-cm-primary]").forEach(b=>b.addEventListener("click",()=>{ if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else $("#cmAlt").textContent=`${b.textContent.trim()} not yet validated.`; }));
+  document.querySelector('[data-cm="jack"]').addEventListener("click",e=>{ const b=e.currentTarget; if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else jackKey(false); });
   render();
 }
