@@ -152,3 +152,12 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Removed the oversized bottom utility row
 - Kept Backspace as a useful web-app convenience
 - Updated stale global footer version to V9.2
+
+## V9.3
+- Activated Hip/V in the locked Trestle keypad position
+- Hip/Valley uses the validated 45-degree plan-angle formula
+- Hip/V = sqrt(Rise² + Run² + Run²)
+- Preserves full roof history in the display
+- Physical reference targets:
+  - 12 ft Run + 5 ft Rise = 17 ft 8-19/64 in Hip/V
+  - 14 ft 7 in Run + 6 ft 3 in Rise = 21 ft 6-39/64 in Hip/V

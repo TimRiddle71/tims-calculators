@@ -14,7 +14,7 @@ let fractionDenominatorText="";
 let acc=null, accKind=null, op=null, result=0, resultKind="length", justEquals=false, convArmed=false;
 
 // V9.0 roof-triangle memory. Lengths are stored internally in inches.
-let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null;
+let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null, roofHipV=null;
 let roofEnteredRun=null, roofEnteredRise=null, roofEnteredDiag=null;
 
 // Separate human-facing expression history from normalized calculation values.
@@ -350,16 +350,19 @@ function setRoofDisplay(label,value,kind="length"){
 function solveRoof(){
   if(roofRun!==null && roofRise!==null){
     roofDiag=Math.hypot(roofRun,roofRise);
+    roofHipV=Math.sqrt(roofRise*roofRise + roofRun*roofRun + roofRun*roofRun);
     roofPitch=Math.atan2(roofRise,roofRun)*180/Math.PI;
     return;
   }
   if(roofRun!==null && roofDiag!==null && roofDiag>=roofRun){
     roofRise=Math.sqrt(Math.max(0,roofDiag*roofDiag-roofRun*roofRun));
+    roofHipV=Math.sqrt(roofRise*roofRise + roofRun*roofRun + roofRun*roofRun);
     roofPitch=Math.atan2(roofRise,roofRun)*180/Math.PI;
     return;
   }
   if(roofRise!==null && roofDiag!==null && roofDiag>=roofRise){
     roofRun=Math.sqrt(Math.max(0,roofDiag*roofDiag-roofRise*roofRise));
+    roofHipV=Math.sqrt(roofRise*roofRise + roofRun*roofRun + roofRun*roofRun);
     roofPitch=Math.atan2(roofRise,roofRun)*180/Math.PI;
   }
 }
@@ -381,13 +384,14 @@ function roofKey(which){
   if(which==="run" && roofRun!==null){ setRoofDisplay("Run",roofRun); return; }
   if(which==="rise" && roofRise!==null){ setRoofDisplay("Rise",roofRise); return; }
   if(which==="diag" && roofDiag!==null){ setRoofDisplay("Diag",roofDiag); return; }
+  if(which==="hipv" && roofHipV!==null){ setRoofDisplay("Hip/V",roofHipV); return; }
   if(which==="pitch" && roofPitch!==null){ setRoofDisplay("Pitch",roofPitch,"angle"); return; }
 
   $("#cmAlt").textContent="Enter two roof dimensions first.";
 }
 function clearAll(){
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;expressionParts=[];
-  roofRun=null;roofRise=null;roofDiag=null;roofPitch=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
+  roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
   render();
 }
 function back(){
