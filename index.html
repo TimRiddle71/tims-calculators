@@ -12,63 +12,52 @@
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-  <main class="app">
-    <header class="hero">
-      <p class="eyebrow">TIM'S TOOLBOX</p>
-      <h1>Calculators</h1>
-      <p>Fast answers without the clutter.</p>
-    </header>
+<main class="app">
+<header class="hero"><p class="eyebrow">TIM'S TOOLBOX</p><h1>Calculators</h1><p>Fast answers without the clutter.</p></header>
+<section id="homeView">
+<h2>Favorites</h2><div class="grid">
+<button class="tile disabled"><span>🏗️</span><b>Construction Master</b><small>Coming soon</small></button>
+<button class="tile" data-open="percentages"><span>%</span><b>Percentages</b><small>Ready</small></button>
+<button class="tile disabled"><span>🏖️</span><b>Days Until</b><small>Coming soon</small></button>
+<button class="tile disabled"><span>🏠</span><b>Mortgage</b><small>Coming soon</small></button>
+</div>
+<h2>All Calculators</h2><div class="grid">
+<button class="tile disabled"><span>🚗</span><b>Auto Loan</b><small>Coming soon</small></button>
+<button class="tile disabled"><span>👴</span><b>Social Security</b><small>Coming soon</small></button>
+<button class="tile disabled"><span>📦</span><b>Volume</b><small>Coming soon</small></button>
+</div></section>
 
-    <section id="homeView">
-      <h2>Favorites</h2>
-      <div class="grid">
-        <button class="tile disabled"><span>🏗️</span><b>Construction Master</b><small>Coming soon</small></button>
-        <button class="tile" data-open="percentages"><span>%</span><b>Percentages</b><small>Ready</small></button>
-        <button class="tile disabled"><span>🏖️</span><b>Days Until</b><small>Coming soon</small></button>
-        <button class="tile disabled"><span>🏠</span><b>Mortgage</b><small>Coming soon</small></button>
-      </div>
+<section id="percentagesView" class="view hidden">
+<button class="back" data-home>← All Calculators</button><h2>Percentage Calculator</h2>
+<div class="mode-tabs"><button id="shopTab" class="mode active">🛍️ Shopping</button><button id="otherTab" class="mode">% Other</button></div>
 
-      <h2>All Calculators</h2>
-      <div class="grid">
-        <button class="tile disabled"><span>🚗</span><b>Auto Loan</b><small>Coming soon</small></button>
-        <button class="tile disabled"><span>👴</span><b>Social Security</b><small>Coming soon</small></button>
-        <button class="tile disabled"><span>📦</span><b>Volume</b><small>Coming soon</small></button>
-      </div>
-    </section>
+<div id="shopPanel" class="calc-card">
+<div class="fields">
+<label>Original Price<div class="input-affix"><span>$</span><input id="price" inputmode="decimal" type="number" min="0" step=".01" placeholder="79.99"></div></label>
+<label>Discount<div class="input-affix suffix"><input id="discount" inputmode="decimal" type="number" min="0" step="any" placeholder="20"><span>%</span></div></label>
+</div>
+<div class="answer"><small>SALE PRICE</small><strong id="salePrice">—</strong><small>YOU SAVE</small><h3 id="savings">—</h3></div>
+<label class="check"><input id="taxToggle" type="checkbox"> Add sales tax</label>
+<div id="taxArea" class="fields hidden">
+<label>Sales Tax<div class="input-affix suffix"><input id="tax" inputmode="decimal" type="number" min="0" step="any" placeholder="8.25"><span>%</span></div></label>
+<div class="mini-answer"><small>WITH TAX</small><b id="withTax">—</b></div>
+</div>
+</div>
 
-    <section id="percentagesView" class="view hidden">
-      <button class="back" data-home>← All Calculators</button>
-      <h2>Percentage Calculator</h2>
-      <p class="sub">Choose the question you're trying to answer.</p>
-
-      <div class="calc-card">
-        <label for="percentMode">Calculate</label>
-        <select id="percentMode">
-          <option value="of">What is X% of Y?</option>
-          <option value="whatPercent">X is what percent of Y?</option>
-          <option value="change">Percentage change from X to Y</option>
-          <option value="add">Add X% to Y</option>
-          <option value="subtract">Subtract X% from Y</option>
-        </select>
-
-        <div class="fields">
-          <label><span id="labelA">Percent</span><input id="valueA" inputmode="decimal" type="number" step="any" placeholder="18"></label>
-          <label><span id="labelB">Number</span><input id="valueB" inputmode="decimal" type="number" step="any" placeholder="240"></label>
-        </div>
-
-        <button id="calculatePercent" class="primary">Calculate</button>
-        <button id="clearPercent" class="secondary">Clear</button>
-
-        <div class="answer" aria-live="polite">
-          <small>ANSWER</small>
-          <strong id="percentAnswer">—</strong>
-          <p id="percentExplanation">Enter two numbers above.</p>
-        </div>
-      </div>
-    </section>
-
-    <footer>V1 • Built for quick everyday use</footer>
-  </main>
-  <script type="module" src="js/app.js"></script>
-</body>
-</html>
+<div id="otherPanel" class="calc-card hidden">
+<label>Calculate<select id="percentMode">
+<option value="of">What is X% of Y?</option><option value="add">Add X% to Y</option>
+<option value="whatPercent">X is what percent of Y?</option><option value="change">Percentage change from X to Y</option>
+<option value="difference">Percentage difference between X and Y</option><option value="reverse">Reverse percentage</option>
+</select></label>
+<div class="fields">
+<label><span id="labelA">Percent</span><input id="valueA" inputmode="decimal" type="number" step="any"></label>
+<label><span id="labelB">Number</span><input id="valueB" inputmode="decimal" type="number" step="any"></label>
+</div>
+<div class="answer"><small>ANSWER</small><strong id="percentAnswer">—</strong><p id="percentExplanation">Enter two numbers above.</p></div>
+</div>
+</section>
+<footer>V2 • Built for quick everyday use</footer>
+</main>
+<script type="module" src="js/app.js"></script>
+</body></html>

@@ -1,39 +1,15 @@
-const fmt = new Intl.NumberFormat("en-US",{maximumFractionDigits:8});
-
+const fmt=new Intl.NumberFormat("en-US",{maximumFractionDigits:8}),money=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"});
 export function initPercentages(){
-  const mode=document.querySelector("#percentMode"),a=document.querySelector("#valueA"),b=document.querySelector("#valueB");
-  const la=document.querySelector("#labelA"),lb=document.querySelector("#labelB"),answer=document.querySelector("#percentAnswer"),ex=document.querySelector("#percentExplanation");
-
-  const labels={
-    of:["Percent","Number"],
-    whatPercent:["First number","Second number"],
-    change:["Starting value","Ending value"],
-    add:["Percent to add","Starting number"],
-    subtract:["Percent to subtract","Starting number"]
-  };
-
-  function relabel(){[la.textContent,lb.textContent]=labels[mode.value];}
-  function showError(msg){answer.textContent="—";ex.textContent=msg;}
-  function calc(){
-    const x=Number(a.value),y=Number(b.value);
-    if(a.value===""||b.value===""||!Number.isFinite(x)||!Number.isFinite(y)){showError("Enter two valid numbers.");return;}
-    let r,desc;
-    switch(mode.value){
-      case "of": r=x/100*y; desc=`${fmt.format(x)}% of ${fmt.format(y)}`; break;
-      case "whatPercent":
-        if(y===0){showError("The second number cannot be zero.");return;}
-        r=x/y*100; answer.textContent=fmt.format(r)+"%"; ex.textContent=`${fmt.format(x)} is ${fmt.format(r)}% of ${fmt.format(y)}.`; return;
-      case "change":
-        if(x===0){showError("Starting value cannot be zero for percentage change.");return;}
-        r=(y-x)/Math.abs(x)*100; answer.textContent=(r>=0?"+":"")+fmt.format(r)+"%"; ex.textContent=`Change from ${fmt.format(x)} to ${fmt.format(y)}.`; return;
-      case "add": r=y*(1+x/100); desc=`${fmt.format(y)} plus ${fmt.format(x)}%`; break;
-      case "subtract": r=y*(1-x/100); desc=`${fmt.format(y)} minus ${fmt.format(x)}%`; break;
-    }
-    answer.textContent=fmt.format(r); ex.textContent=`${desc} = ${fmt.format(r)}.`;
-  }
-  mode.addEventListener("change",relabel);
-  document.querySelector("#calculatePercent").addEventListener("click",calc);
-  document.querySelector("#clearPercent").addEventListener("click",()=>{a.value="";b.value="";answer.textContent="—";ex.textContent="Enter two numbers above.";a.focus();});
-  [a,b].forEach(el=>el.addEventListener("keydown",e=>{if(e.key==="Enter")calc();}));
-  relabel();
-}
+const shopTab=document.querySelector("#shopTab"),otherTab=document.querySelector("#otherTab"),shop=document.querySelector("#shopPanel"),other=document.querySelector("#otherPanel");
+function tab(which){const s=which==="shop";shop.classList.toggle("hidden",!s);other.classList.toggle("hidden",s);shopTab.classList.toggle("active",s);otherTab.classList.toggle("active",!s)}
+shopTab.addEventListener("click",()=>tab("shop"));otherTab.addEventListener("click",()=>tab("other"));
+const price=document.querySelector("#price"),discount=document.querySelector("#discount"),tax=document.querySelector("#tax");
+function shopping(){const p=Number(price.value),d=Number(discount.value);if(price.value===""||discount.value===""||!Number.isFinite(p)||!Number.isFinite(d)){salePrice.textContent=savings.textContent=withTax.textContent="—";return}const save=p*d/100,sale=p-save;salePrice.textContent=money.format(sale);savings.textContent=`${money.format(save)} (${fmt.format(d)}%)`;const t=Number(tax.value);withTax.textContent=tax.value!==""&&Number.isFinite(t)?money.format(sale*(1+t/100)):"—"}
+const salePrice=document.querySelector("#salePrice"),savings=document.querySelector("#savings"),withTax=document.querySelector("#withTax");
+[price,discount,tax].forEach(x=>x.addEventListener("input",shopping));
+document.querySelector("#taxToggle").addEventListener("change",e=>{document.querySelector("#taxArea").classList.toggle("hidden",!e.target.checked);shopping()});
+const mode=document.querySelector("#percentMode"),a=document.querySelector("#valueA"),b=document.querySelector("#valueB"),la=document.querySelector("#labelA"),lb=document.querySelector("#labelB"),ans=document.querySelector("#percentAnswer"),ex=document.querySelector("#percentExplanation");
+const labels={of:["Percent","Number"],add:["Percent to add","Starting number"],whatPercent:["First number","Second number"],change:["Starting value","Ending value"],difference:["First value","Second value"],reverse:["Percent change","Final value"]};
+function calc(){[la.textContent,lb.textContent]=labels[mode.value];const x=Number(a.value),y=Number(b.value);if(a.value===""||b.value===""||!Number.isFinite(x)||!Number.isFinite(y)){ans.textContent="—";ex.textContent="Enter two numbers above.";return}let r,msg,suffix="";switch(mode.value){case"of":r=x/100*y;msg=`${fmt.format(x)}% of ${fmt.format(y)}`;break;case"add":r=y*(1+x/100);msg=`${fmt.format(y)} plus ${fmt.format(x)}%`;break;case"whatPercent":if(y===0)return err("Second number cannot be zero.");r=x/y*100;suffix="%";msg=`${fmt.format(x)} is this percent of ${fmt.format(y)}`;break;case"change":if(x===0)return err("Starting value cannot be zero.");r=(y-x)/Math.abs(x)*100;suffix="%";msg=`Change from ${fmt.format(x)} to ${fmt.format(y)}`;break;case"difference":{const avg=(Math.abs(x)+Math.abs(y))/2;r=avg===0?0:Math.abs(x-y)/avg*100;suffix="%";msg=`Difference between ${fmt.format(x)} and ${fmt.format(y)}`;break}case"reverse":if(1+x/100===0)return err("This percentage cannot be reversed.");r=y/(1+x/100);msg=`Original value before a ${fmt.format(x)}% change`;break}ans.textContent=fmt.format(r)+suffix;ex.textContent=msg}
+function err(m){ans.textContent="—";ex.textContent=m}
+mode.addEventListener("change",calc);[a,b].forEach(x=>x.addEventListener("input",calc));calc();}

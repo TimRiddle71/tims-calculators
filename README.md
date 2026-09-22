@@ -1,12 +1,10 @@
 # Tim's Calculators
 
-A mobile-first collection of useful everyday calculators.
+Mobile-first personal calculator suite.
 
-## V1
-- Calculator-suite home screen
-- Working Percentage Calculator
-- Placeholders for Construction Master, Mortgage, Auto Loan, Social Security, Volume, and Days Until
-- PWA manifest and offline-ready service worker foundation
-
-## Planned
-The suite will grow calculator-by-calculator, with the Construction Master receiving dedicated validation against the physical reference calculator.
+## V2
+- Percentage calculator redesigned with dedicated Shopping mode
+- Live sale price and savings
+- Optional sales tax / checkout price
+- Six additional percentage tools including percentage difference and reverse percentage
+- Construction Master, Mortgage, Auto Loan, Social Security, Volume, and Days Until remain planned modules

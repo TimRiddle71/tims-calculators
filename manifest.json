@@ -1,9 +1,1 @@
-{
-  "name": "Tim's Calculators",
-  "short_name": "Calculators",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#0b1020",
-  "theme_color": "#111827",
-  "description": "A mobile-first collection of useful everyday calculators."
-}
+{"name":"Tim's Calculators","short_name":"Calculators","start_url":"./","display":"standalone","background_color":"#0b1020","theme_color":"#111827","description":"A mobile-first collection of useful everyday calculators."}
