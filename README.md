@@ -69,3 +69,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Conversion cycling among feet-inch-fraction, decimal feet, decimal inches, and fractional inches
 - Added exact-inch and decimal-foot verification readouts
 - Intentionally defers rafter/trig/square/cube/memory functions until the dimensional core is validated
+
+## V8.1
+- Construction Master ft / in / fraction keys grouped together for faster dimensional entry
+- Fixed compound inch-fraction entry state (example: 8 in + 3/32 in)
+- Live display now preserves the dimension being constructed instead of showing a misleading 0 ft prefix
+- Exact Inches and Decimal Feet now follow the current operand instead of stale prior-operation state
