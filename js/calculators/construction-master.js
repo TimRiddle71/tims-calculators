@@ -10,20 +10,20 @@ let hasInches=false;
 let hasUnits=false;
 let fractionNumerator=null;
 let fractionDenominatorText="";
-let acc=null;
-let op=null;
-let result=0;
-let justEquals=false;
-let convIndex=0;
-let history=[];
+
+let acc=null, op=null, result=0, justEquals=false, convIndex=0;
+
+// Separate human-facing expression history from normalized calculation values.
+let expressionParts=[];
+let committedOperandText="";
 
 const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+const clean=n=>Math.abs(n)<1e-12?0:n;
+const dec=(n,d=6)=>clean(n).toLocaleString(undefined,{maximumFractionDigits:d,useGrouping:false});
 
 function roundedFraction(value,den=64){
-  const sign=value<0?"−":"";
-  const a=Math.abs(value);
-  let whole=Math.floor(a+1e-10);
-  let n=Math.round((a-whole)*den), d=den;
+  const sign=value<0?"−":"", a=Math.abs(value);
+  let whole=Math.floor(a+1e-10), n=Math.round((a-whole)*den), d=den;
   if(n===den){whole++;n=0}
   if(n){const g=gcd(n,d);n/=g;d/=g}
   return {sign,whole,n,d};
@@ -35,11 +35,9 @@ function inchesOnly(value){
   return `${f.sign}${body} in`;
 }
 function feetInches(value){
-  const neg=value<0;
-  const a=Math.abs(value);
+  const neg=value<0, a=Math.abs(value);
   let ft=Math.floor(a/12+1e-10);
-  const rem=a-ft*12;
-  const f=roundedFraction(rem,64);
+  const rem=a-ft*12, f=roundedFraction(rem,64);
   let iw=f.whole;
   if(iw>=12){ft++;iw-=12}
   let ins=iw?String(iw):"";
@@ -47,8 +45,6 @@ function feetInches(value){
   if(!ins) ins="0";
   return `${neg?"−":""}${ft} ft ${ins} in`;
 }
-const clean=n=>Math.abs(n)<1e-12?0:n;
-const dec=(n,d=6)=>clean(n).toLocaleString(undefined,{maximumFractionDigits:d,useGrouping:false});
 
 function fractionValue(){
   const den=Number(fractionDenominatorText);
@@ -58,32 +54,65 @@ function pendingNumeric(){
   if(fractionNumerator!==null) return fractionValue();
   return entry===""?0:Number(entry)||0;
 }
-function operandValue(){
-  return wholeInches + pendingNumeric();
-}
-function hasOperand(){
-  return hasUnits || entry!=="" || fractionNumerator!==null;
-}
-function operandDisplay(){
-  // V8.2: preserve the user's dimensional-entry representation.
-  // Internal math stays normalized to inches, but "25 → ft" displays "25 ft".
+function operandValue(){ return wholeInches+pendingNumeric(); }
+function hasOperand(){ return hasUnits || entry!=="" || fractionNumerator!==null; }
+
+function liveOperandText(){
   const parts=[];
   if(hasFeet) parts.push(`${dec(enteredFeet,6)} ft`);
-  if(hasInches) parts.push(`${dec(enteredInches,6)} in`);
+
+  if(hasInches){
+    let inchText=dec(enteredInches,6);
+    if(fractionNumerator!==null && fractionDenominatorText){
+      inchText += `-${fractionNumerator}/${fractionDenominatorText}`;
+      parts.push(`${inchText} in`);
+      return parts.join(" ");
+    }
+    parts.push(`${inchText} in`);
+  }
 
   if(fractionNumerator!==null){
-    const den=fractionDenominatorText;
-    parts.push(`${fractionNumerator}/${den}`);
+    const f=`${fractionNumerator}/${fractionDenominatorText}`;
+    if(!hasInches) parts.push(f);
   } else if(entry!==""){
     parts.push(entry);
   }
-
-  return parts.join("  ") || "0";
+  return parts.join(" ") || "0";
 }
+
+function finalizedOperandText(){
+  // Preserve entered units and decimal style, but normalize inch + fraction visually.
+  const parts=[];
+  if(hasFeet) parts.push(`${dec(enteredFeet,6)} ft`);
+  let inchVal=enteredInches;
+  if(fractionNumerator!==null && Number(fractionDenominatorText)>0)
+    inchVal += fractionNumerator/Number(fractionDenominatorText);
+
+  if(hasInches || (fractionNumerator!==null && Number(fractionDenominatorText)>0)){
+    const f=roundedFraction(inchVal,64);
+    let body=String(f.whole);
+    if(f.n) body+=`${f.whole?"-":""}${f.n}/${f.d}`;
+    parts.push(`${body} in`);
+  } else if(entry!==""){
+    parts.push(entry);
+  }
+  return parts.join(" ") || "0";
+}
+
+function operatorSymbol(o){return {add:"+",subtract:"−",multiply:"×",divide:"÷"}[o]}
+
+function liveExpression(){
+  const bits=[...expressionParts];
+  if(hasOperand()) bits.push(liveOperandText());
+  return bits.join(" ");
+}
+
 function render(){
   const live=hasOperand();
-  $("#cmMain").textContent=live?operandDisplay():feetInches(result);
-  $("#cmHistory").textContent=history.length?history.join(" "):"Ready";
+  $("#cmMain").textContent=live?liveOperandText():feetInches(result);
+
+  const expr=liveExpression();
+  $("#cmHistory").textContent=expr || (justEquals ? expressionParts.join(" ") : "Ready");
 
   const v=live?operandValue():result;
   $("#cmExact").textContent=`${dec(v,6)} in`;
@@ -97,29 +126,21 @@ function render(){
   ];
   $("#cmAlt").textContent=justEquals?formats[convIndex]:"Enter dimensions with ft / in keys.";
 }
+
 function resetOperand(){
-  entry="";
-  wholeInches=0;
-  enteredFeet=0;
-  enteredInches=0;
-  hasFeet=false;
-  hasInches=false;
-  hasUnits=false;
-  fractionNumerator=null;
-  fractionDenominatorText="";
+  entry=""; wholeInches=0; enteredFeet=0; enteredInches=0;
+  hasFeet=false; hasInches=false; hasUnits=false;
+  fractionNumerator=null; fractionDenominatorText="";
 }
 function startFreshIfNeeded(){
   if(justEquals && op===null){
-    result=0;acc=null;history=[];justEquals=false;resetOperand();
+    result=0;acc=null;expressionParts=[];justEquals=false;resetOperand();
   }
 }
 function digit(d){
   startFreshIfNeeded();
-  if(fractionNumerator!==null){
-    fractionDenominatorText+=d;
-  } else {
-    entry=(entry==="0")?d:entry+d;
-  }
+  if(fractionNumerator!==null) fractionDenominatorText+=d;
+  else entry=(entry==="0")?d:entry+d;
   render();
 }
 function decimal(){
@@ -130,108 +151,96 @@ function decimal(){
 }
 function feet(){
   startFreshIfNeeded();
-  if(fractionNumerator!==null) return;
-  if(entry==="") return;
+  if(fractionNumerator!==null || entry==="") return;
   const n=Number(entry)||0;
-  enteredFeet+=n;
-  hasFeet=true;
-  wholeInches+=n*12;
-  hasUnits=true;
-  entry="";
+  enteredFeet+=n; hasFeet=true; wholeInches+=n*12; hasUnits=true; entry="";
   render();
 }
 function inches(){
   startFreshIfNeeded();
 
-  // Complete a fraction: e.g. 8 in 3 / 32 in.
   if(fractionNumerator!==null){
     const den=Number(fractionDenominatorText);
     if(den>0){
       wholeInches+=fractionNumerator/den;
-      hasInches=true;
-      hasUnits=true;
+      hasInches=true; hasUnits=true;
     }
-    fractionNumerator=null;
-    fractionDenominatorText="";
-    entry="";
-    render();
-    return;
+    fractionNumerator=null; fractionDenominatorText=""; entry="";
+    render(); return;
   }
 
   if(entry==="") return;
   const n=Number(entry)||0;
-  enteredInches+=n;
-  hasInches=true;
-  wholeInches+=n;
-  hasUnits=true;
-  entry="";
+  enteredInches+=n; hasInches=true; wholeInches+=n; hasUnits=true; entry="";
   render();
 }
 function fraction(){
   startFreshIfNeeded();
   if(fractionNumerator!==null || entry==="" || entry.includes(".")) return;
-  fractionNumerator=Number(entry);
-  fractionDenominatorText="";
-  entry="";
+  fractionNumerator=Number(entry); fractionDenominatorText=""; entry="";
   render();
 }
 function apply(a,b,o){
-  if(o==="add") return a+b;
-  if(o==="subtract") return a-b;
-  if(o==="multiply") return a*b;
-  if(o==="divide") return b===0?NaN:a/b;
+  if(o==="add")return a+b;
+  if(o==="subtract")return a-b;
+  if(o==="multiply")return a*b;
+  if(o==="divide")return b===0?NaN:a/b;
   return b;
 }
-function symbol(o){return {add:"+",subtract:"−",multiply:"×",divide:"÷"}[o]}
 function setOp(next){
+  if(!hasOperand()) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
+
   const v=operandValue();
+  const text=finalizedOperandText();
+
   if(acc===null) acc=v;
   else if(op){
     const x=apply(acc,v,op);
     if(Number.isFinite(x)) acc=x;
   }
   result=acc;
-  history=[feetInches(acc),symbol(next)];
+
+  expressionParts.push(text,operatorSymbol(next));
   op=next;
-  resetOperand();
-  justEquals=false;
+  resetOperand();justEquals=false;
   render();
 }
 function equals(){
+  if(!hasOperand() && !(op && acc!==null)) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
+
   const v=operandValue();
+  const text=finalizedOperandText();
+
   if(op && acc!==null){
     const x=apply(acc,v,op);
     if(Number.isFinite(x)){
-      history=[feetInches(acc),symbol(op),feetInches(v),"="];
+      expressionParts.push(text,"=");
       result=x;
     }else{
-      history=["Cannot divide by zero"];
+      expressionParts=["Cannot divide by zero"];
       result=0;
     }
   }else{
+    expressionParts=[text,"="];
     result=v;
-    history=[feetInches(v),"="];
   }
   acc=null;op=null;resetOperand();justEquals=true;convIndex=0;render();
 }
 function clearAll(){
-  resetOperand();acc=null;op=null;result=0;justEquals=false;convIndex=0;history=[];render();
+  resetOperand();acc=null;op=null;result=0;justEquals=false;convIndex=0;expressionParts=[];render();
 }
 function back(){
   if(fractionNumerator!==null){
     if(fractionDenominatorText) fractionDenominatorText=fractionDenominatorText.slice(0,-1);
     else fractionNumerator=null;
-  }else if(entry){
-    entry=entry.slice(0,-1);
-  }
+  }else if(entry) entry=entry.slice(0,-1);
   render();
 }
 function conv(){
-  if(!justEquals) return;
-  convIndex=(convIndex+1)%4;
-  render();
+  if(!justEquals)return;
+  convIndex=(convIndex+1)%4;render();
 }
 
 export function initConstruction(){

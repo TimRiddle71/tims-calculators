@@ -81,3 +81,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - `25 → ft` displays `25 ft` while the internal engine still stores 300 inches for arithmetic
 - Feet and inches entry representation is now separated from normalized calculation storage
 - Verification boxes continue to show normalized exact inches and decimal feet
+
+## V8.3
+- Added a separate human-facing expression-history layer to Construction Master
+- Running tally now preserves each operand as entered instead of showing normalized arithmetic operands
+- Example history now remains `25 ft 3 in + 8-3/32 in + 27.5 in =`
+- Live history updates while the current operand is being keyed
+- Internal arithmetic remains normalized to inches and is independent of display/history formatting
