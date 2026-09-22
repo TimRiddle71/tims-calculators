@@ -186,3 +186,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Normal trig results display up to six decimals, matching the physical Trig Plus II.
 - Inverse trig displays `DEG` at left and the angle at right.
 - Physical benchmarks: sin 37° = 0.601815; cos 37° = 0.798636; tan 37° = 0.753554; asin 0.5 = 30°; acos 0.5 = 60°; atan 1 = 45°.
+
+
+## V9.8
+- Added physically validated Circ cycle: DIA → AREA → CIRC → DIA.
+- Preserves inch-only vs feet/inches area display behavior from the Trig Plus II benchmarks.
+- Gold Arc remains deliberately unimplemented until physically mapped.

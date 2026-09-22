@@ -31,6 +31,11 @@ const rwallOC=16;
 let rwallIndex=0;
 let rwallActive=false; // After Conv → Diag starts R/Wall, plain Diag advances the active RW sequence.
 
+// V9.8 Circ memory. Physical Trig Plus II cycles DIA → AREA → CIRC → DIA.
+let circleDiameter=null; // inches
+let circleAreaUnit="in"; // "in" for inch-only entry, otherwise "ft"
+let circleStage=0;
+
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
 let committedOperandText="";
@@ -557,7 +562,7 @@ function rwallKey(){
 function clearAll(){
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;expressionParts=[];
   roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
-  irregularPitchSlope=null; storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false;
+  irregularPitchSlope=null; storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleDiameter=null; circleAreaUnit="in"; circleStage=0;
   clearPending=false;
   render();
 }
@@ -567,7 +572,7 @@ function clearKey(){
   // Stored roof geometry, pitches and Jack O.C. remain available.
   resetOperand(); acc=null; accKind=null; op=null; result=0; resultKind="length";
   justEquals=false; convArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null;
-  jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false;
+  jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleDiameter=null; circleAreaUnit="in"; circleStage=0;
   clearPending=true;
   render();
 }
@@ -620,6 +625,58 @@ function trigKey(which){
   $("#cmExact").textContent=inverse?`${dec(value,6)}°`:dec(value,6);
   $("#cmFeet").textContent="—";
 }
+
+function circleDisplay(stage){
+  if(!(circleDiameter>=0)) return false;
+  const d=circleDiameter;
+  resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
+  resultKind="length"; result=d;
+  if(stage===1){
+    $("#cmHistory").textContent="Circle diameter";
+    $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">DIA</span><span class="cm-jack-value">${circleAreaUnit==="in"?inchesOnly(d):feetInches(d)}</span></span>`;
+    $("#cmExact").previousElementSibling.textContent="DIAMETER";
+    $("#cmFeet").previousElementSibling.textContent="DECIMAL FEET";
+    $("#cmExact").textContent=`${dec(d,6)} in`;
+    $("#cmFeet").textContent=`${dec(d/12,6)} ft`;
+  }else if(stage===2){
+    const areaIn2=Math.PI*Math.pow(d/2,2);
+    const area=circleAreaUnit==="in"?areaIn2:areaIn2/144;
+    const unit=circleAreaUnit==="in"?"sq. in.":"sq. feet";
+    $("#cmHistory").textContent="Circle area";
+    $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">AREA</span><span class="cm-jack-value">${dec(area,6)} ${unit}</span></span>`;
+    $("#cmExact").previousElementSibling.textContent="SQUARE INCHES";
+    $("#cmFeet").previousElementSibling.textContent="SQUARE FEET";
+    $("#cmExact").textContent=`${dec(areaIn2,6)} sq in`;
+    $("#cmFeet").textContent=`${dec(areaIn2/144,6)} sq ft`;
+  }else{
+    const circumference=Math.PI*d;
+    result=circumference;
+    $("#cmHistory").textContent="Circle circumference";
+    $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">CIRC</span><span class="cm-jack-value">${circleAreaUnit==="in"?inchesOnly(circumference):feetInches(circumference)}</span></span>`;
+    $("#cmExact").previousElementSibling.textContent="EXACT INCHES";
+    $("#cmFeet").previousElementSibling.textContent="DECIMAL FEET";
+    $("#cmExact").textContent=`${dec(circumference,6)} in`;
+    $("#cmFeet").textContent=`${dec(circumference/12,6)} ft`;
+  }
+  $("#cmAlt").textContent="";
+  return true;
+}
+function circKey(){
+  convArmed=false;
+  if(hasOperand()){
+    if(!hasUnits){ $("#cmAlt").textContent="Enter a diameter with ft / in units first."; return; }
+    circleDiameter=operandValue();
+    // Physical benchmark: inch-only diameter reports sq. in.; any feet entry reports sq. feet.
+    circleAreaUnit=hasFeet?"ft":"in";
+    circleStage=1;
+    circleDisplay(circleStage);
+    return;
+  }
+  if(circleDiameter===null){ $("#cmAlt").textContent="Enter a diameter first."; return; }
+  circleStage=circleStage>=3?1:circleStage+1;
+  circleDisplay(circleStage);
+}
+
 function secondaryNotValidated(name){
   convArmed=false;
   $("#cmAlt").textContent=`${name} recognized — function not yet validated.`;
@@ -656,7 +713,7 @@ export function initConstruction(){
   document.querySelectorAll("[data-cm-roof]").forEach(b=>b.addEventListener("click",()=>roofKey(b.dataset.cmRoof)));
   document.querySelector('[data-cm="stor"]').addEventListener("click",storeKey);
   document.querySelectorAll("[data-cm-trig]").forEach(b=>b.addEventListener("click",()=>trigKey(b.dataset.cmTrig)));
-  document.querySelectorAll("[data-cm-primary]").forEach(b=>b.addEventListener("click",()=>{ if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else $("#cmAlt").textContent=`${b.textContent.trim()} not yet validated.`; }));
+  document.querySelectorAll("[data-cm-primary]").forEach(b=>b.addEventListener("click",()=>{ if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else if(b.dataset.cmPrimary==="circ") circKey(); else $("#cmAlt").textContent=`${b.textContent.trim()} not yet validated.`; }));
   document.querySelector('[data-cm="jack"]').addEventListener("click",e=>{ const b=e.currentTarget; if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else jackKey(false); });
   render();
 }
