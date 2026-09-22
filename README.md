@@ -60,3 +60,12 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Tank/Pool mode supports rectangular and round shapes and reports US gallons
 - Added visual dimension diagrams for shape-based calculations
 - Added common volume conversions for cubic inches, cubic feet, cubic yards, gallons, liters, and cubic meters
+
+## V8
+- Added Construction Master Phase 1 core engine
+- Feet/inches/fraction dimensional entry
+- Dimensional addition, subtraction, multiplication and division foundation
+- Fraction entry using numerator / denominator followed by inch
+- Conversion cycling among feet-inch-fraction, decimal feet, decimal inches, and fractional inches
+- Added exact-inch and decimal-foot verification readouts
+- Intentionally defers rafter/trig/square/cube/memory functions until the dimensional core is validated

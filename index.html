@@ -16,7 +16,7 @@
 <header class="hero"><p class="eyebrow">TIM'S TOOLBOX</p><h1>Calculators</h1><p>Fast answers without the clutter.</p></header>
 <section id="homeView">
 <h2>Favorites</h2><div class="grid">
-<button class="tile disabled"><span>🏗️</span><b>Construction Master</b><small>Coming soon</small></button>
+<button class="tile" data-open="construction"><span>🏗️</span><b>Construction Master</b><small>Core engine</small></button>
 <button class="tile" data-open="percentages"><span>%</span><b>Percentages</b><small>Ready</small></button>
 <button class="tile" data-open="days"><span>🏖️</span><b>Days Until</b><small>Ready</small></button>
 <button class="tile" data-open="mortgage"><span>🏠</span><b>Mortgage</b><small>Ready</small></button>
@@ -26,6 +26,47 @@
 <button class="tile" data-open="social"><span>👴</span><b>Social Security</b><small>Ready</small></button>
 <button class="tile" data-open="volume"><span>📦</span><b>Volume</b><small>Ready</small></button>
 </div></section>
+
+
+<section id="constructionView" class="view hidden">
+<button class="back" data-construction-home>← All Calculators</button>
+<div class="cm-heading"><div><h2>Construction Master</h2><p>V8 Core Engine • Feet, inches & fractions</p></div><span>PHASE 1</span></div>
+<div class="cm-shell">
+  <div class="cm-display" aria-live="polite">
+    <div id="cmHistory" class="cm-history">Ready</div>
+    <div id="cmMain" class="cm-main">0</div>
+    <div id="cmAlt" class="cm-alt">Enter a number, then choose ft or in.</div>
+  </div>
+  <div class="cm-help">Example: <b>25 ft 3 in + 8 in 3/32 + 27.5 in =</b><br>
+  Key it as: <b>25 → ft → 3 → in → + → 8 → in → 3 → / → 32 → in → + → 27.5 → in → =</b></div>
+  <div class="cm-keypad">
+    <button class="cm-key utility" data-cm="clear">C</button>
+    <button class="cm-key utility" data-cm="back">⌫</button>
+    <button class="cm-key utility" data-cm="conv">Conv</button>
+    <button class="cm-key operator" data-cm-op="divide">÷</button>
+
+    <button class="cm-key" data-cm-digit="7">7</button><button class="cm-key" data-cm-digit="8">8</button><button class="cm-key" data-cm-digit="9">9</button>
+    <button class="cm-key operator" data-cm-op="multiply">×</button>
+
+    <button class="cm-key" data-cm-digit="4">4</button><button class="cm-key" data-cm-digit="5">5</button><button class="cm-key" data-cm-digit="6">6</button>
+    <button class="cm-key operator" data-cm-op="subtract">−</button>
+
+    <button class="cm-key" data-cm-digit="1">1</button><button class="cm-key" data-cm-digit="2">2</button><button class="cm-key" data-cm-digit="3">3</button>
+    <button class="cm-key operator" data-cm-op="add">+</button>
+
+    <button class="cm-key unit" data-cm="feet">ft</button><button class="cm-key" data-cm-digit="0">0</button><button class="cm-key" data-cm="decimal">.</button>
+    <button class="cm-key equals" data-cm="equals">=</button>
+
+    <button class="cm-key unit wide" data-cm="inch">in</button>
+    <button class="cm-key fraction wide" data-cm="fraction">/ <small>fraction</small></button>
+  </div>
+  <div class="cm-status-grid">
+    <div><small>EXACT INCHES</small><b id="cmExact">0 in</b></div>
+    <div><small>DECIMAL FEET</small><b id="cmFeet">0 ft</b></div>
+  </div>
+  <p class="calc-note">V8 intentionally focuses on dimensional entry and arithmetic first. Pitch, Rise, Run, Diagonal, Hip/Valley, Jack, trig, square/cube, memory and percent come after this core engine is validated against the physical calculator.</p>
+</div>
+</section>
 
 <section id="percentagesView" class="view hidden">
 <button class="back" data-home>← All Calculators</button><h2>Percentage Calculator</h2>
@@ -255,7 +296,7 @@
 </div>
 </section>
 
-<footer>V7 • Built for quick everyday use</footer>
+<footer>V8 • Built for quick everyday use</footer>
 </main>
 <script type="module" src="js/app.js"></script>
 </body></html>
