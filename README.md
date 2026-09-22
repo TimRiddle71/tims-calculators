@@ -52,3 +52,11 @@ Mobile-first personal calculator suite.
 
 ## Planned
 Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
+
+## V7
+- Added Volume calculator with Box, Cylinder, Concrete, Tank/Pool, and Convert modes
+- Mixed linear units can be used in the same calculation
+- Concrete mode reports cubic yards prominently and supports 0/5/10/15% waste
+- Tank/Pool mode supports rectangular and round shapes and reports US gallons
+- Added visual dimension diagrams for shape-based calculations
+- Added common volume conversions for cubic inches, cubic feet, cubic yards, gallons, liters, and cubic meters

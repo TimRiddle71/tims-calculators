@@ -24,7 +24,7 @@
 <h2>All Calculators</h2><div class="grid">
 <button class="tile" data-open="auto"><span>🚗</span><b>Auto Loan</b><small>Ready</small></button>
 <button class="tile" data-open="social"><span>👴</span><b>Social Security</b><small>Ready</small></button>
-<button class="tile disabled"><span>📦</span><b>Volume</b><small>Coming soon</small></button>
+<button class="tile" data-open="volume"><span>📦</span><b>Volume</b><small>Ready</small></button>
 </div></section>
 
 <section id="percentagesView" class="view hidden">
@@ -176,7 +176,86 @@
 </div>
 <p class="calc-note">Estimates use current SSA retirement-age adjustment rules. Break-even figures compare gross benefits only and do not include COLAs, taxes, investment returns, earnings-test withholding, Medicare, spouse/survivor benefits, or individual longevity.</p>
 </div></section>
-<footer>V6 • Built for quick everyday use</footer>
+
+<section id="volumeView" class="view hidden">
+<button class="back" data-volume-home>← All Calculators</button><h2>Volume</h2>
+<div class="mode-tabs volume-tabs">
+<button class="mode active" data-volume-mode="box">▭ Box</button>
+<button class="mode" data-volume-mode="cylinder">◯ Cylinder</button>
+<button class="mode" data-volume-mode="concrete">🏗️ Concrete</button>
+<button class="mode" data-volume-mode="pool">💧 Tank / Pool</button>
+<button class="mode" data-volume-mode="convert">⇄ Convert</button>
+</div>
+
+<div class="calc-card">
+<div id="volBox" class="volume-panel">
+<div class="shape-diagram box-diagram" aria-label="Rectangular box with length, width, and height dimensions">
+<div class="shape-title">RECTANGULAR VOLUME</div>
+<div class="box-shape"><span class="dim dim-l">L</span><span class="dim dim-w">W</span><span class="dim dim-h">H</span></div>
+</div>
+<div class="volume-fields">
+<label>Length<div class="measure"><input id="boxL" type="number" inputmode="decimal" value="12" min="0" step="any"><select id="boxLU"><option value="ft" selected>ft</option><option value="in">in</option><option value="yd">yd</option><option value="m">m</option><option value="cm">cm</option><option value="mm">mm</option></select></div></label>
+<label>Width<div class="measure"><input id="boxW" type="number" inputmode="decimal" value="8" min="0" step="any"><select id="boxWU"><option value="ft" selected>ft</option><option value="in">in</option><option value="yd">yd</option><option value="m">m</option><option value="cm">cm</option><option value="mm">mm</option></select></div></label>
+<label>Height<div class="measure"><input id="boxH" type="number" inputmode="decimal" value="2" min="0" step="any"><select id="boxHU"><option value="ft" selected>ft</option><option value="in">in</option><option value="yd">yd</option><option value="m">m</option><option value="cm">cm</option><option value="mm">mm</option></select></div></label>
+</div>
+<div class="answer volume-answer"><small>VOLUME</small><strong id="boxPrimary">—</strong><p id="boxSecondary">—</p></div>
+</div>
+
+<div id="volCylinder" class="volume-panel hidden">
+<div class="shape-diagram cylinder-diagram" aria-label="Cylinder with diameter and height dimensions">
+<div class="shape-title">CYLINDER</div><div class="cyl-shape"><span class="dim dim-d">D</span><span class="dim dim-ch">H</span></div>
+</div>
+<div class="volume-fields">
+<label>Diameter<div class="measure"><input id="cylD" type="number" inputmode="decimal" value="24" min="0" step="any"><select id="cylDU"><option value="in" selected>in</option><option value="ft">ft</option><option value="yd">yd</option><option value="m">m</option><option value="cm">cm</option><option value="mm">mm</option></select></div></label>
+<label>Height / Length<div class="measure"><input id="cylH" type="number" inputmode="decimal" value="10" min="0" step="any"><select id="cylHU"><option value="ft" selected>ft</option><option value="in">in</option><option value="yd">yd</option><option value="m">m</option><option value="cm">cm</option><option value="mm">mm</option></select></div></label>
+</div>
+<div class="answer volume-answer"><small>VOLUME</small><strong id="cylPrimary">—</strong><p id="cylSecondary">—</p></div>
+</div>
+
+<div id="volConcrete" class="volume-panel hidden">
+<div class="shape-diagram slab-diagram" aria-label="Concrete slab with length, width, and thickness dimensions">
+<div class="shape-title">CONCRETE SLAB</div><div class="slab-shape"><span class="dim dim-l">L</span><span class="dim dim-w">W</span><span class="dim dim-t">T</span></div>
+</div>
+<div class="volume-fields">
+<label>Length<div class="measure"><input id="conL" type="number" inputmode="decimal" value="24" min="0" step="any"><select id="conLU"><option value="ft" selected>ft</option><option value="in">in</option><option value="yd">yd</option><option value="m">m</option></select></div></label>
+<label>Width<div class="measure"><input id="conW" type="number" inputmode="decimal" value="18" min="0" step="any"><select id="conWU"><option value="ft" selected>ft</option><option value="in">in</option><option value="yd">yd</option><option value="m">m</option></select></div></label>
+<label>Thickness<div class="measure"><input id="conT" type="number" inputmode="decimal" value="4" min="0" step="any"><select id="conTU"><option value="in" selected>in</option><option value="ft">ft</option><option value="cm">cm</option><option value="mm">mm</option></select></div></label>
+<label>Waste Factor<select id="conWaste"><option value="0">0%</option><option value="5">5%</option><option value="10" selected>10%</option><option value="15">15%</option></select></label>
+</div>
+<div class="answer volume-answer"><small>CONCRETE TO ORDER</small><strong id="conOrder">—</strong><p id="conBase">—</p></div>
+</div>
+
+<div id="volPool" class="volume-panel hidden">
+<div class="pool-type"><button class="mode active" data-pool-shape="rect">▭ Rectangular</button><button class="mode" data-pool-shape="round">◯ Round</button></div>
+<div id="poolRect">
+<div class="shape-diagram pool-diagram"><div class="shape-title">RECTANGULAR TANK / POOL</div><div class="box-shape"><span class="dim dim-l">L</span><span class="dim dim-w">W</span><span class="dim dim-h">DEPTH</span></div></div>
+<div class="volume-fields">
+<label>Length<div class="measure"><input id="poolL" type="number" inputmode="decimal" value="20" min="0" step="any"><select id="poolLU"><option value="ft" selected>ft</option><option value="in">in</option><option value="m">m</option></select></div></label>
+<label>Width<div class="measure"><input id="poolW" type="number" inputmode="decimal" value="10" min="0" step="any"><select id="poolWU"><option value="ft" selected>ft</option><option value="in">in</option><option value="m">m</option></select></div></label>
+<label>Average Depth<div class="measure"><input id="poolH" type="number" inputmode="decimal" value="5" min="0" step="any"><select id="poolHU"><option value="ft" selected>ft</option><option value="in">in</option><option value="m">m</option></select></div></label>
+</div></div>
+<div id="poolRound" class="hidden">
+<div class="shape-diagram cylinder-diagram"><div class="shape-title">ROUND TANK / POOL</div><div class="cyl-shape"><span class="dim dim-d">D</span><span class="dim dim-ch">DEPTH</span></div></div>
+<div class="volume-fields">
+<label>Diameter<div class="measure"><input id="poolD" type="number" inputmode="decimal" value="18" min="0" step="any"><select id="poolDU"><option value="ft" selected>ft</option><option value="in">in</option><option value="m">m</option></select></div></label>
+<label>Average Depth<div class="measure"><input id="poolDepth" type="number" inputmode="decimal" value="4" min="0" step="any"><select id="poolDepthU"><option value="ft" selected>ft</option><option value="in">in</option><option value="m">m</option></select></div></label>
+</div></div>
+<div class="answer volume-answer"><small>CAPACITY</small><strong id="poolGallons">—</strong><p id="poolSecondary">—</p></div>
+<p class="calc-note">Pool results use average depth. Real pools with steps, benches, slopes, rounded corners, or irregular shapes will vary.</p>
+</div>
+
+<div id="volConvert" class="volume-panel hidden">
+<div class="shape-diagram convert-diagram"><div class="shape-title">VOLUME CONVERTER</div><div class="convert-mark">1 → many</div></div>
+<div class="volume-fields">
+<label>Amount<input id="convAmount" type="number" inputmode="decimal" value="1" min="0" step="any"></label>
+<label>From<select id="convUnit"><option value="cuin">cubic inches (in³)</option><option value="cuft" selected>cubic feet (ft³)</option><option value="cuyd">cubic yards (yd³)</option><option value="gal">US gallons</option><option value="liter">liters</option><option value="cum">cubic meters (m³)</option></select></label>
+</div>
+<div class="conversion-list" id="conversionList"></div>
+</div>
+</div>
+</section>
+
+<footer>V7 • Built for quick everyday use</footer>
 </main>
 <script type="module" src="js/app.js"></script>
 </body></html>

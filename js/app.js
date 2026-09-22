@@ -3,6 +3,7 @@ import { initDaysUntil } from "./calculators/days-until.js";
 import { initMortgage } from "./calculators/mortgage.js";
 import { initAutoLoan } from "./calculators/auto-loan.js";
 import { initSocialSecurity } from "./calculators/social-security.js";
+import { initVolume } from "./calculators/volume.js";
 const home=document.querySelector("#homeView"),percentages=document.querySelector("#percentagesView");
 document.querySelector('[data-open="percentages"]').addEventListener("click",()=>{home.classList.add("hidden");percentages.classList.remove("hidden");window.scrollTo(0,0)});
 document.querySelector("[data-home]").addEventListener("click",()=>{percentages.classList.add("hidden");home.classList.remove("hidden");window.scrollTo(0,0)});
@@ -14,7 +15,9 @@ document.querySelector('[data-open="auto"]').addEventListener("click",()=>{home.
 document.querySelector("[data-auto-home]").addEventListener("click",()=>{document.querySelector("#autoView").classList.add("hidden");home.classList.remove("hidden");window.scrollTo(0,0)});
 document.querySelector('[data-open="social"]').addEventListener("click",()=>{home.classList.add("hidden");document.querySelector("#socialView").classList.remove("hidden");window.scrollTo(0,0)});
 document.querySelector("[data-social-home]").addEventListener("click",()=>{document.querySelector("#socialView").classList.add("hidden");home.classList.remove("hidden");window.scrollTo(0,0)});
-initPercentages(); initDaysUntil(); initMortgage(); initAutoLoan(); initSocialSecurity();
+document.querySelector('[data-open="volume"]').addEventListener("click",()=>{home.classList.add("hidden");document.querySelector("#volumeView").classList.remove("hidden");window.scrollTo(0,0)});
+document.querySelector("[data-volume-home]").addEventListener("click",()=>{document.querySelector("#volumeView").classList.add("hidden");home.classList.remove("hidden");window.scrollTo(0,0)});
+initPercentages(); initDaysUntil(); initMortgage(); initAutoLoan(); initSocialSecurity(); initVolume();
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 // Toolbox-wide quick entry: tapping/clicking a numeric field selects its current value.
 document.querySelectorAll('input[type="number"]').forEach(el=>{

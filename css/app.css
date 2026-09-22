@@ -4,3 +4,27 @@
 
 .trade-summary{margin:4px 0 12px;border:1px solid var(--border);border-radius:14px;padding:13px;display:grid;grid-template-columns:1fr auto;gap:4px 12px}.trade-summary b{text-align:right}.trade-summary small{grid-column:1/-1;color:var(--muted)}.finance-breakdown{border:1px solid var(--border);border-radius:14px;overflow:hidden}.finance-breakdown div{display:flex;justify-content:space-between;gap:14px;padding:10px 13px;border-bottom:1px solid var(--border)}.finance-breakdown div:last-child{border-bottom:0}.finance-total{background:var(--panel2);font-weight:800}.calc-note{color:var(--muted);font-size:.82rem;line-height:1.4}
 .ss-fra-banner{margin:4px 0 14px;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--panel2);display:grid;grid-template-columns:1fr auto;gap:4px 12px}.ss-fra-banner span{color:var(--muted);font-size:.78rem;font-weight:800;letter-spacing:.08em}.ss-fra-banner b{font-size:1.2rem;text-align:right}.ss-fra-banner small{grid-column:1/-1;color:var(--muted)}.ss-highlight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.ss-highlight{border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--panel2);min-width:0}.ss-highlight small,.ss-highlight span{display:block;color:var(--muted)}.ss-highlight small{font-weight:800;letter-spacing:.04em;min-height:32px}.ss-highlight strong{display:block;font-size:1.65rem;margin:8px 0;overflow-wrap:anywhere}.ss-highlight.featured{border-color:var(--accent)}.ss-break-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.ss-break{min-height:118px}.ss-break span{color:var(--muted);font-size:.78rem;line-height:1.35;margin-top:5px}.ss-table-wrap{border:1px solid var(--border);border-radius:14px}.fra-row{background:var(--panel2);font-weight:800}.ss-source-note{margin-top:-5px}@media(max-width:620px){.ss-highlight-grid,.ss-break-grid{grid-template-columns:1fr}.ss-highlight small{min-height:0}}
+
+.volume-tabs{grid-template-columns:repeat(5,1fr)}
+.volume-tabs .mode{font-size:.82rem;padding:6px}
+.volume-panel{min-width:0}
+.shape-diagram{position:relative;min-height:150px;margin:0 0 18px;border:1px solid var(--border);border-radius:14px;background:var(--bg);overflow:hidden}
+.shape-title{position:absolute;left:12px;top:10px;color:var(--muted);font-size:.72rem;font-weight:800;letter-spacing:.09em}
+.box-shape,.slab-shape{position:absolute;left:50%;top:56%;width:180px;height:72px;border:2px solid var(--muted);transform:translate(-50%,-50%) skewY(-8deg)}
+.box-shape:before,.slab-shape:before{content:"";position:absolute;left:18px;top:-30px;width:178px;height:28px;border:2px solid var(--muted);border-bottom:0;transform:skewY(8deg)}
+.slab-shape{height:35px;top:60%}.slab-shape:before{top:-24px;height:22px}
+.dim{position:absolute;color:var(--accent);font-weight:900;font-size:.8rem;background:var(--bg);padding:1px 4px}
+.dim-l{left:46%;bottom:10px}.dim-w{left:20%;top:47%}.dim-h,.dim-t{right:16%;top:50%}
+.cyl-shape{position:absolute;left:50%;top:58%;width:120px;height:75px;border:2px solid var(--muted);border-radius:50%/18%;transform:translate(-50%,-50%)}
+.cyl-shape:before{content:"";position:absolute;left:-2px;top:-3px;width:120px;height:24px;border:2px solid var(--muted);border-radius:50%}
+.dim-d{left:42%;top:12px}.dim-ch{right:-34px;top:43%}
+.volume-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.measure{display:grid;grid-template-columns:minmax(0,1fr) 88px;gap:7px}
+.measure select{padding:0 8px}
+.volume-answer{text-align:center}.volume-answer strong{margin-bottom:5px}.volume-answer p{line-height:1.5}
+.pool-type{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.conversion-list{border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.conversion-row{display:flex;justify-content:space-between;gap:16px;padding:11px 13px;border-bottom:1px solid var(--border)}
+.conversion-row:last-child{border-bottom:0}.conversion-row span{color:var(--muted)}.conversion-row b{text-align:right}
+.convert-mark{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);font-size:2rem;font-weight:900;color:var(--accent)}
+@media(max-width:620px){.volume-tabs{grid-template-columns:repeat(2,1fr)}.volume-fields{grid-template-columns:1fr}.shape-diagram{min-height:135px}}
