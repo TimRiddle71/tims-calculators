@@ -30,23 +30,63 @@
 
 <section id="constructionView" class="view hidden">
 <button class="back" data-construction-home>← All Calculators</button>
-<div class="cm-brand"><div class="cm-trestle-mark"><span></span></div><div class="cm-brand-name">TRESTLE</div><div class="cm-brand-sub">FIELD TRIG CALCULATOR</div></div>
-<div class="cm-shell">
-<div class="cm-display" aria-live="polite"><div id="cmHistory" class="cm-history">Ready</div><div id="cmMain" class="cm-main">0 ft 0 in</div><div id="cmAlt" class="cm-alt">Enter dimensions with ft / in keys.</div></div>
-<div class="cm-physical-grid">
-<button class="cm-key roof" data-cm-roof="pitch">Pitch</button><button class="cm-key roof" data-cm-roof="rise">Rise</button><button class="cm-key roof" data-cm-roof="run">Run</button><div class="cm-labeled-key"><small>R/Wall</small><button class="cm-key roof" data-cm-roof="diag">Diag</button></div><div class="cm-labeled-key"><small>Ir/Pitch</small><button class="cm-key future" disabled>Hip/V</button></div>
-<button class="cm-key future" disabled>Sine</button><button class="cm-key future" disabled>Cos</button><button class="cm-key future" disabled>Tan</button><div class="cm-labeled-key"><small>Arc</small><button class="cm-key future" disabled>Circ</button></div><div class="cm-labeled-key"><small>Ir/Jack</small><button class="cm-key future" disabled>Jack</button></div>
-<button class="cm-key future" disabled>Cu</button><button class="cm-key future" disabled>Sq</button><button class="cm-key future" disabled>m</button><button class="cm-key future" disabled>mm</button><div class="cm-labeled-key"><small>x²</small><button class="cm-key future" disabled>√</button></div>
-<button class="cm-key future" disabled>Yds</button><div class="cm-labeled-key"><small>Ft-In</small><button class="cm-key unit" data-cm="feet">Feet</button></div><button class="cm-key unit" data-cm="inch">Inch</button><div class="cm-labeled-key"><small>EXP</small><button class="cm-key fraction" data-cm="fraction">/</button></div><button class="cm-key future" disabled>d:m:s</button>
-<button class="cm-key conv" data-cm="conv">Conv</button><button class="cm-key number" data-cm-digit="7">7</button><button class="cm-key number" data-cm-digit="8">8</button><button class="cm-key number" data-cm-digit="9">9</button><div class="cm-labeled-key"><small>1/x</small><button class="cm-key operator" data-cm-op="divide">÷</button></div>
-<button class="cm-key future" disabled>Stor</button><button class="cm-key number" data-cm-digit="4">4</button><button class="cm-key number" data-cm-digit="5">5</button><button class="cm-key number" data-cm-digit="6">6</button><div class="cm-labeled-key"><small>AC</small><button class="cm-key operator" data-cm-op="multiply">×</button></div>
-<button class="cm-key future" disabled>Rcl</button><button class="cm-key number" data-cm-digit="1">1</button><button class="cm-key number" data-cm-digit="2">2</button><button class="cm-key number" data-cm-digit="3">3</button><div class="cm-labeled-key"><small>π</small><button class="cm-key operator" data-cm-op="add">+</button></div>
-<button class="cm-key future" disabled>%</button><button class="cm-key number" data-cm-digit="0">0</button><button class="cm-key number" data-cm="decimal">.</button><button class="cm-key equals" data-cm="equals">=</button><div class="cm-labeled-key"><small>+/−</small><button class="cm-key operator" data-cm-op="subtract">−</button></div>
+<div class="cm-brand">
+  <div class="cm-trestle-mark" aria-hidden="true"><span></span></div>
+  <div class="cm-brand-name">TRESTLE</div>
+  <div class="cm-brand-sub">FIELD TRIG CALCULATOR</div>
 </div>
-<div class="cm-action-row"><button class="cm-key utility" data-cm="clear">C</button><button class="cm-key utility" data-cm="back">⌫</button></div>
-<div class="cm-status-grid"><div><small>EXACT INCHES</small><b id="cmExact">0 in</b></div><div><small>DECIMAL FEET</small><b id="cmFeet">0 ft</b></div></div>
-<p class="calc-note">V9.1 • Familiar field-calculator layout with the validated V9.0 dimensional and roof-triangle engine. Dimmed keys are reserved for functions we have not validated yet.</p>
-</div></section>
+<div class="cm-shell">
+  <div class="cm-display" aria-live="polite">
+    <div id="cmHistory" class="cm-history">Ready</div>
+    <div id="cmMain" class="cm-main">0 ft 0 in</div>
+    <div id="cmAlt" class="cm-alt">Enter dimensions with ft / in keys.</div>
+  </div>
+
+  <div class="cm-physical-grid">
+    <button class="cm-key roof" data-cm-roof="pitch">Pitch</button>
+    <button class="cm-key roof" data-cm-roof="rise">Rise</button>
+    <button class="cm-key roof" data-cm-roof="run">Run</button>
+    <div class="cm-labeled-key"><small>R/Wall</small><button class="cm-key roof" data-cm-roof="diag">Diag</button></div>
+    <div class="cm-labeled-key"><small>Ir/Pitch</small><button class="cm-key future" disabled>Hip/V</button></div>
+
+    <button class="cm-key future" disabled>Sine</button><button class="cm-key future" disabled>Cos</button><button class="cm-key future" disabled>Tan</button>
+    <div class="cm-labeled-key"><small>Arc</small><button class="cm-key future" disabled>Circ</button></div>
+    <div class="cm-labeled-key"><small>Ir/Jack</small><button class="cm-key future" disabled>Jack</button></div>
+
+    <button class="cm-key future" disabled>Cu</button><button class="cm-key future" disabled>Sq</button><button class="cm-key future" disabled>m</button><button class="cm-key future" disabled>mm</button>
+    <div class="cm-labeled-key"><small>x²</small><button class="cm-key future" disabled>√</button></div>
+
+    <button class="cm-key future" disabled>Yds</button>
+    <div class="cm-labeled-key"><small>Ft-In</small><button class="cm-key unit" data-cm="feet">Feet</button></div>
+    <button class="cm-key unit" data-cm="inch">Inch</button>
+    <div class="cm-labeled-key"><small>EXP</small><button class="cm-key fraction" data-cm="fraction">/</button></div>
+    <button class="cm-key future" disabled>d:m:s</button>
+
+    <button class="cm-key conv" data-cm="conv">Conv</button><button class="cm-key number" data-cm-digit="7">7</button><button class="cm-key number" data-cm-digit="8">8</button><button class="cm-key number" data-cm-digit="9">9</button>
+    <div class="cm-labeled-key"><small>1/x</small><button class="cm-key operator" data-cm-op="divide">÷</button></div>
+
+    <button class="cm-key future" disabled>Stor</button><button class="cm-key number" data-cm-digit="4">4</button><button class="cm-key number" data-cm-digit="5">5</button><button class="cm-key number" data-cm-digit="6">6</button>
+    <div class="cm-labeled-key"><small>AC</small><button class="cm-key operator" data-cm-op="multiply">×</button></div>
+
+    <button class="cm-key future" disabled>Rcl</button><button class="cm-key number" data-cm-digit="1">1</button><button class="cm-key number" data-cm-digit="2">2</button><button class="cm-key number" data-cm-digit="3">3</button>
+    <div class="cm-labeled-key"><small>π</small><button class="cm-key operator" data-cm-op="add">+</button></div>
+
+    <button class="cm-key future" disabled>%</button><button class="cm-key number" data-cm-digit="0">0</button><button class="cm-key number" data-cm="decimal">.</button><button class="cm-key equals" data-cm="equals">=</button>
+    <div class="cm-labeled-key"><small>+/−</small><button class="cm-key operator" data-cm-op="subtract">−</button></div>
+  </div>
+
+  <div class="cm-action-row">
+    <button class="cm-key utility" data-cm="clear">C</button>
+    <button class="cm-key utility" data-cm="back">⌫</button>
+  </div>
+
+  <div class="cm-status-grid">
+    <div><small>EXACT INCHES</small><b id="cmExact">0 in</b></div>
+    <div><small>DECIMAL FEET</small><b id="cmFeet">0 ft</b></div>
+  </div>
+  <p class="calc-note">V9.1 Fixed • Familiar field-calculator layout with the validated V9.0 engine. Dimmed keys are reserved for functions not yet validated.</p>
+</div>
+</section>
 
 <section id="percentagesView" class="view hidden">
 <button class="back" data-home>← All Calculators</button><h2>Percentage Calculator</h2>

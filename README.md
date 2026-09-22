@@ -136,12 +136,12 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Validated reference triangle target: 12 ft Run + 5 ft Rise
 - Expected recalls: Diag 13 ft 0 in, Pitch 22.61986°, Rise 5 ft 0 in, Run 12 ft 0 in
 - Hip/Valley, Jack rafters and direct Pitch-entry behavior remain deferred until separately mapped against the physical Trig Plus II
-\n## V9.1
-- Rebranded module as TRESTLE Field Trig Calculator
-- Removed Construction Master branding and unnecessary power controls
-- Reorganized keys around the familiar Trig Plus II geography
-- Correctly positions R/Wall above Diag and Ir/Pitch above Hip/V
-- Reserved/dimmed future keys keep the layout stable as functions are added
-- Larger, lighter-weight number keys
-- Added TRESTLE roof-line logo treatment
-- Roof history now shows entered triangle dimensions and requested function
+
+## V9.1 Fixed
+- Rebuilt from known-good V9.0
+- TRESTLE Field Trig Calculator layout
+- Familiar Trig Plus II-inspired key geography
+- R/Wall above Diag; Ir/Pitch above Hip/V
+- Larger, lighter number keys
+- Full roof-history line
+- Unvalidated future functions remain disabled

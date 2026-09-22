@@ -14,7 +14,8 @@ let fractionDenominatorText="";
 let acc=null, accKind=null, op=null, result=0, resultKind="length", justEquals=false, convArmed=false;
 
 // V9.0 roof-triangle memory. Lengths are stored internally in inches.
-let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null;\nlet roofEnteredRun=null, roofEnteredRise=null, roofEnteredDiag=null;
+let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null;
+let roofEnteredRun=null, roofEnteredRise=null, roofEnteredDiag=null;
 
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
@@ -386,7 +387,7 @@ function roofKey(which){
 }
 function clearAll(){
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;expressionParts=[];
-  roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;\n  roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
+  roofRun=null;roofRise=null;roofDiag=null;roofPitch=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
   render();
 }
 function back(){
