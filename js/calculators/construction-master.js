@@ -24,6 +24,7 @@ let storArmed=false;
 let storedCandidate=null;
 let jackMode="jk";
 let jackIndex=0;
+let clearPending=false; // First C clears the current entry/result; second consecutive C clears all.
 
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
@@ -511,6 +512,17 @@ function clearAll(){
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;expressionParts=[];
   roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
   irregularPitchSlope=null; storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0;
+  clearPending=false;
+  render();
+}
+function clearKey(){
+  if(clearPending){ clearAll(); return; }
+  // Match the Trig Plus II: one C clears only the current entry/result state.
+  // Stored roof geometry, pitches and Jack O.C. remain available.
+  resetOperand(); acc=null; accKind=null; op=null; result=0; resultKind="length";
+  justEquals=false; convArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null;
+  jackMode="jk"; jackIndex=0;
+  clearPending=true;
   render();
 }
 function back(){
@@ -540,6 +552,8 @@ function conv(){
 }
 
 export function initConstruction(){
+  // Any key other than C breaks the consecutive-C sequence.
+  document.querySelectorAll('#constructionView button:not([data-cm="clear"])').forEach(b=>b.addEventListener("click",()=>{ clearPending=false; },{capture:true}));
   document.querySelectorAll("[data-cm-digit]").forEach(b=>b.addEventListener("click",()=>digit(b.dataset.cmDigit)));
   document.querySelectorAll("[data-cm-op]").forEach(b=>b.addEventListener("click",()=>{ if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else setOp(b.dataset.cmOp); }));
   document.querySelector('[data-cm="decimal"]').addEventListener("click",decimal);
@@ -547,7 +561,7 @@ export function initConstruction(){
   document.querySelector('[data-cm="inch"]').addEventListener("click",inches);
   document.querySelector('[data-cm="fraction"]').addEventListener("click",e=>{ const b=e.currentTarget; if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else fraction(); });
   document.querySelector('[data-cm="equals"]').addEventListener("click",equals);
-  document.querySelector('[data-cm="clear"]').addEventListener("click",clearAll);
+  document.querySelector('[data-cm="clear"]').addEventListener("click",clearKey);
   document.querySelector('[data-cm="back"]').addEventListener("click",back);
   document.querySelector('[data-cm="conv"]').addEventListener("click",conv);
   document.querySelectorAll("[data-cm-roof]").forEach(b=>b.addEventListener("click",()=>roofKey(b.dataset.cmRoof)));
