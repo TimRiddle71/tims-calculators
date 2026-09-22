@@ -1,5 +1,13 @@
 # Tim's Calculators
 
+## V5
+- Auto Loan calculator
+- Trade-in equity including negative equity
+- Sales tax, dealer fees, APR, and loan term
+- Amount financed and monthly payment breakdown
+- Total interest, total loan payments, cash out-of-pocket, payoff month
+- Year-by-year amortization and Reset
+
 ## V4.1
 - Mortgage money inputs now display dollar signs and thousands separators
 - Monthly payment and breakdown show cents

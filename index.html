@@ -22,7 +22,7 @@
 <button class="tile" data-open="mortgage"><span>🏠</span><b>Mortgage</b><small>Ready</small></button>
 </div>
 <h2>All Calculators</h2><div class="grid">
-<button class="tile disabled"><span>🚗</span><b>Auto Loan</b><small>Coming soon</small></button>
+<button class="tile" data-open="auto"><span>🚗</span><b>Auto Loan</b><small>Ready</small></button>
 <button class="tile disabled"><span>👴</span><b>Social Security</b><small>Coming soon</small></button>
 <button class="tile disabled"><span>📦</span><b>Volume</b><small>Coming soon</small></button>
 </div></section>
@@ -114,7 +114,42 @@
 <details class="amort-details"><summary>Year-by-Year Amortization</summary><div class="table-wrap"><table><thead><tr><th>Year</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead><tbody id="amortBody"></tbody></table></div></details>
 </div>
 </section>
-<footer>V4.1 • Built for quick everyday use</footer>
+
+<section id="autoView" class="view hidden">
+<button class="back" data-auto-home>← All Calculators</button><h2>Auto Loan</h2>
+<div class="calc-card">
+<div class="fields">
+<label>Vehicle Price ($)<input id="vehiclePrice" type="text" inputmode="decimal" value="$45,000"></label>
+<label>Down Payment ($)<input id="autoDown" type="text" inputmode="decimal" value="$5,000"></label>
+<label>Trade-In Value ($)<input id="tradeValue" type="text" inputmode="decimal" value="$10,000"></label>
+<label>Amount Owed on Trade ($)<input id="tradeOwed" type="text" inputmode="decimal" value="$0"></label>
+<label>Sales Tax (%)<input id="autoTaxRate" type="number" inputmode="decimal" value="6.25" min="0" step=".01"></label>
+<label>Dealer / Other Fees ($)<input id="autoFees" type="text" inputmode="decimal" value="$500"></label>
+<label>Interest Rate (APR %)<input id="autoApr" type="number" inputmode="decimal" value="6.5" min="0" step=".01"></label>
+<label>Loan Term (months)<select id="autoMonths"><option>36</option><option>48</option><option selected>60</option><option>72</option><option>84</option></select></label>
+<label>First Payment Month<input id="autoStart" type="month"></label>
+</div>
+<button id="resetAuto" class="reset-btn" type="button">Reset</button>
+<div class="trade-summary"><span>Trade Equity</span><b id="tradeEquity">$—</b><small id="tradeNote"></small></div>
+<div class="finance-breakdown">
+<div><span>Vehicle Price</span><b id="autoPriceOut">$—</b></div>
+<div><span>Down Payment</span><b id="autoDownOut">−$—</b></div>
+<div><span>Trade Equity</span><b id="autoTradeOut">−$—</b></div>
+<div><span>Estimated Sales Tax</span><b id="autoTaxOut">+$—</b></div>
+<div><span>Dealer / Other Fees</span><b id="autoFeesOut">+$—</b></div>
+<div class="finance-total"><span>Amount Financed</span><b id="autoFinanced">$—</b></div>
+</div>
+<div class="answer mortgage-answer"><small>ESTIMATED MONTHLY PAYMENT</small><strong id="autoMonthly">$—</strong><p>Principal & interest</p></div>
+<div class="stat-grid mortgage-stats">
+<div class="mini-answer"><small>TOTAL INTEREST</small><b id="autoInterest">$—</b></div>
+<div class="mini-answer"><small>TOTAL LOAN PAYMENTS</small><b id="autoPayments">$—</b></div>
+<div class="mini-answer"><small>TOTAL OUT-OF-POCKET*</small><b id="autoTotalCost">$—</b></div>
+<div class="mini-answer"><small>PAYOFF</small><b id="autoPayoff">—</b></div>
+</div>
+<p class="calc-note">*Down payment + total loan payments. Trade-in value is shown separately and is not counted as cash out-of-pocket.</p>
+<details class="amort-details"><summary>Year-by-Year Amortization</summary><div class="table-wrap"><table><thead><tr><th>Year</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead><tbody id="autoAmortBody"></tbody></table></div></details>
+</div></section>
+<footer>V5 • Built for quick everyday use</footer>
 </main>
 <script type="module" src="js/app.js"></script>
 </body></html>
