@@ -11,7 +11,7 @@ let hasUnits=false;
 let fractionNumerator=null;
 let fractionDenominatorText="";
 
-let acc=null, op=null, result=0, justEquals=false, convIndex=-1;
+let acc=null, op=null, result=0, justEquals=false, convArmed=false;
 
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
@@ -118,13 +118,10 @@ function render(){
   $("#cmExact").textContent=`${dec(v,6)} in`;
   $("#cmFeet").textContent=`${dec(v/12,6)} ft`;
 
-  const formats=[
-    `${dec(result/12,5)} ft`,
-    `${dec(result,4)} in`,
-    inchesOnly(result)
-  ];
-  if(justEquals){
-    $("#cmAlt").textContent=convIndex>=0 ? formats[convIndex] : "";
+  if(convArmed){
+    $("#cmAlt").textContent="CONV — choose ft or in";
+  }else if(justEquals){
+    $("#cmAlt").textContent="";
   }else{
     $("#cmAlt").textContent="Enter dimensions with ft / in keys.";
   }
@@ -152,7 +149,33 @@ function decimal(){
   if(!entry.includes(".")) entry=entry===""?"0.":entry+".";
   render();
 }
+function valueForConversion(){
+  if(hasOperand()) return operandValue();
+  return result;
+}
+function showConverted(unit){
+  const v=valueForConversion();
+  result=v;
+  resetOperand();
+  expressionParts=[];
+  acc=null; op=null; justEquals=true; convArmed=false;
+
+  if(unit==="ft"){
+    $("#cmMain").textContent=`${dec(v/12,6)} ft`;
+    $("#cmHistory").textContent="Converted to feet";
+    $("#cmExact").textContent=`${dec(v,6)} in`;
+    $("#cmFeet").textContent=`${dec(v/12,6)} ft`;
+    $("#cmAlt").textContent="";
+  }else{
+    $("#cmMain").textContent=inchesOnly(v);
+    $("#cmHistory").textContent="Converted to inches";
+    $("#cmExact").textContent=`${dec(v,6)} in`;
+    $("#cmFeet").textContent=`${dec(v/12,6)} ft`;
+    $("#cmAlt").textContent="";
+  }
+}
 function feet(){
+  if(convArmed){ showConverted("ft"); return; }
   startFreshIfNeeded();
   if(fractionNumerator!==null || entry==="") return;
   const n=Number(entry)||0;
@@ -160,6 +183,7 @@ function feet(){
   render();
 }
 function inches(){
+  if(convArmed){ showConverted("in"); return; }
   startFreshIfNeeded();
 
   if(fractionNumerator!==null){
@@ -229,10 +253,10 @@ function equals(){
     expressionParts=[text,"="];
     result=v;
   }
-  acc=null;op=null;resetOperand();justEquals=true;convIndex=-1;render();
+  acc=null;op=null;resetOperand();justEquals=true;convArmed=false;render();
 }
 function clearAll(){
-  resetOperand();acc=null;op=null;result=0;justEquals=false;convIndex=-1;expressionParts=[];render();
+  resetOperand();acc=null;op=null;result=0;justEquals=false;convArmed=false;expressionParts=[];render();
 }
 function back(){
   if(fractionNumerator!==null){
@@ -242,8 +266,9 @@ function back(){
   render();
 }
 function conv(){
-  if(!justEquals)return;
-  convIndex=(convIndex+1)%3;
+  // Construction Master behavior: Conv modifies the NEXT unit key.
+  if(!hasOperand() && !justEquals) return;
+  convArmed=true;
   render();
 }
 

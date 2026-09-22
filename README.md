@@ -94,3 +94,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - The blue secondary line now appears only after pressing `Conv`
 - `Conv` cycles through decimal feet, decimal inches, and fractional inches
 - Reduced the main Construction Master answer font weight for easier reading of feet-inch fractions
+
+## V8.5
+- Changed `Conv` from a post-answer cycle button to a Construction Master-style modifier key
+- `9 → ft → Conv → in` now converts the current 9 ft value to 108 in without requiring `=`
+- `108 → in → Conv → ft` converts back to 9 ft
+- Conv now prompts for the destination unit instead of cycling blindly
