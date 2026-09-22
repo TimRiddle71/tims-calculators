@@ -11,7 +11,7 @@ let hasUnits=false;
 let fractionNumerator=null;
 let fractionDenominatorText="";
 
-let acc=null, op=null, result=0, justEquals=false, convArmed=false;
+let acc=null, accKind=null, op=null, result=0, resultKind="length", justEquals=false, convArmed=false;
 
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
@@ -56,6 +56,7 @@ function pendingNumeric(){
 }
 function operandValue(){ return wholeInches+pendingNumeric(); }
 function hasOperand(){ return hasUnits || entry!=="" || fractionNumerator!==null; }
+function operandKind(){ return hasUnits ? "length" : "scalar"; }
 
 function liveOperandText(){
   const parts=[];
@@ -109,14 +110,33 @@ function liveExpression(){
 
 function render(){
   const live=hasOperand();
-  $("#cmMain").textContent=live?liveOperandText():feetInches(result);
+  if(live){
+    $("#cmMain").textContent=liveOperandText();
+  }else if(resultKind==="area"){
+    $("#cmMain").textContent=`${dec(result/144,6)} sq ft`;
+  }else if(resultKind==="scalar"){
+    $("#cmMain").textContent=dec(result,6);
+  }else{
+    $("#cmMain").textContent=feetInches(result);
+  }
 
   const expr=liveExpression();
   $("#cmHistory").textContent=expr || (justEquals ? expressionParts.join(" ") : "Ready");
 
-  const v=live?operandValue():result;
-  $("#cmExact").textContent=`${dec(v,6)} in`;
-  $("#cmFeet").textContent=`${dec(v/12,6)} ft`;
+  if(live){
+    const v=operandValue();
+    $("#cmExact").textContent=hasUnits ? `${dec(v,6)} in` : "—";
+    $("#cmFeet").textContent=hasUnits ? `${dec(v/12,6)} ft` : "—";
+  }else if(resultKind==="length"){
+    $("#cmExact").textContent=`${dec(result,6)} in`;
+    $("#cmFeet").textContent=`${dec(result/12,6)} ft`;
+  }else if(resultKind==="area"){
+    $("#cmExact").textContent=`${dec(result,6)} sq in`;
+    $("#cmFeet").textContent=`${dec(result/144,6)} sq ft`;
+  }else{
+    $("#cmExact").textContent="—";
+    $("#cmFeet").textContent="—";
+  }
 
   if(convArmed){
     $("#cmAlt").textContent="CONV — choose ft or in";
@@ -134,7 +154,7 @@ function resetOperand(){
 }
 function startFreshIfNeeded(){
   if(justEquals && op===null){
-    result=0;acc=null;expressionParts=[];justEquals=false;resetOperand();
+    result=0;resultKind="length";acc=null;accKind=null;expressionParts=[];justEquals=false;resetOperand();
   }
 }
 function digit(d){
@@ -158,7 +178,7 @@ function showConverted(unit){
   result=v;
   resetOperand();
   expressionParts=[];
-  acc=null; op=null; justEquals=true; convArmed=false;
+  acc=null; accKind=null; op=null; resultKind="length"; justEquals=true; convArmed=false;
 
   if(unit==="ft"){
     // Construction-style result belongs in the primary display.
@@ -209,26 +229,38 @@ function fraction(){
   fractionNumerator=Number(entry); fractionDenominatorText=""; entry="";
   render();
 }
-function apply(a,b,o){
-  if(o==="add")return a+b;
-  if(o==="subtract")return a-b;
-  if(o==="multiply")return a*b;
-  if(o==="divide")return b===0?NaN:a/b;
-  return b;
+function applyTyped(a,aKind,b,bKind,o){
+  if(o==="add" || o==="subtract"){
+    if(aKind!==bKind) return {value:NaN,kind:aKind};
+    return {value:o==="add"?a+b:a-b,kind:aKind};
+  }
+  if(o==="multiply"){
+    if(aKind==="length" && bKind==="length") return {value:a*b,kind:"area"};
+    if(aKind==="length" && bKind==="scalar") return {value:a*b,kind:"length"};
+    if(aKind==="scalar" && bKind==="length") return {value:a*b,kind:"length"};
+    if(aKind==="scalar" && bKind==="scalar") return {value:a*b,kind:"scalar"};
+  }
+  if(o==="divide"){
+    if(b===0) return {value:NaN,kind:aKind};
+    if(aKind==="length" && bKind==="scalar") return {value:a/b,kind:"length"};
+    if(aKind==="length" && bKind==="length") return {value:a/b,kind:"scalar"};
+    if(aKind==="scalar" && bKind==="scalar") return {value:a/b,kind:"scalar"};
+  }
+  return {value:NaN,kind:aKind};
 }
 function setOp(next){
   if(!hasOperand()) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
 
-  const v=operandValue();
+  const v=operandValue(), kind=operandKind();
   const text=finalizedOperandText();
 
-  if(acc===null) acc=v;
+  if(acc===null){ acc=v; accKind=kind; }
   else if(op){
-    const x=apply(acc,v,op);
-    if(Number.isFinite(x)) acc=x;
+    const x=applyTyped(acc,accKind,v,kind,op);
+    if(Number.isFinite(x.value)){ acc=x.value; accKind=x.kind; }
   }
-  result=acc;
+  result=acc; resultKind=accKind || "length";
 
   expressionParts.push(text,operatorSymbol(next));
   op=next;
@@ -239,26 +271,26 @@ function equals(){
   if(!hasOperand() && !(op && acc!==null)) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
 
-  const v=operandValue();
+  const v=operandValue(), kind=operandKind();
   const text=finalizedOperandText();
 
   if(op && acc!==null){
-    const x=apply(acc,v,op);
-    if(Number.isFinite(x)){
+    const x=applyTyped(acc,accKind,v,kind,op);
+    if(Number.isFinite(x.value)){
       expressionParts.push(text,"=");
-      result=x;
+      result=x.value; resultKind=x.kind;
     }else{
-      expressionParts=["Cannot divide by zero"];
-      result=0;
+      expressionParts=["Invalid dimensional operation"];
+      result=0; resultKind="length";
     }
   }else{
     expressionParts=[text,"="];
-    result=v;
+    result=v; resultKind=kind;
   }
-  acc=null;op=null;resetOperand();justEquals=true;convArmed=false;render();
+  acc=null;accKind=null;op=null;resetOperand();justEquals=true;convArmed=false;render();
 }
 function clearAll(){
-  resetOperand();acc=null;op=null;result=0;justEquals=false;convArmed=false;expressionParts=[];render();
+  resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;expressionParts=[];render();
 }
 function back(){
   if(fractionNumerator!==null){

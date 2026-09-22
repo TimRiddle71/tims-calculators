@@ -106,3 +106,12 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Example: `147 in → Conv → ft` displays `12 ft 3 in`
 - Decimal feet remains available in the verification box below, avoiding duplicate decimal-foot output
 - Fractional-inch conversions remain construction-friendly, e.g. `147-5/8 in` becomes `12 ft 3-5/8 in`
+
+## V8.7
+- Added dimensional type tracking to Construction Master arithmetic
+- Plain numbers are treated as scalars; ft/in entries are lengths
+- length × scalar remains a length
+- length ÷ scalar remains a length
+- length × length now produces area
+- `10 ft × 8 ft =` displays `80 sq ft`
+- Area verification shows square inches and square feet
