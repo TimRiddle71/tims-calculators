@@ -1,5 +1,13 @@
 # Tim's Calculators
 
+## V4.1
+- Mortgage money inputs now display dollar signs and thousands separators
+- Monthly payment and breakdown show cents
+- Start Date renamed First Payment Month
+- Payoff month now treats that field as payment #1
+- Added Mortgage Reset button
+- Core mortgage and amortization formulas unchanged after validation
+
 ## V4
 - Mortgage calculator with live payment calculation
 - Linked down-payment dollars and percentage
