@@ -115,3 +115,12 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - length × length now produces area
 - `10 ft × 8 ft =` displays `80 sq ft`
 - Area verification shows square inches and square feet
+
+## V8.8
+- Added area × length → volume dimensional arithmetic
+- `10 ft × 8 ft × 3 ft =` now displays `240 cu ft`
+- Added scalar multiplication/division support for area and volume
+- Verification labels now change with dimensional type:
+  - EXACT INCHES / DECIMAL FEET
+  - SQUARE INCHES / SQUARE FEET
+  - CUBIC INCHES / CUBIC FEET

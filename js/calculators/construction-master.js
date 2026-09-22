@@ -114,6 +114,8 @@ function render(){
     $("#cmMain").textContent=liveOperandText();
   }else if(resultKind==="area"){
     $("#cmMain").textContent=`${dec(result/144,6)} sq ft`;
+  }else if(resultKind==="volume"){
+    $("#cmMain").textContent=`${dec(result/1728,6)} cu ft`;
   }else if(resultKind==="scalar"){
     $("#cmMain").textContent=dec(result,6);
   }else{
@@ -123,17 +125,33 @@ function render(){
   const expr=liveExpression();
   $("#cmHistory").textContent=expr || (justEquals ? expressionParts.join(" ") : "Ready");
 
+  const exactLabel=$("#cmExact").previousElementSibling;
+  const feetLabel=$("#cmFeet").previousElementSibling;
+
   if(live){
     const v=operandValue();
+    exactLabel.textContent=hasUnits ? "EXACT INCHES" : "VALUE";
+    feetLabel.textContent=hasUnits ? "DECIMAL FEET" : "VALUE";
     $("#cmExact").textContent=hasUnits ? `${dec(v,6)} in` : "—";
     $("#cmFeet").textContent=hasUnits ? `${dec(v/12,6)} ft` : "—";
   }else if(resultKind==="length"){
+    exactLabel.textContent="EXACT INCHES";
+    feetLabel.textContent="DECIMAL FEET";
     $("#cmExact").textContent=`${dec(result,6)} in`;
     $("#cmFeet").textContent=`${dec(result/12,6)} ft`;
   }else if(resultKind==="area"){
+    exactLabel.textContent="SQUARE INCHES";
+    feetLabel.textContent="SQUARE FEET";
     $("#cmExact").textContent=`${dec(result,6)} sq in`;
     $("#cmFeet").textContent=`${dec(result/144,6)} sq ft`;
+  }else if(resultKind==="volume"){
+    exactLabel.textContent="CUBIC INCHES";
+    feetLabel.textContent="CUBIC FEET";
+    $("#cmExact").textContent=`${dec(result,6)} cu in`;
+    $("#cmFeet").textContent=`${dec(result/1728,6)} cu ft`;
   }else{
+    exactLabel.textContent="VALUE";
+    feetLabel.textContent="VALUE";
     $("#cmExact").textContent="—";
     $("#cmFeet").textContent="—";
   }
@@ -236,13 +254,21 @@ function applyTyped(a,aKind,b,bKind,o){
   }
   if(o==="multiply"){
     if(aKind==="length" && bKind==="length") return {value:a*b,kind:"area"};
+    if(aKind==="area" && bKind==="length") return {value:a*b,kind:"volume"};
+    if(aKind==="length" && bKind==="area") return {value:a*b,kind:"volume"};
     if(aKind==="length" && bKind==="scalar") return {value:a*b,kind:"length"};
+    if(aKind==="area" && bKind==="scalar") return {value:a*b,kind:"area"};
+    if(aKind==="volume" && bKind==="scalar") return {value:a*b,kind:"volume"};
     if(aKind==="scalar" && bKind==="length") return {value:a*b,kind:"length"};
+    if(aKind==="scalar" && bKind==="area") return {value:a*b,kind:"area"};
+    if(aKind==="scalar" && bKind==="volume") return {value:a*b,kind:"volume"};
     if(aKind==="scalar" && bKind==="scalar") return {value:a*b,kind:"scalar"};
   }
   if(o==="divide"){
     if(b===0) return {value:NaN,kind:aKind};
     if(aKind==="length" && bKind==="scalar") return {value:a/b,kind:"length"};
+    if(aKind==="area" && bKind==="scalar") return {value:a/b,kind:"area"};
+    if(aKind==="volume" && bKind==="scalar") return {value:a/b,kind:"volume"};
     if(aKind==="length" && bKind==="length") return {value:a/b,kind:"scalar"};
     if(aKind==="scalar" && bKind==="scalar") return {value:a/b,kind:"scalar"};
   }
