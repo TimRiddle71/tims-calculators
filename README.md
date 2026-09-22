@@ -100,3 +100,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - `9 → ft → Conv → in` now converts the current 9 ft value to 108 in without requiring `=`
 - `108 → in → Conv → ft` converts back to 9 ft
 - Conv now prompts for the destination unit instead of cycling blindly
+
+## V8.6
+- Construction Master `Conv → ft` now shows construction-style feet/inches/fractions in the main display
+- Example: `147 in → Conv → ft` displays `12 ft 3 in`
+- Decimal feet remains available in the verification box below, avoiding duplicate decimal-foot output
+- Fractional-inch conversions remain construction-friendly, e.g. `147-5/8 in` becomes `12 ft 3-5/8 in`

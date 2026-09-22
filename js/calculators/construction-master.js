@@ -161,8 +161,10 @@ function showConverted(unit){
   acc=null; op=null; justEquals=true; convArmed=false;
 
   if(unit==="ft"){
-    $("#cmMain").textContent=`${dec(v/12,6)} ft`;
-    $("#cmHistory").textContent="Converted to feet";
+    // Construction-style result belongs in the primary display.
+    // Decimal feet is already available in the verification box below.
+    $("#cmMain").textContent=feetInches(v);
+    $("#cmHistory").textContent="Converted to feet / inches";
     $("#cmExact").textContent=`${dec(v,6)} in`;
     $("#cmFeet").textContent=`${dec(v/12,6)} ft`;
     $("#cmAlt").textContent="";
