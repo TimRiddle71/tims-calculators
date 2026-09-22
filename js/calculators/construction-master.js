@@ -389,7 +389,7 @@ function roofKey(which){
       // Run available for later Jack work, but do not let stale Rise/Diag overwrite it.
       roofRise=null; roofDiag=null; roofHipV=null; roofEnteredRise=null; roofEnteredDiag=null;
       resetOperand(); justEquals=true; expressionParts=[];
-      setSpecialDisplay("Pitch",`PCH  ${inchesOnly(v)}`,"Roof pitch stored.");
+      setLabeledDisplay("Pitch","PCH",inchesOnly(v),"Roof pitch stored.");
       return;
     } else return;
     resetOperand(); justEquals=false; expressionParts=[];
@@ -418,6 +418,10 @@ function setSpecialDisplay(history,main,alt=""){
   $("#cmExact").textContent="—";
   $("#cmFeet").textContent="—";
 }
+function setLabeledDisplay(history,label,value,alt="") {
+  setSpecialDisplay(history,"",alt);
+  $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">${label}</span><span class="cm-jack-value">${value}</span></span>`;
+}
 function regularPitchSlope(){
   if(roofRun!==null && roofRise!==null && roofRun>0) return roofRise/roofRun;
   if(roofPitch!==null) return Math.tan(roofPitch*Math.PI/180);
@@ -445,7 +449,7 @@ function storeIrregularPitch(){
   if(!(slope>0)) return;
   irregularPitchSlope=slope;
   resetOperand(); justEquals=true; expressionParts=[];
-  setSpecialDisplay("Ir/Pitch",`IPCH  ${label}`,"Irregular roof pitch stored.");
+  setLabeledDisplay("Ir/Pitch","IPCH",label,"Irregular roof pitch stored.");
 }
 function jackSeries(kind){
   const p=regularPitchSlope();
@@ -485,7 +489,7 @@ function jackKey(forceIrregular=false){
   if(storArmed){
     if(storedCandidate>0) jackOC=storedCandidate;
     storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0;
-    setSpecialDisplay("Stor → Jack",`OC  ${inchesOnly(jackOC)}`,"Jack on-center spacing stored.");
+    setLabeledDisplay("Stor → Jack","OC",inchesOnly(jackOC),"Jack on-center spacing stored.");
     return;
   }
   if(!jackSeries("jk")){
