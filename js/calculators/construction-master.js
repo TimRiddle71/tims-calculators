@@ -14,7 +14,7 @@ let fractionDenominatorText="";
 let acc=null, accKind=null, op=null, result=0, resultKind="length", justEquals=false, convArmed=false;
 
 // V9.0 roof-triangle memory. Lengths are stored internally in inches.
-let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null;
+let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null;\nlet roofEnteredRun=null, roofEnteredRise=null, roofEnteredDiag=null;
 
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
@@ -319,14 +319,22 @@ function equals(){
   }
   acc=null;accKind=null;op=null;resetOperand();justEquals=true;convArmed=false;render();
 }
+function roofHistory(requested){
+  const bits=[];
+  if(roofEnteredRun!==null) bits.push(`${feetInches(roofEnteredRun).replace(" 0 in","")} Run`);
+  if(roofEnteredRise!==null) bits.push(`${feetInches(roofEnteredRise).replace(" 0 in","")} Rise`);
+  if(roofEnteredDiag!==null) bits.push(`${feetInches(roofEnteredDiag).replace(" 0 in","")} Diag`);
+  bits.push(requested);
+  return bits.join(" → ");
+}
 function setRoofDisplay(label,value,kind="length"){
   resetOperand();
   acc=null; accKind=null; op=null; convArmed=false; justEquals=true;
-  expressionParts=[label];
+  expressionParts=[roofHistory(label)];
   if(kind==="angle"){
     resultKind="scalar";
     result=value;
-    $("#cmHistory").textContent=label;
+    $("#cmHistory").textContent=roofHistory(label);
     $("#cmMain").textContent=`${dec(value,5)}°`;
     $("#cmExact").previousElementSibling.textContent="ROOF ANGLE";
     $("#cmFeet").previousElementSibling.textContent="PITCH";
@@ -359,9 +367,9 @@ function roofKey(which){
   if(hasOperand()){
     if(!hasUnits) return; // roof dimensions must be dimensional entries
     const v=operandValue();
-    if(which==="run") roofRun=v;
-    else if(which==="rise") roofRise=v;
-    else if(which==="diag") roofDiag=v;
+    if(which==="run"){ roofRun=v; roofEnteredRun=v; }
+    else if(which==="rise"){ roofRise=v; roofEnteredRise=v; }
+    else if(which==="diag"){ roofDiag=v; roofEnteredDiag=v; }
     else return; // Pitch input behavior will be mapped separately against the physical calculator.
     resetOperand(); justEquals=false; expressionParts=[];
     solveRoof();
@@ -378,7 +386,7 @@ function roofKey(which){
 }
 function clearAll(){
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;expressionParts=[];
-  roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;
+  roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;\n  roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
   render();
 }
 function back(){
