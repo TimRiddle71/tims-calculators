@@ -52,9 +52,8 @@ function feetInches(value){
   const rem=a-ft*12, f=roundedFraction(rem,64);
   let iw=f.whole;
   if(iw>=12){ft++;iw-=12}
-  let ins=iw?String(iw):"";
-  if(f.n) ins+=(ins?"-":"")+`${f.n}/${f.d}`;
-  if(!ins) ins="0";
+  let ins=String(iw);
+  if(f.n) ins+=`-${f.n}/${f.d}`;
   return `${neg?"−":""}${ft} ft ${ins} in`;
 }
 
