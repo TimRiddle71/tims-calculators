@@ -46,3 +46,8 @@
 #constructionView .cm-alt:empty{
   display:none;
 }
+
+/* V9.0 roof-triangle keys */
+.cm-roofkeys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+.cm-key.roof{background:#1c2940;color:var(--accent);font-size:.95rem}
+@media(max-width:420px){.cm-roofkeys{grid-template-columns:repeat(2,1fr)}}

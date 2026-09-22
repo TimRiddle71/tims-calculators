@@ -129,3 +129,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Added practical reverse dimensional arithmetic: area ÷ length → length
 - Reference workflow: `10 ft × 8 ft ÷ 4 ft = 20 ft 0 in`
 - Keeps the dimensional engine focused on realistic construction-calculator workflows
+
+## V9.0
+- Added first Construction Master roof-triangle engine
+- Added Pitch, Rise, Run and Diag keys
+- Validated reference triangle target: 12 ft Run + 5 ft Rise
+- Expected recalls: Diag 13 ft 0 in, Pitch 22.61986°, Rise 5 ft 0 in, Run 12 ft 0 in
+- Hip/Valley, Jack rafters and direct Pitch-entry behavior remain deferred until separately mapped against the physical Trig Plus II

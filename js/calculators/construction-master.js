@@ -13,6 +13,9 @@ let fractionDenominatorText="";
 
 let acc=null, accKind=null, op=null, result=0, resultKind="length", justEquals=false, convArmed=false;
 
+// V9.0 roof-triangle memory. Lengths are stored internally in inches.
+let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null;
+
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
 let committedOperandText="";
@@ -316,8 +319,67 @@ function equals(){
   }
   acc=null;accKind=null;op=null;resetOperand();justEquals=true;convArmed=false;render();
 }
+function setRoofDisplay(label,value,kind="length"){
+  resetOperand();
+  acc=null; accKind=null; op=null; convArmed=false; justEquals=true;
+  expressionParts=[label];
+  if(kind==="angle"){
+    resultKind="scalar";
+    result=value;
+    $("#cmHistory").textContent=label;
+    $("#cmMain").textContent=`${dec(value,5)}°`;
+    $("#cmExact").previousElementSibling.textContent="ROOF ANGLE";
+    $("#cmFeet").previousElementSibling.textContent="PITCH";
+    $("#cmExact").textContent=`${dec(value,5)}°`;
+    $("#cmFeet").textContent=`${dec(value,5)}°`;
+    $("#cmAlt").textContent="";
+  }else{
+    resultKind="length"; result=value;
+    render();
+  }
+}
+function solveRoof(){
+  if(roofRun!==null && roofRise!==null){
+    roofDiag=Math.hypot(roofRun,roofRise);
+    roofPitch=Math.atan2(roofRise,roofRun)*180/Math.PI;
+    return;
+  }
+  if(roofRun!==null && roofDiag!==null && roofDiag>=roofRun){
+    roofRise=Math.sqrt(Math.max(0,roofDiag*roofDiag-roofRun*roofRun));
+    roofPitch=Math.atan2(roofRise,roofRun)*180/Math.PI;
+    return;
+  }
+  if(roofRise!==null && roofDiag!==null && roofDiag>=roofRise){
+    roofRun=Math.sqrt(Math.max(0,roofDiag*roofDiag-roofRise*roofRise));
+    roofPitch=Math.atan2(roofRise,roofRun)*180/Math.PI;
+  }
+}
+function roofKey(which){
+  // If a dimension is currently entered, store it under the selected roof key.
+  if(hasOperand()){
+    if(!hasUnits) return; // roof dimensions must be dimensional entries
+    const v=operandValue();
+    if(which==="run") roofRun=v;
+    else if(which==="rise") roofRise=v;
+    else if(which==="diag") roofDiag=v;
+    else return; // Pitch input behavior will be mapped separately against the physical calculator.
+    resetOperand(); justEquals=false; expressionParts=[];
+    solveRoof();
+  }
+
+  // Recall / calculate the requested roof value from stored triangle data.
+  solveRoof();
+  if(which==="run" && roofRun!==null){ setRoofDisplay("Run",roofRun); return; }
+  if(which==="rise" && roofRise!==null){ setRoofDisplay("Rise",roofRise); return; }
+  if(which==="diag" && roofDiag!==null){ setRoofDisplay("Diag",roofDiag); return; }
+  if(which==="pitch" && roofPitch!==null){ setRoofDisplay("Pitch",roofPitch,"angle"); return; }
+
+  $("#cmAlt").textContent="Enter two roof dimensions first.";
+}
 function clearAll(){
-  resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;expressionParts=[];render();
+  resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;expressionParts=[];
+  roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;
+  render();
 }
 function back(){
   if(fractionNumerator!==null){
@@ -344,5 +406,6 @@ export function initConstruction(){
   document.querySelector('[data-cm="clear"]').addEventListener("click",clearAll);
   document.querySelector('[data-cm="back"]').addEventListener("click",back);
   document.querySelector('[data-cm="conv"]').addEventListener("click",conv);
+  document.querySelectorAll("[data-cm-roof]").forEach(b=>b.addEventListener("click",()=>roofKey(b.dataset.cmRoof)));
   render();
 }

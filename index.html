@@ -30,7 +30,7 @@
 
 <section id="constructionView" class="view hidden">
 <button class="back" data-construction-home>← All Calculators</button>
-<div class="cm-heading"><div><h2>Construction Master</h2><p>V8.9 Core Engine • Feet, inches & fractions</p></div><span>PHASE 1</span></div>
+<div class="cm-heading"><div><h2>Construction Master</h2><p>V9.0 Roof Triangle • Feet, inches & fractions</p></div><span>ROOF TRIANGLE</span></div>
 <div class="cm-shell">
   <div class="cm-display" aria-live="polite">
     <div id="cmHistory" class="cm-history">Ready</div>
@@ -39,6 +39,12 @@
   </div>
   <div class="cm-help">Example: <b>25 ft 3 in + 8 in 3/32 + 27.5 in =</b><br>
   Key it as: <b>25 → ft → 3 → in → + → 8 → in → 3 → / → 32 → in → + → 27.5 → in → =</b></div>
+  <div class="cm-roofkeys">
+    <button class="cm-key roof" data-cm-roof="pitch">Pitch</button>
+    <button class="cm-key roof" data-cm-roof="rise">Rise</button>
+    <button class="cm-key roof" data-cm-roof="run">Run</button>
+    <button class="cm-key roof" data-cm-roof="diag">Diag</button>
+  </div>
   <div class="cm-keypad">
     <button class="cm-key utility" data-cm="clear">C</button>
     <button class="cm-key utility" data-cm="back">⌫</button>
@@ -65,7 +71,7 @@
     <div><small>EXACT INCHES</small><b id="cmExact">0 in</b></div>
     <div><small>DECIMAL FEET</small><b id="cmFeet">0 ft</b></div>
   </div>
-  <p class="calc-note">V8.9 intentionally focuses on dimensional entry and arithmetic first. Pitch, Rise, Run, Diagonal, Hip/Valley, Jack, trig, square/cube, memory and percent come after this core engine is validated against the physical calculator.</p>
+  <p class="calc-note">V9.0 adds the first validated roof-triangle workflow. Enter a dimension, press Run or Rise, enter the second dimension, then use Diag / Pitch / Rise / Run to recall the triangle. Hip/Valley, Jack, trig, memory and percent remain deferred.</p>
 </div>
 </section>
 
