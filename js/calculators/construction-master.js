@@ -17,6 +17,14 @@ let acc=null, accKind=null, op=null, result=0, resultKind="length", justEquals=f
 let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null, roofHipV=null;
 let roofEnteredRun=null, roofEnteredRise=null, roofEnteredDiag=null;
 
+// V9.4 Jack memory. O.C. defaults to the physical calculator's 16 in setting.
+let jackOC=16;
+let irregularPitchSlope=null; // rise/run, e.g. 8/12
+let storArmed=false;
+let storedCandidate=null;
+let jackMode="jk";
+let jackIndex=0;
+
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
 let committedOperandText="";
@@ -389,9 +397,103 @@ function roofKey(which){
 
   $("#cmAlt").textContent="Enter two roof dimensions first.";
 }
+function setSpecialDisplay(history,main,alt=""){
+  resetOperand(); acc=null; accKind=null; op=null; convArmed=false; justEquals=true;
+  expressionParts=[history];
+  result=0; resultKind="length";
+  $("#cmHistory").textContent=history;
+  $("#cmMain").textContent=main;
+  $("#cmAlt").textContent=alt;
+  $("#cmExact").previousElementSibling.textContent="EXACT INCHES";
+  $("#cmFeet").previousElementSibling.textContent="DECIMAL FEET";
+  $("#cmExact").textContent="—";
+  $("#cmFeet").textContent="—";
+}
+function regularPitchSlope(){
+  if(roofRun!==null && roofRise!==null && roofRun>0) return roofRise/roofRun;
+  if(roofPitch!==null) return Math.tan(roofPitch*Math.PI/180);
+  return null;
+}
+function storeKey(){
+  if(!hasOperand()) return;
+  storedCandidate=operandValue();
+  storArmed=true;
+  resetOperand(); justEquals=false; expressionParts=[];
+  setSpecialDisplay("Stor","STOR","Press Jack to store O.C. spacing.");
+}
+function storeIrregularPitch(){
+  if(!hasOperand()) return;
+  let slope=null, label="";
+  if(hasUnits){
+    const v=operandValue();
+    slope=v/12; // dimensional pitch entry: 8 in means 8/12
+    label=inchesOnly(v);
+  }else{
+    const deg=operandValue();
+    slope=Math.tan(deg*Math.PI/180);
+    label=`${dec(deg,5)}°`;
+  }
+  if(!(slope>0)) return;
+  irregularPitchSlope=slope;
+  resetOperand(); justEquals=true; expressionParts=[];
+  setSpecialDisplay("Ir/Pitch",`IPCH  ${label}`,"Irregular roof pitch stored.");
+}
+function jackSeries(kind){
+  const p=regularPitchSlope();
+  const q=irregularPitchSlope ?? p;
+  if(!(p>0) || !(q>0) || !(roofRun>0) || !(jackOC>0)) return null;
+  if(kind==="jk"){
+    const commonRun=roofRun;
+    const runStep=jackOC*(q/p);
+    const factor=Math.sqrt(1+p*p);
+    return {common:commonRun*factor, step:runStep*factor};
+  }
+  const commonRun=roofRun*(p/q);
+  const runStep=jackOC*(p/q);
+  const factor=Math.sqrt(1+q*q);
+  return {common:commonRun*factor, step:runStep*factor};
+}
+function jackValue(kind,index){
+  const s=jackSeries(kind); if(!s) return null;
+  return Math.max(0,s.common-index*s.step);
+}
+function jackZeroIndex(kind){
+  const s=jackSeries(kind); if(!s) return 0;
+  return Math.ceil((s.common-1e-9)/s.step);
+}
+function showJack(kind,index){
+  const value=jackValue(kind,index); if(value===null) return false;
+  const tag=kind==="jk"?"Jk":"IJ";
+  const hist=`${roofHistory(tag+" "+index)} • OC ${inchesOnly(jackOC)}`;
+  resetOperand(); acc=null; accKind=null; op=null; convArmed=false; justEquals=true;
+  expressionParts=[hist]; resultKind="length"; result=value;
+  render();
+  $("#cmHistory").textContent=hist;
+  $("#cmMain").textContent=`${tag} ${index}   ${feetInches(value)}`;
+  return true;
+}
+function jackKey(forceIrregular=false){
+  if(storArmed){
+    if(storedCandidate>0) jackOC=storedCandidate;
+    storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0;
+    setSpecialDisplay("Stor → Jack",`OC  ${inchesOnly(jackOC)}`,"Jack on-center spacing stored.");
+    return;
+  }
+  if(!jackSeries("jk")){
+    $("#cmAlt").textContent="Enter Run + Rise (or roof Pitch) first.";
+    return;
+  }
+  if(forceIrregular){ jackMode="ij"; jackIndex=1; showJack("ij",1); return; }
+  if(jackIndex===0){ jackMode="jk"; jackIndex=1; showJack("jk",1); return; }
+  const zero=jackZeroIndex(jackMode);
+  if(jackIndex<zero){ jackIndex++; showJack(jackMode,jackIndex); return; }
+  if(jackMode==="jk"){ jackMode="ij"; jackIndex=1; showJack("ij",1); return; }
+  jackMode="jk"; jackIndex=1; showJack("jk",1);
+}
 function clearAll(){
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;expressionParts=[];
   roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
+  irregularPitchSlope=null; storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0;
   render();
 }
 function back(){
@@ -420,5 +522,9 @@ export function initConstruction(){
   document.querySelector('[data-cm="back"]').addEventListener("click",back);
   document.querySelector('[data-cm="conv"]').addEventListener("click",conv);
   document.querySelectorAll("[data-cm-roof]").forEach(b=>b.addEventListener("click",()=>roofKey(b.dataset.cmRoof)));
+  document.querySelector('[data-cm="stor"]').addEventListener("click",storeKey);
+  document.querySelector('[data-cm="jack"]').addEventListener("click",()=>jackKey(false));
+  document.querySelector('[data-cm="irjack"]').addEventListener("click",()=>jackKey(true));
+  document.querySelector('[data-cm="irpitch"]').addEventListener("click",storeIrregularPitch);
   render();
 }

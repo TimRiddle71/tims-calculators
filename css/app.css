@@ -64,3 +64,5 @@
 .cm-mini-tool:active{transform:translateY(1px)}
 .cm-mini-tool:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:420px){.cm-display-tools{left:7px;top:7px;gap:4px}.cm-mini-tool{min-width:34px;height:30px;padding:0 8px;font-size:.78rem}}
+
+.cm-secondary{height:18px;border:0;background:transparent;color:#e7bd55;font-size:.66rem;font-weight:650;text-align:center;line-height:16px;padding:0;cursor:pointer}.cm-secondary:active{transform:translateY(1px)}@media(max-width:620px){.cm-secondary{font-size:.55rem;height:15px;line-height:13px}}

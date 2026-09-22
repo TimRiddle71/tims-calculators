@@ -51,11 +51,11 @@
     <button class="cm-key roof" data-cm-roof="rise">Rise</button>
     <button class="cm-key roof" data-cm-roof="run">Run</button>
     <div class="cm-labeled-key"><small>R/Wall</small><button class="cm-key roof" data-cm-roof="diag">Diag</button></div>
-    <div class="cm-labeled-key"><small>Ir/Pitch</small><button class="cm-key roof" data-cm-roof="hipv">Hip/V</button></div>
+    <div class="cm-labeled-key"><button class="cm-secondary" data-cm="irpitch">Ir/Pitch</button><button class="cm-key roof" data-cm-roof="hipv">Hip/V</button></div>
 
     <button class="cm-key future" disabled>Sine</button><button class="cm-key future" disabled>Cos</button><button class="cm-key future" disabled>Tan</button>
     <div class="cm-labeled-key"><small>Arc</small><button class="cm-key future" disabled>Circ</button></div>
-    <div class="cm-labeled-key"><small>Ir/Jack</small><button class="cm-key future" disabled>Jack</button></div>
+    <div class="cm-labeled-key"><button class="cm-secondary" data-cm="irjack">Ir/Jack</button><button class="cm-key roof" data-cm="jack">Jack</button></div>
 
     <button class="cm-key future" disabled>Cu</button><button class="cm-key future" disabled>Sq</button><button class="cm-key future" disabled>m</button><button class="cm-key future" disabled>mm</button>
     <div class="cm-labeled-key"><small>x²</small><button class="cm-key future" disabled>√</button></div>
@@ -69,7 +69,7 @@
     <button class="cm-key conv" data-cm="conv">Conv</button><button class="cm-key number" data-cm-digit="7">7</button><button class="cm-key number" data-cm-digit="8">8</button><button class="cm-key number" data-cm-digit="9">9</button>
     <div class="cm-labeled-key"><small>1/x</small><button class="cm-key operator" data-cm-op="divide">÷</button></div>
 
-    <button class="cm-key future" disabled>Stor</button><button class="cm-key number" data-cm-digit="4">4</button><button class="cm-key number" data-cm-digit="5">5</button><button class="cm-key number" data-cm-digit="6">6</button>
+    <button class="cm-key" data-cm="stor">Stor</button><button class="cm-key number" data-cm-digit="4">4</button><button class="cm-key number" data-cm-digit="5">5</button><button class="cm-key number" data-cm-digit="6">6</button>
     <div class="cm-labeled-key"><small>AC</small><button class="cm-key operator" data-cm-op="multiply">×</button></div>
 
     <button class="cm-key future" disabled>Rcl</button><button class="cm-key number" data-cm-digit="1">1</button><button class="cm-key number" data-cm-digit="2">2</button><button class="cm-key number" data-cm-digit="3">3</button>
@@ -82,7 +82,7 @@
     <div><small>EXACT INCHES</small><b id="cmExact">0 in</b></div>
     <div><small>DECIMAL FEET</small><b id="cmFeet">0 ft</b></div>
   </div>
-  <p class="calc-note">V9.3 • Hip/Valley enabled with the validated V9.0 engine. Dimmed keys are reserved for functions not yet validated.</p>
+  <p class="calc-note">V9.4 • Jack / Irregular Jack enabled with stored O.C. spacing. Dimmed keys are reserved for functions not yet validated.</p>
 </div>
 </section>
 
@@ -314,7 +314,7 @@
 </div>
 </section>
 
-<footer>V9.3 • Built for quick everyday use</footer>
+<footer>V9.4 • Built for quick everyday use</footer>
 </main>
 <script type="module" src="js/app.js"></script>
 </body></html>

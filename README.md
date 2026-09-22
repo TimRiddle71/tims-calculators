@@ -161,3 +161,12 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Physical reference targets:
   - 12 ft Run + 5 ft Rise = 17 ft 8-19/64 in Hip/V
   - 14 ft 7 in Run + 6 ft 3 in Rise = 21 ft 6-39/64 in Hip/V
+
+
+## V9.4
+- Added validated Jack and Irregular Jack workflows.
+- `Stor → Jack` stores jack on-center spacing (default 16 in).
+- Regular `Jack` cycles descending JK values through zero, then IJ values through zero, then repeats.
+- Gold `Ir/Jack` jumps directly to the irregular-jack sequence.
+- Gold `Ir/Pitch` stores the adjoining irregular roof pitch.
+- Irregular jack geometry maintains the stored O.C. spacing on both sides, matching the physical Trig Plus II test data.
