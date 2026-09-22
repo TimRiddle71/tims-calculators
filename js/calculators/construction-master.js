@@ -29,6 +29,7 @@ let clearPending=false; // First C clears the current entry/result; second conse
 // V9.6 R/Wall memory. Tim uses the Trig Plus II default 16 in rake-wall spacing.
 const rwallOC=16;
 let rwallIndex=0;
+let rwallActive=false; // After Conv → Diag starts R/Wall, plain Diag advances the active RW sequence.
 
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
@@ -192,6 +193,7 @@ function startFreshIfNeeded(){
   }
 }
 function digit(d){
+  rwallActive=false;
   startFreshIfNeeded();
   if(fractionNumerator!==null) fractionDenominatorText+=d;
   else entry=(entry==="0")?d:entry+d;
@@ -379,6 +381,10 @@ function solveRoof(){
   }
 }
 function roofKey(which){
+  // Match the Trig Plus II: after Conv → Diag starts an R/Wall sequence,
+  // subsequent plain Diag presses advance RW 2, RW 3, etc. without Conv.
+  if(which==="diag" && rwallActive && !convArmed && !hasOperand()){ rwallKey(); return; }
+  if(which!=="diag") rwallActive=false;
   if(convArmed){
     const secondary={diag:"rwall",hipv:"irpitch"}[which];
     if(secondary){ secondaryKey(secondary); return; }
@@ -544,13 +550,14 @@ function rwallKey(){
   if(!zero){ $("#cmAlt").textContent="Enter roof Rise + Run (or Run + Pitch) first."; return; }
   if(rwallIndex===0) rwallIndex=1;
   else if(rwallIndex<zero) rwallIndex++;
+  rwallActive=true;
   // Physical Trig Plus II stops at the final zero-length RW result; it does not wrap.
   showRwall(rwallIndex);
 }
 function clearAll(){
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;expressionParts=[];
   roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
-  irregularPitchSlope=null; storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0; rwallIndex=0;
+  irregularPitchSlope=null; storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false;
   clearPending=false;
   render();
 }
@@ -560,7 +567,7 @@ function clearKey(){
   // Stored roof geometry, pitches and Jack O.C. remain available.
   resetOperand(); acc=null; accKind=null; op=null; result=0; resultKind="length";
   justEquals=false; convArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null;
-  jackMode="jk"; jackIndex=0; rwallIndex=0;
+  jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false;
   clearPending=true;
   render();
 }

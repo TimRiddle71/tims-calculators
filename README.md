@@ -172,7 +172,7 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Irregular jack geometry maintains the stored O.C. spacing on both sides, matching the physical Trig Plus II test data.
 
 
-## V9.6 — R/Wall
+## V9.6.1 — R/Wall
 - Added validated gold `R/Wall` (`Conv → Diag`) workflow.
 - Uses fixed 16 in rake-wall spacing, matching Tim's field workflow and physical Trig Plus II default.
 - Repeated R/Wall presses step through `RW 1`, `RW 2`, etc. to the final `0 ft 0 in`.
