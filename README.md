@@ -178,3 +178,11 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Repeated R/Wall presses step through `RW 1`, `RW 2`, etc. to the final `0 ft 0 in`.
 - The final RW result holds on additional presses rather than wrapping.
 - Validated physical benchmarks prepared for 12 ft run / 5 ft rise and 12 ft run / 8 ft rise.
+
+
+## V9.7 — Trig
+- Enabled validated degree-mode `Sine`, `Cos`, and `Tan`.
+- Enabled gold inverse trig with `Conv → Sine/Cos/Tan`.
+- Normal trig results display up to six decimals, matching the physical Trig Plus II.
+- Inverse trig displays `DEG` at left and the angle at right.
+- Physical benchmarks: sin 37° = 0.601815; cos 37° = 0.798636; tan 37° = 0.753554; asin 0.5 = 30°; acos 0.5 = 60°; atan 1 = 45°.

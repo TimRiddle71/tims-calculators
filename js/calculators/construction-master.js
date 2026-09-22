@@ -578,6 +578,48 @@ function back(){
   }else if(entry) entry=entry.slice(0,-1);
   render();
 }
+function trigKey(which){
+  // V9.7: physical Trig Plus II validation established degree-mode trig and
+  // Conv + trig as the inverse function. Only typed scalar input is mapped.
+  if(!hasOperand() || hasUnits){
+    convArmed=false;
+    $("#cmAlt").textContent="Enter a unitless value first.";
+    return;
+  }
+  const input=operandValue();
+  const inverse=convArmed;
+  convArmed=false;
+  let value;
+  if(inverse){
+    if((which==="sin" || which==="cos") && (input < -1 || input > 1)){
+      $("#cmAlt").textContent="Inverse Sine/Cosine input must be from −1 to 1.";
+      return;
+    }
+    if(which==="sin") value=Math.asin(input)*180/Math.PI;
+    else if(which==="cos") value=Math.acos(input)*180/Math.PI;
+    else value=Math.atan(input)*180/Math.PI;
+  }else{
+    const rad=input*Math.PI/180;
+    if(which==="sin") value=Math.sin(rad);
+    else if(which==="cos") value=Math.cos(rad);
+    else value=Math.tan(rad);
+  }
+  if(!Number.isFinite(value)) return;
+  resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
+  resultKind="scalar"; result=value;
+  const name={sin:"Sine",cos:"Cos",tan:"Tan"}[which];
+  $("#cmHistory").textContent=inverse?`Inverse ${name}`:`${name} ${dec(input,6)}°`;
+  if(inverse){
+    $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">DEG</span><span class="cm-jack-value">${dec(value,6)}°</span></span>`;
+  }else{
+    $("#cmMain").textContent=dec(value,6);
+  }
+  $("#cmAlt").textContent="";
+  $("#cmExact").previousElementSibling.textContent=inverse?"DEGREES":"VALUE";
+  $("#cmFeet").previousElementSibling.textContent="VALUE";
+  $("#cmExact").textContent=inverse?`${dec(value,6)}°`:dec(value,6);
+  $("#cmFeet").textContent="—";
+}
 function secondaryNotValidated(name){
   convArmed=false;
   $("#cmAlt").textContent=`${name} recognized — function not yet validated.`;
@@ -613,6 +655,7 @@ export function initConstruction(){
   document.querySelector('[data-cm="conv"]').addEventListener("click",conv);
   document.querySelectorAll("[data-cm-roof]").forEach(b=>b.addEventListener("click",()=>roofKey(b.dataset.cmRoof)));
   document.querySelector('[data-cm="stor"]').addEventListener("click",storeKey);
+  document.querySelectorAll("[data-cm-trig]").forEach(b=>b.addEventListener("click",()=>trigKey(b.dataset.cmTrig)));
   document.querySelectorAll("[data-cm-primary]").forEach(b=>b.addEventListener("click",()=>{ if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else $("#cmAlt").textContent=`${b.textContent.trim()} not yet validated.`; }));
   document.querySelector('[data-cm="jack"]').addEventListener("click",e=>{ const b=e.currentTarget; if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else jackKey(false); });
   render();
