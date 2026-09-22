@@ -199,3 +199,12 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Arc length = circumference × angle / 360°.
 - One `C` preserves the stored circle diameter; two consecutive `C` presses still clear all stored state.
 - Physical 10 in diameter benchmarks: 90° = 7 55/64 in; 180° = 15 45/64 in; 360° = 31 27/64 in.
+
+
+## V9.10 — Square Root / x²
+- Built from the validated V9.9 baseline.
+- Added physically validated square-root behavior: `144 → √ = 12`, `2 → √ = 1.414214`.
+- Added gold square behavior: `12 → Conv → √ = 144`, `1.234 → Conv → √ = 1.522756`.
+- Uses the established six-decimal result formatting with unnecessary trailing zeros removed.
+- Activated and visually corrected the √ key while preserving the locked five-column keypad geometry.
+- Service-worker cache bumped to V9.10.

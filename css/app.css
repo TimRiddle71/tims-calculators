@@ -71,3 +71,6 @@
 #constructionView .cm-jack-result{display:flex;align-items:baseline;justify-content:space-between;width:100%;gap:14px}
 #constructionView .cm-jack-tag{flex:0 0 auto;text-align:left}
 #constructionView .cm-jack-value{flex:1 1 auto;text-align:right}
+
+/* V9.10: make the validated square-root key read like the physical Trig Plus II key. */
+.cm-physical-grid .cm-radical{font-family:"Times New Roman",serif;font-size:1.55em;font-weight:400;line-height:1}

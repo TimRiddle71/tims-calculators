@@ -697,6 +697,33 @@ function circKey(){
   circleDisplay(circleStage);
 }
 
+
+function sqrtSquareKey(square=false){
+  // V9.10 physical benchmarks: 144 → √ = 12; 2 → √ = 1.414214;
+  // 12 → Conv → √ = 144; 1.234 → Conv → √ = 1.522756.
+  convArmed=false;
+  if(!hasOperand() || hasUnits){
+    $("#cmAlt").textContent="Enter a unitless value first.";
+    return;
+  }
+  const input=operandValue();
+  if(!square && input<0){
+    $("#cmAlt").textContent="Square root requires a non-negative value.";
+    return;
+  }
+  const value=square ? input*input : Math.sqrt(input);
+  if(!Number.isFinite(value)) return;
+  resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
+  resultKind="scalar"; result=value;
+  $("#cmHistory").textContent=square?`Square ${dec(input,6)}`:`Square root ${dec(input,6)}`;
+  $("#cmMain").textContent=dec(value,6);
+  $("#cmAlt").textContent="";
+  $("#cmExact").previousElementSibling.textContent="VALUE";
+  $("#cmFeet").previousElementSibling.textContent="VALUE";
+  $("#cmExact").textContent=dec(value,6);
+  $("#cmFeet").textContent="—";
+}
+
 function secondaryNotValidated(name){
   convArmed=false;
   $("#cmAlt").textContent=`${name} recognized — function not yet validated.`;
@@ -708,6 +735,7 @@ function secondaryKey(name){
   if(name==="irjack"){ convArmed=false; jackKey(true); return true; }
   if(name==="rwall"){ convArmed=false; rwallKey(); return true; }
   if(name==="arc"){ arcKey(); return true; }
+  if(name==="square"){ sqrtSquareKey(true); return true; }
   const labels={rwall:"R/Wall",arc:"Arc",square:"x²",ftin:"Ft-In",exp:"EXP",reciprocal:"1/x",ac:"AC",pi:"π",sign:"+/−"};
   secondaryNotValidated(labels[name]||name); return true;
 }
@@ -734,7 +762,7 @@ export function initConstruction(){
   document.querySelectorAll("[data-cm-roof]").forEach(b=>b.addEventListener("click",()=>roofKey(b.dataset.cmRoof)));
   document.querySelector('[data-cm="stor"]').addEventListener("click",storeKey);
   document.querySelectorAll("[data-cm-trig]").forEach(b=>b.addEventListener("click",()=>trigKey(b.dataset.cmTrig)));
-  document.querySelectorAll("[data-cm-primary]").forEach(b=>b.addEventListener("click",()=>{ if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else if(b.dataset.cmPrimary==="circ") circKey(); else $("#cmAlt").textContent=`${b.textContent.trim()} not yet validated.`; }));
+  document.querySelectorAll("[data-cm-primary]").forEach(b=>b.addEventListener("click",()=>{ if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else if(b.dataset.cmPrimary==="circ") circKey(); else if(b.dataset.cmPrimary==="sqrt") sqrtSquareKey(false); else $("#cmAlt").textContent=`${b.textContent.trim()} not yet validated.`; }));
   document.querySelector('[data-cm="jack"]').addEventListener("click",e=>{ const b=e.currentTarget; if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else jackKey(false); });
   render();
 }
