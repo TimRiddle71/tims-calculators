@@ -19,7 +19,7 @@
 <button class="tile disabled"><span>🏗️</span><b>Construction Master</b><small>Coming soon</small></button>
 <button class="tile" data-open="percentages"><span>%</span><b>Percentages</b><small>Ready</small></button>
 <button class="tile" data-open="days"><span>🏖️</span><b>Days Until</b><small>Ready</small></button>
-<button class="tile disabled"><span>🏠</span><b>Mortgage</b><small>Coming soon</small></button>
+<button class="tile" data-open="mortgage"><span>🏠</span><b>Mortgage</b><small>Ready</small></button>
 </div>
 <h2>All Calculators</h2><div class="grid">
 <button class="tile disabled"><span>🚗</span><b>Auto Loan</b><small>Coming soon</small></button>
@@ -80,7 +80,40 @@
 <div id="savedEvents" class="saved-list"></div>
 <p id="daysEmpty" class="empty-note">No saved countdowns yet. Add your first one above.</p>
 </section>
-<footer>V3.1 • Built for quick everyday use</footer>
+
+<section id="mortgageView" class="view hidden">
+<button class="back" data-mortgage-home>← All Calculators</button><h2>Mortgage</h2>
+<div class="calc-card">
+<div class="fields">
+<label>Home Price ($)<input id="homePrice" type="number" inputmode="decimal" value="350000" min="0" step="1000"></label>
+<label>Down Payment ($)<input id="downDollars" type="number" inputmode="decimal" value="70000" min="0" step="1000"></label>
+<label>Down Payment (%)<input id="downPercent" type="number" inputmode="decimal" value="20" min="0" max="100" step=".1"></label>
+<label>Interest Rate (%)<input id="interestRate" type="number" inputmode="decimal" value="6.25" min="0" step=".01"></label>
+<label>Loan Term (years)<select id="loanYears"><option>10</option><option>15</option><option>20</option><option selected>30</option></select></label>
+<label>Start Date<input id="loanStart" type="month"></label>
+</div>
+<h3>Monthly Cost Extras</h3>
+<div class="fields">
+<label>Property Tax ($/year)<input id="propertyTax" type="number" inputmode="decimal" value="6500" min="0" step="100"></label>
+<label>Home Insurance ($/year)<input id="insurance" type="number" inputmode="decimal" value="2400" min="0" step="100"></label>
+<label>HOA ($/month)<input id="hoa" type="number" inputmode="decimal" value="0" min="0" step="10"></label>
+<label>PMI ($/month)<input id="pmi" type="number" inputmode="decimal" value="0" min="0" step="10"></label>
+</div>
+<div class="answer mortgage-answer"><small>ESTIMATED MONTHLY PAYMENT</small><strong id="monthlyTotal">$—</strong><p>Principal, interest, taxes, insurance & extras</p></div>
+<div class="payment-breakdown">
+<div><span>Principal & Interest</span><b id="piOut">$—</b></div><div><span>Property Tax</span><b id="taxOut">$—</b></div>
+<div><span>Insurance</span><b id="insOut">$—</b></div><div><span>HOA</span><b id="hoaOut">$—</b></div><div><span>PMI</span><b id="pmiOut">$—</b></div>
+</div>
+<div class="stat-grid mortgage-stats">
+<div class="mini-answer"><small>LOAN AMOUNT</small><b id="loanAmount">$—</b></div>
+<div class="mini-answer"><small>TOTAL INTEREST</small><b id="totalInterest">$—</b></div>
+<div class="mini-answer"><small>TOTAL P&I PAYMENTS</small><b id="totalPayments">$—</b></div>
+<div class="mini-answer"><small>PAYOFF</small><b id="payoffDate">—</b></div>
+</div>
+<details class="amort-details"><summary>Year-by-Year Amortization</summary><div class="table-wrap"><table><thead><tr><th>Year</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead><tbody id="amortBody"></tbody></table></div></details>
+</div>
+</section>
+<footer>V4 • Built for quick everyday use</footer>
 </main>
 <script type="module" src="js/app.js"></script>
 </body></html>
