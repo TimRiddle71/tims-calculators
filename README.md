@@ -88,3 +88,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Example history now remains `25 ft 3 in + 8-3/32 in + 27.5 in =`
 - Live history updates while the current operand is being keyed
 - Internal arithmetic remains normalized to inches and is independent of display/history formatting
+
+## V8.4
+- Removed the duplicate blue result immediately after `=`
+- The blue secondary line now appears only after pressing `Conv`
+- `Conv` cycles through decimal feet, decimal inches, and fractional inches
+- Reduced the main Construction Master answer font weight for easier reading of feet-inch fractions

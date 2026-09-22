@@ -11,7 +11,7 @@ let hasUnits=false;
 let fractionNumerator=null;
 let fractionDenominatorText="";
 
-let acc=null, op=null, result=0, justEquals=false, convIndex=0;
+let acc=null, op=null, result=0, justEquals=false, convIndex=-1;
 
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
@@ -119,12 +119,15 @@ function render(){
   $("#cmFeet").textContent=`${dec(v/12,6)} ft`;
 
   const formats=[
-    feetInches(result),
     `${dec(result/12,5)} ft`,
     `${dec(result,4)} in`,
     inchesOnly(result)
   ];
-  $("#cmAlt").textContent=justEquals?formats[convIndex]:"Enter dimensions with ft / in keys.";
+  if(justEquals){
+    $("#cmAlt").textContent=convIndex>=0 ? formats[convIndex] : "";
+  }else{
+    $("#cmAlt").textContent="Enter dimensions with ft / in keys.";
+  }
 }
 
 function resetOperand(){
@@ -226,10 +229,10 @@ function equals(){
     expressionParts=[text,"="];
     result=v;
   }
-  acc=null;op=null;resetOperand();justEquals=true;convIndex=0;render();
+  acc=null;op=null;resetOperand();justEquals=true;convIndex=-1;render();
 }
 function clearAll(){
-  resetOperand();acc=null;op=null;result=0;justEquals=false;convIndex=0;expressionParts=[];render();
+  resetOperand();acc=null;op=null;result=0;justEquals=false;convIndex=-1;expressionParts=[];render();
 }
 function back(){
   if(fractionNumerator!==null){
@@ -240,7 +243,8 @@ function back(){
 }
 function conv(){
   if(!justEquals)return;
-  convIndex=(convIndex+1)%4;render();
+  convIndex=(convIndex+1)%3;
+  render();
 }
 
 export function initConstruction(){

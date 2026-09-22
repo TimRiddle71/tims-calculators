@@ -37,3 +37,12 @@
 /* V8.1: keep the three dimensional-entry keys together */
 .cm-equals-wide{grid-column:span 2}
 .cm-fraction-wide{grid-column:span 2}
+
+/* V8.4 Construction Master display polish */
+#constructionView .cm-main{
+  font-weight:600;
+  letter-spacing:.005em;
+}
+#constructionView .cm-alt:empty{
+  display:none;
+}
