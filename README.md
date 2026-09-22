@@ -191,4 +191,11 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 ## V9.8
 - Added physically validated Circ cycle: DIA → AREA → CIRC → DIA.
 - Preserves inch-only vs feet/inches area display behavior from the Trig Plus II benchmarks.
-- Gold Arc remains deliberately unimplemented until physically mapped.
+- Gold Arc was deliberately left unimplemented in V9.8 until physically mapped.
+
+
+## V9.9 — Arc
+- Added physically validated gold `Arc` workflow: establish a diameter with `Circ`, then enter an angle and use `Conv → Circ`.
+- Arc length = circumference × angle / 360°.
+- One `C` preserves the stored circle diameter; two consecutive `C` presses still clear all stored state.
+- Physical 10 in diameter benchmarks: 90° = 7 55/64 in; 180° = 15 45/64 in; 360° = 31 27/64 in.

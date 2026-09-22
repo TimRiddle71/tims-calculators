@@ -31,7 +31,7 @@ const rwallOC=16;
 let rwallIndex=0;
 let rwallActive=false; // After Conv → Diag starts R/Wall, plain Diag advances the active RW sequence.
 
-// V9.8 Circ memory. Physical Trig Plus II cycles DIA → AREA → CIRC → DIA.
+// V9.9 Circle memory. Circ cycles DIA → AREA → CIRC → DIA; gold Arc uses the stored diameter.
 let circleDiameter=null; // inches
 let circleAreaUnit="in"; // "in" for inch-only entry, otherwise "ft"
 let circleStage=0;
@@ -572,7 +572,8 @@ function clearKey(){
   // Stored roof geometry, pitches and Jack O.C. remain available.
   resetOperand(); acc=null; accKind=null; op=null; result=0; resultKind="length";
   justEquals=false; convArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null;
-  jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleDiameter=null; circleAreaUnit="in"; circleStage=0;
+  jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleStage=0;
+  // Physical Trig Plus II: one C preserves the stored circle diameter; double C clears it via clearAll().
   clearPending=true;
   render();
 }
@@ -661,6 +662,25 @@ function circleDisplay(stage){
   $("#cmAlt").textContent="";
   return true;
 }
+function arcKey(){
+  // V9.9 physical workflow: establish a circle diameter, then angle → Conv → Circ (gold Arc).
+  convArmed=false;
+  if(circleDiameter===null){ $("#cmAlt").textContent="Enter a circle diameter with Circ first."; return; }
+  if(!hasOperand() || hasUnits){ $("#cmAlt").textContent="Enter a unitless angle first."; return; }
+  const angle=operandValue();
+  const arcLength=Math.PI*circleDiameter*(angle/360);
+  if(!Number.isFinite(arcLength)) return;
+  resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
+  resultKind="length"; result=arcLength; circleStage=0;
+  $("#cmHistory").textContent=`Circle arc • ${dec(angle,6)}°`;
+  $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">ARC</span><span class="cm-jack-value">${circleAreaUnit==="in"?inchesOnly(arcLength):feetInches(arcLength)}</span></span>`;
+  $("#cmExact").previousElementSibling.textContent="EXACT INCHES";
+  $("#cmFeet").previousElementSibling.textContent="DECIMAL FEET";
+  $("#cmExact").textContent=`${dec(arcLength,6)} in`;
+  $("#cmFeet").textContent=`${dec(arcLength/12,6)} ft`;
+  $("#cmAlt").textContent="";
+}
+
 function circKey(){
   convArmed=false;
   if(hasOperand()){
@@ -687,6 +707,7 @@ function secondaryKey(name){
   if(name==="irpitch"){ convArmed=false; storeIrregularPitch(); return true; }
   if(name==="irjack"){ convArmed=false; jackKey(true); return true; }
   if(name==="rwall"){ convArmed=false; rwallKey(); return true; }
+  if(name==="arc"){ arcKey(); return true; }
   const labels={rwall:"R/Wall",arc:"Arc",square:"x²",ftin:"Ft-In",exp:"EXP",reciprocal:"1/x",ac:"AC",pi:"π",sign:"+/−"};
   secondaryNotValidated(labels[name]||name); return true;
 }
