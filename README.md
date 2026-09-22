@@ -1,3 +1,9 @@
+## V6
+- Added Social Security retirement claiming calculator
+- Calculates FRA from birth date, including SSA January 1 treatment
+- Shows age 62, FRA, age 70, yearly claiming comparisons, and gross-benefit break-even ages
+- Uses SSA early-retirement reduction and delayed-retirement credit formulas
+
 # Tim's Calculators
 
 ## V5.1

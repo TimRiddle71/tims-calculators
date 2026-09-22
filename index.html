@@ -23,7 +23,7 @@
 </div>
 <h2>All Calculators</h2><div class="grid">
 <button class="tile" data-open="auto"><span>🚗</span><b>Auto Loan</b><small>Ready</small></button>
-<button class="tile disabled"><span>👴</span><b>Social Security</b><small>Coming soon</small></button>
+<button class="tile" data-open="social"><span>👴</span><b>Social Security</b><small>Ready</small></button>
 <button class="tile disabled"><span>📦</span><b>Volume</b><small>Coming soon</small></button>
 </div></section>
 
@@ -150,7 +150,33 @@
 <p class="calc-note">*Down payment + total loan payments. Trade-in value is shown separately and is not counted as cash paid.</p>
 <details class="amort-details"><summary>Year-by-Year Amortization</summary><div class="table-wrap"><table><thead><tr><th>Year</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead><tbody id="autoAmortBody"></tbody></table></div></details>
 </div></section>
-<footer>V5.1 • Built for quick everyday use</footer>
+
+<section id="socialView" class="view hidden">
+<button class="back" data-social-home>← All Calculators</button><h2>Social Security</h2>
+<div class="calc-card">
+<div class="fields">
+<label>Date of Birth<input id="ssDob" type="date"></label>
+<label>Monthly Benefit at Full Retirement Age ($)<input id="ssFraBenefit" type="text" inputmode="decimal" value="$3,000"></label>
+</div>
+<p class="calc-note ss-source-note">Use the estimated benefit at your Full Retirement Age from your Social Security statement or my Social Security account.</p>
+<button id="resetSocial" class="reset-btn" type="button">Reset</button>
+<div class="ss-fra-banner"><span>YOUR FULL RETIREMENT AGE</span><b id="ssFraAge">—</b><small id="ssFraDate">Enter your date of birth.</small></div>
+<div class="ss-highlight-grid">
+<div class="ss-highlight"><small>AGE 62 · EARLIEST</small><strong id="ss62">$—</strong><span id="ss62Pct">—</span></div>
+<div class="ss-highlight featured"><small id="ssFraLabel">FULL RETIREMENT AGE</small><strong id="ssFra">$—</strong><span>100% of FRA benefit</span></div>
+<div class="ss-highlight"><small>AGE 70 · MAXIMUM DELAY</small><strong id="ss70">$—</strong><span id="ss70Pct">—</span></div>
+</div>
+<h3>Claiming Age Comparison</h3>
+<div class="table-wrap ss-table-wrap"><table><thead><tr><th>Claim Age</th><th>Monthly</th><th>Annual</th><th>vs. FRA</th></tr></thead><tbody id="ssAgeBody"></tbody></table></div>
+<h3>Break-Even Comparisons</h3>
+<div class="ss-break-grid">
+<div class="mini-answer ss-break"><small>62 vs. FRA</small><b id="ssBreak62Fra">—</b><span id="ssHead62Fra"></span></div>
+<div class="mini-answer ss-break"><small>62 vs. 70</small><b id="ssBreak6270">—</b><span id="ssHead6270"></span></div>
+<div class="mini-answer ss-break"><small>FRA vs. 70</small><b id="ssBreakFra70">—</b><span id="ssHeadFra70"></span></div>
+</div>
+<p class="calc-note">Estimates use current SSA retirement-age adjustment rules. Break-even figures compare gross benefits only and do not include COLAs, taxes, investment returns, earnings-test withholding, Medicare, spouse/survivor benefits, or individual longevity.</p>
+</div></section>
+<footer>V6 • Built for quick everyday use</footer>
 </main>
 <script type="module" src="js/app.js"></script>
 </body></html>
