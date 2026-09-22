@@ -26,6 +26,10 @@ let jackMode="jk";
 let jackIndex=0;
 let clearPending=false; // First C clears the current entry/result; second consecutive C clears all.
 
+// V9.6 R/Wall memory. Tim uses the Trig Plus II default 16 in rake-wall spacing.
+const rwallOC=16;
+let rwallIndex=0;
+
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
 let committedOperandText="";
@@ -508,10 +512,45 @@ function jackKey(forceIrregular=false){
   if(jackMode==="jk"){ jackMode="ij"; jackIndex=1; showJack("ij",1); return; }
   jackMode="jk"; jackIndex=1; showJack("jk",1);
 }
+function rwallSeries(){
+  const p=regularPitchSlope();
+  if(!(p>0)) return null;
+  // Prefer the explicitly stored Rise. If only Run + Pitch are stored, derive Rise.
+  let rise=roofRise;
+  if(!(rise>=0) && roofRun!==null && roofRun>=0) rise=roofRun*p;
+  if(!(rise>=0)) return null;
+  return {rise, step:rwallOC*p};
+}
+function rwallZeroIndex(){
+  const s=rwallSeries(); if(!s || !(s.step>0)) return 0;
+  return Math.ceil((s.rise-1e-9)/s.step);
+}
+function rwallValue(index){
+  const s=rwallSeries(); if(!s) return null;
+  return Math.max(0,s.rise-index*s.step);
+}
+function showRwall(index){
+  const value=rwallValue(index); if(value===null) return false;
+  const hist=`${roofHistory("RW "+index)} • RWOC ${inchesOnly(rwallOC)}`;
+  resetOperand(); acc=null; accKind=null; op=null; convArmed=false; justEquals=true;
+  expressionParts=[hist]; resultKind="length"; result=value;
+  render();
+  $("#cmHistory").textContent=hist;
+  $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">RW ${index}</span><span class="cm-jack-value">${feetInches(value)}</span></span>`;
+  return true;
+}
+function rwallKey(){
+  const zero=rwallZeroIndex();
+  if(!zero){ $("#cmAlt").textContent="Enter roof Rise + Run (or Run + Pitch) first."; return; }
+  if(rwallIndex===0) rwallIndex=1;
+  else if(rwallIndex<zero) rwallIndex++;
+  // Physical Trig Plus II stops at the final zero-length RW result; it does not wrap.
+  showRwall(rwallIndex);
+}
 function clearAll(){
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;expressionParts=[];
   roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
-  irregularPitchSlope=null; storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0;
+  irregularPitchSlope=null; storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0; rwallIndex=0;
   clearPending=false;
   render();
 }
@@ -521,7 +560,7 @@ function clearKey(){
   // Stored roof geometry, pitches and Jack O.C. remain available.
   resetOperand(); acc=null; accKind=null; op=null; result=0; resultKind="length";
   justEquals=false; convArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null;
-  jackMode="jk"; jackIndex=0;
+  jackMode="jk"; jackIndex=0; rwallIndex=0;
   clearPending=true;
   render();
 }
@@ -541,6 +580,7 @@ function secondaryKey(name){
   // Execute only behavior already mapped against Tim's Trig Plus II.
   if(name==="irpitch"){ convArmed=false; storeIrregularPitch(); return true; }
   if(name==="irjack"){ convArmed=false; jackKey(true); return true; }
+  if(name==="rwall"){ convArmed=false; rwallKey(); return true; }
   const labels={rwall:"R/Wall",arc:"Arc",square:"x²",ftin:"Ft-In",exp:"EXP",reciprocal:"1/x",ac:"AC",pi:"π",sign:"+/−"};
   secondaryNotValidated(labels[name]||name); return true;
 }

@@ -170,3 +170,11 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Gold `Ir/Jack` jumps directly to the irregular-jack sequence.
 - Gold `Ir/Pitch` stores the adjoining irregular roof pitch.
 - Irregular jack geometry maintains the stored O.C. spacing on both sides, matching the physical Trig Plus II test data.
+
+
+## V9.6 — R/Wall
+- Added validated gold `R/Wall` (`Conv → Diag`) workflow.
+- Uses fixed 16 in rake-wall spacing, matching Tim's field workflow and physical Trig Plus II default.
+- Repeated R/Wall presses step through `RW 1`, `RW 2`, etc. to the final `0 ft 0 in`.
+- The final RW result holds on additional presses rather than wrapping.
+- Validated physical benchmarks prepared for 12 ft run / 5 ft rise and 12 ft run / 8 ft rise.
