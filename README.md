@@ -145,3 +145,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Larger, lighter number keys
 - Full roof-history line
 - Unvalidated future functions remain disabled
+
+## V9.2
+- Locked the approved Trestle calculator width and keypad geography
+- Moved Clear and Backspace into compact display-area utility controls
+- Removed the oversized bottom utility row
+- Kept Backspace as a useful web-app convenience
+- Updated stale global footer version to V9.2
