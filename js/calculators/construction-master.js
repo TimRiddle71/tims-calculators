@@ -3,6 +3,10 @@ const $=s=>document.querySelector(s);
 
 let entry="";
 let wholeInches=0;
+let enteredFeet=0;
+let enteredInches=0;
+let hasFeet=false;
+let hasInches=false;
 let hasUnits=false;
 let fractionNumerator=null;
 let fractionDenominatorText="";
@@ -61,10 +65,11 @@ function hasOperand(){
   return hasUnits || entry!=="" || fractionNumerator!==null;
 }
 function operandDisplay(){
-  // Build exactly what the user is constructing, without inventing "0 ft".
+  // V8.2: preserve the user's dimensional-entry representation.
+  // Internal math stays normalized to inches, but "25 → ft" displays "25 ft".
   const parts=[];
-  if(hasUnits && wholeInches!==0) parts.push(inchesOnly(wholeInches));
-  else if(hasUnits) parts.push("0 in");
+  if(hasFeet) parts.push(`${dec(enteredFeet,6)} ft`);
+  if(hasInches) parts.push(`${dec(enteredInches,6)} in`);
 
   if(fractionNumerator!==null){
     const den=fractionDenominatorText;
@@ -72,6 +77,7 @@ function operandDisplay(){
   } else if(entry!==""){
     parts.push(entry);
   }
+
   return parts.join("  ") || "0";
 }
 function render(){
@@ -94,6 +100,10 @@ function render(){
 function resetOperand(){
   entry="";
   wholeInches=0;
+  enteredFeet=0;
+  enteredInches=0;
+  hasFeet=false;
+  hasInches=false;
   hasUnits=false;
   fractionNumerator=null;
   fractionDenominatorText="";
@@ -122,7 +132,10 @@ function feet(){
   startFreshIfNeeded();
   if(fractionNumerator!==null) return;
   if(entry==="") return;
-  wholeInches+=(Number(entry)||0)*12;
+  const n=Number(entry)||0;
+  enteredFeet+=n;
+  hasFeet=true;
+  wholeInches+=n*12;
   hasUnits=true;
   entry="";
   render();
@@ -135,6 +148,7 @@ function inches(){
     const den=Number(fractionDenominatorText);
     if(den>0){
       wholeInches+=fractionNumerator/den;
+      hasInches=true;
       hasUnits=true;
     }
     fractionNumerator=null;
@@ -145,7 +159,10 @@ function inches(){
   }
 
   if(entry==="") return;
-  wholeInches+=Number(entry)||0;
+  const n=Number(entry)||0;
+  enteredInches+=n;
+  hasInches=true;
+  wholeInches+=n;
   hasUnits=true;
   entry="";
   render();

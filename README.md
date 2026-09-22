@@ -75,3 +75,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Fixed compound inch-fraction entry state (example: 8 in + 3/32 in)
 - Live display now preserves the dimension being constructed instead of showing a misleading 0 ft prefix
 - Exact Inches and Decimal Feet now follow the current operand instead of stale prior-operation state
+
+## V8.2
+- Construction Master live display now preserves the units the user actually entered
+- `25 → ft` displays `25 ft` while the internal engine still stores 300 inches for arithmetic
+- Feet and inches entry representation is now separated from normalized calculation storage
+- Verification boxes continue to show normalized exact inches and decimal feet
