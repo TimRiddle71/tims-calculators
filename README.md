@@ -124,3 +124,8 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
   - EXACT INCHES / DECIMAL FEET
   - SQUARE INCHES / SQUARE FEET
   - CUBIC INCHES / CUBIC FEET
+
+## V8.9
+- Added practical reverse dimensional arithmetic: area ÷ length → length
+- Reference workflow: `10 ft × 8 ft ÷ 4 ft = 20 ft 0 in`
+- Keeps the dimensional engine focused on realistic construction-calculator workflows

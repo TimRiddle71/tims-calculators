@@ -269,6 +269,7 @@ function applyTyped(a,aKind,b,bKind,o){
     if(aKind==="length" && bKind==="scalar") return {value:a/b,kind:"length"};
     if(aKind==="area" && bKind==="scalar") return {value:a/b,kind:"area"};
     if(aKind==="volume" && bKind==="scalar") return {value:a/b,kind:"volume"};
+    if(aKind==="area" && bKind==="length") return {value:a/b,kind:"length"};
     if(aKind==="length" && bKind==="length") return {value:a/b,kind:"scalar"};
     if(aKind==="scalar" && bKind==="scalar") return {value:a/b,kind:"scalar"};
   }
