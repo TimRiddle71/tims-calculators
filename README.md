@@ -2,6 +2,9 @@
 
 Mobile-first personal calculator suite.
 
+## V3.1
+- Days Until now previews/calculates immediately when the date or event name changes; Save Event only saves the countdown.
+
 ## V3
 - Percentage calculator V2 retained
 - Days Until calculator added
