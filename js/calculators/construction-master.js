@@ -17,7 +17,7 @@ let acc=null, accKind=null, op=null, result=0, resultKind="length", justEquals=f
 let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null, roofHipV=null;
 let roofEnteredRun=null, roofEnteredRise=null, roofEnteredDiag=null;
 
-// V9.4 Jack memory. O.C. defaults to the physical calculator's 16 in setting.
+// V9.4.1 Jack memory. O.C. defaults to the physical calculator's 16 in setting.
 let jackOC=16;
 let irregularPitchSlope=null; // rise/run, e.g. 8/12
 let storArmed=false;
@@ -382,7 +382,16 @@ function roofKey(which){
     if(which==="run"){ roofRun=v; roofEnteredRun=v; }
     else if(which==="rise"){ roofRise=v; roofEnteredRise=v; }
     else if(which==="diag"){ roofDiag=v; roofEnteredDiag=v; }
-    else return; // Pitch input behavior will be mapped separately against the physical calculator.
+    else if(which==="pitch"){
+      // Trig Plus II dimensional pitch entry: 5 in Pitch means a 5-in-12 roof.
+      roofPitch=Math.atan(v/12)*180/Math.PI;
+      // A newly entered pitch is an independent roof definition. Keep an existing
+      // Run available for later Jack work, but do not let stale Rise/Diag overwrite it.
+      roofRise=null; roofDiag=null; roofHipV=null; roofEnteredRise=null; roofEnteredDiag=null;
+      resetOperand(); justEquals=true; expressionParts=[];
+      setSpecialDisplay("Pitch",`PCH  ${inchesOnly(v)}`,"Roof pitch stored.");
+      return;
+    } else return;
     resetOperand(); justEquals=false; expressionParts=[];
     solveRoof();
   }
@@ -469,7 +478,7 @@ function showJack(kind,index){
   expressionParts=[hist]; resultKind="length"; result=value;
   render();
   $("#cmHistory").textContent=hist;
-  $("#cmMain").textContent=`${tag} ${index}   ${feetInches(value)}`;
+  $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">${tag} ${index}</span><span class="cm-jack-value">${feetInches(value)}</span></span>`;
   return true;
 }
 function jackKey(forceIrregular=false){
