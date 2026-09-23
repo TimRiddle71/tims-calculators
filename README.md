@@ -413,3 +413,16 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Physical benchmarks: 10 × 144 √ = 120; 10 ft × 30 Sine = 5 ft 0 in; 10 × 4 1/x = 2.5; 10 × 2 x² = 40.
 - Standalone function behavior is unchanged. Inverse trig (Conv Sine/Cos/Tan) as operand #2 is not yet physically tested and is unchanged.
 - Regression suite: DIM-11, DIM-15, DIM-20, DIM-21 graduated; CORE-13 and TRIG-10 NOW PASSING; added CORE-17 (1/x) and CORE-18 (x²); 0 unexpected failures.
+
+## V9.23.13
+- Implemented completed-result chaining and repeated equals (audit root cause R1), per physical Trig Plus II tests:
+  - an operator after a completed `=` result (or a standalone Sq/Cu entry) uses that result as the first number (5 × 5 = × 2 = 50);
+  - a new number after a completed result starts fresh (5 × 5 = 3 → 3);
+  - pressing `=` again replays the most recent completed operator and second number, keeping its dimensional kind (5 × 5 = = 125; 5 + 2 = = 9; 10 ft + 2 ft = = 14 ft; 5 × 5 = + 2 = = 29);
+  - a second operator before the second number replaces the first (5 × + 2 = 7);
+  - an operator with no second number returns the first number (5 × = 5).
+- Results of roof, Jack, R/Wall, trig, √, 1/x, DMS, %, EXP, conversions, memory and errors are NOT made chainable (not physically tested).
+- Clear behavior (physically tested): a single C after a completed operation shows 0 but keeps the result recoverable; the next = restores it without replaying, and the = after that replays (5 × 5 = C = = → 25, 125). Double C and AC destroy the completed result and replay state.
+- The temporary Circle AREA exception from V9.23.10 is unchanged.
+- Regression page: shows READY TO TEST with the loaded Trestle version and test count before running, and a VERSION MISMATCH / FILES OUT OF DATE warning (with Run disabled) when the loaded calculator differs from the server. "Load the latest files" now also refreshes the browser's HTTP cache.
+- Regression suite: CORE-13, TRIG-10 graduated; added TRIG-11, TRIG-12, CORE-19 to CORE-26, DIM-27; CORE-15 and CORE-16 promoted to physical validated.

@@ -65,6 +65,24 @@ let circleStage=0;
 // 157.0796 sq. in.). Remove this flag and its setOp() exception when R1 /
 // general completed-result chaining is implemented.
 let circleAreaResult=false;
+// V9.23.13 (R1) completed-result chaining and repeated equals.
+// resultChainable: the displayed result came from a completed "=" operation or a
+//   standalone Sq/Cu entry, so an operator key may use it as operand #1
+//   (physical: 5 × 5 = × 2 = 50; 24 sq. ft. × 6 ft = 144 cu. ft.).
+// replayArmed / lastReplay: the most recent completed "=" operation, replayed by
+//   pressing = again (physical: 5 × 5 = = 125; 5 + 2 = = 9; 10 ft + 2 ft = = 14 ft).
+//   lastReplay keeps the numeric value AND dimensional kind of operand #2.
+// Both flags are cleared by resetOperand(), so any other new entry or function
+// result ends them. Results of roof, Jack, R/Wall, trig, √, 1/x, DMS, %, EXP,
+// conversions, memory and errors are NOT made chainable (not physically tested).
+let resultChainable=false;
+let replayArmed=false;
+let lastReplay=null; // {op, value, kind, text}
+// Single C after a completed "=" operation hides the result but keeps it
+// recoverable (physical: 5 × 5 = C = → 25, then = → 125). Holds
+// {value, kind, parts, replay}. Double C and AC destroy it (via clearAll /
+// resetOperand); any other new entry or result also ends it (resetOperand).
+let clearedCompleted=null;
 
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
@@ -225,6 +243,8 @@ function resetOperand(){
   fractionNumerator=null; fractionDenominatorText="";
   metricEntryUnit=null; metricEntryValue=null; inchEntryWasDecimal=false;
   circleAreaResult=false; // V9.23.10 temporary: any new entry/result ends the Circle AREA exception.
+  resultChainable=false; replayArmed=false; // V9.23.13 (R1): any new entry/result ends chaining/replay.
+  clearedCompleted=null; // V9.23.13 (R1): only the key right after a single C can restore it
 }
 function startFreshIfNeeded(){
   if(justEquals && op===null){
@@ -286,6 +306,7 @@ function setCubicUnit(unit){
     recalledValue=null;
     justEquals=true;
     acc=null;accKind=null;op=null;expressionParts=[];
+    resultChainable=true; // V9.23.13 (R1): completed cubic entry can start a calculation
   }
   $("#cmMain").textContent=volumeDisplay;
   $("#cmHistory").textContent=inActiveCalculation ? `${expressionParts.join(" ")} ${volumeDisplay}` : "Cubic unit entry";
@@ -354,6 +375,7 @@ function setSquareUnit(unit){
     recalledValue=null;
     justEquals=true;
     acc=null;accKind=null;op=null;expressionParts=[];
+    resultChainable=true; // V9.23.13 (R1): physical 24 sq. ft. × 6 ft = 144 cu. ft.
   }
   $("#cmMain").textContent=areaDisplay;
   $("#cmHistory").textContent=inActiveCalculation ? `${expressionParts.join(" ")} ${areaDisplay}` : "Square unit entry";
@@ -590,6 +612,15 @@ function showError(code){
 }
 function setOp(next){
   percentJustApplied=false;
+  // V9.23.13 (R1): operator replacement. If operand #2 has not been entered yet,
+  // a new operator replaces the pending one (physical: 5 × + 2 = 7).
+  if(op!==null && acc!==null && !hasOperand() && !recalledValue && !recallArmed){
+    op=next;
+    if(expressionParts.length) expressionParts[expressionParts.length-1]=operatorSymbol(next);
+    justEquals=false;
+    render();
+    return;
+  }
   // V9.23.4: Sq/Cu unit entry stores a completed dimensional value in
   // result/resultKind rather than the live operand fields. Allow a completed
   // area or volume to become the dividend when ÷ is pressed.
@@ -599,7 +630,10 @@ function setOp(next){
      // may become operand #1 for any operator, reproducing physically validated
      // Circle AREA chaining. This is NOT general result chaining. Remove when
      // R1 / general completed-result chaining is implemented.
-     (circleAreaResult && resultKind==="area"));
+     (circleAreaResult && resultKind==="area") ||
+     // V9.23.13 (R1): a completed "=" result or standalone Sq/Cu entry may
+     // become operand #1 for any operator (physical: 5 × 5 = × 2 = 50).
+     resultChainable);
   if(!hasOperand() && !recalledValue && !fromDimensionalResult) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
 
@@ -637,6 +671,37 @@ function equals(){
     render();
     return;
   }
+  // V9.23.13 (R1): first = after a single C restores the hidden completed
+  // result and its replay state, without replaying yet.
+  if(clearedCompleted && op===null && acc===null && !hasOperand() && !recalledValue){
+    const c=clearedCompleted;
+    resetOperand(); // also clears clearedCompleted
+    result=c.value; resultKind=c.kind; expressionParts=c.parts; lastReplay=c.replay;
+    justEquals=true; convArmed=false; render();
+    replayArmed=true; resultChainable=true;
+    return;
+  }
+  // V9.23.13 (R1): operator with no operand #2 returns operand #1 unchanged
+  // (physical: 5 × = 5, not 25). No chaining/replay state is created here
+  // because that follow-on behavior has not been physically tested.
+  if(op && acc!==null && !hasOperand() && !recalledValue && !recallArmed){
+    expressionParts.push("=");
+    result=acc; resultKind=accKind || "length";
+    acc=null;accKind=null;op=null;resetOperand();justEquals=true;convArmed=false;lastReplay=null;render();
+    return;
+  }
+  // V9.23.13 (R1): repeated equals replays the most recently completed
+  // operator and operand #2, including its dimensional kind.
+  if(op===null && !hasOperand() && !recalledValue && justEquals && replayArmed && lastReplay){
+    const firstText=$("#cmMain").textContent;
+    const x=applyTyped(result,resultKind,lastReplay.value,lastReplay.kind,lastReplay.op);
+    if(!Number.isFinite(x.value)){ lastReplay=null; showError(x.error||3); return; }
+    expressionParts=[firstText,operatorSymbol(lastReplay.op),lastReplay.text,"="];
+    result=x.value; resultKind=x.kind;
+    resetOperand();justEquals=true;convArmed=false;render();
+    replayArmed=true; resultChainable=true;
+    return;
+  }
   if(!hasOperand() && !recalledValue && !(op && acc!==null)) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
 
@@ -648,20 +713,25 @@ function equals(){
   const text=fromMemory?memoryValueText(recalledValue):finalizedOperandText();
   recalledValue=null;
 
+  let completedOperation=false;
   if(op && acc!==null){
     const x=applyTyped(acc,accKind,v,kind,op);
     if(Number.isFinite(x.value)){
       expressionParts.push(text,"=");
       result=x.value; resultKind=x.kind;
+      lastReplay={op,value:v,kind,text}; completedOperation=true; // V9.23.13 (R1)
     }else{
+      lastReplay=null;
       showError(x.error||3); // V9.23.11 (R4): Error 1 or Error 3
       return;
     }
   }else{
     expressionParts=[text,"="];
     result=v; resultKind=kind;
+    lastReplay=null;
   }
   acc=null;accKind=null;op=null;resetOperand();justEquals=true;convArmed=false;render();
+  replayArmed=completedOperation; resultChainable=completedOperation; // V9.23.13 (R1)
 }
 
 function percentKey(){
@@ -1007,6 +1077,7 @@ function rwallKey(){
   showRwall(rwallIndex);
 }
 function clearAll(){
+  lastReplay=null; clearedCompleted=null; // V9.23.13 (R1): C C / AC destroy the completed result and replay state
   percentJustApplied=false;
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;cubicArmed=false;squareArmed=false;expressionParts=[];
   roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
@@ -1015,6 +1086,12 @@ function clearAll(){
   render();
 }
 function clearKey(){
+  // V9.23.13 (R1): a SINGLE C directly after a completed "=" operation keeps
+  // that result and its replay recoverable. The next = restores the result
+  // WITHOUT replaying; the = after that replays (physical: 5 × 5 = C = = → 25, 125).
+  const keepCompleted=(!clearPending && !expMode && justEquals && op===null && replayArmed && lastReplay && !hasOperand() && !recalledValue)
+    ? {value:result, kind:resultKind, parts:[...expressionParts], replay:lastReplay} : null;
+  lastReplay=null; // V9.23.13 (R1): C clears the active replay (single C keeps a copy in clearedCompleted)
   percentJustApplied=false;
   if(expMode){ expMode=false; expBase=null; expDigits=""; expNegative=false; }
   if(clearPending){ clearAll(); return; }
@@ -1026,6 +1103,7 @@ function clearKey(){
   jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleStage=0;
   // Physical Trig Plus II: one C preserves the stored circle diameter; double C clears it via clearAll().
   clearPending=true;
+  clearedCompleted=keepCompleted; // V9.23.13 (R1): set after resetOperand() above
   render();
 }
 function back(){
@@ -1311,6 +1389,7 @@ function signToggleKey(){
 }
 
 function dmsKey(){
+  resultChainable=false; replayArmed=false; // V9.23.13 (R1): DMS display is not a chainable "=" result
   // V9.17 physical benchmarks:
   // 30.5 → d:m:s = DEG 30.5°; next press = DMS 30.30.00°; next = DEG 30.5°.
   // 30.5125° = DMS 30.30.45°. Seconds round to nearest whole second:
@@ -1382,6 +1461,7 @@ function secondaryKey(name){
   secondaryNotValidated(labels[name]||name); return true;
 }
 function conv(){
+  resultChainable=false; replayArmed=false; // V9.23.13 (R1): conversions/gold functions end "=" chaining (untested)
   // Conv is a modifier only. Arm the gold secondary layer without re-rendering
   // the main value; re-rendering would expose the internal base-unit value and
   // look like a conversion happened before the destination key was pressed.

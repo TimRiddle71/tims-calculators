@@ -194,28 +194,70 @@
   }
 
   // ---- Stale-cache check -------------------------------------------------
-  // The app's service worker serves files from its offline cache. If that
-  // cache holds an older build, the tests would silently test old code.
-  // Compare what is cached with what the web server has right now.
+  // The app's service worker serves files from its offline cache, and the
+  // browser keeps its own HTTP cache. If either holds an older build, the
+  // tests would silently test old code. For each key file this compares:
+  //   • the service-worker offline copy (if any), and
+  //   • what a normal request returns (the same path the calculator uses)
+  // against a fresh copy fetched straight from the server.
+  const KEY_FILES = ["index.html", "js/app.js", "js/calculators/construction-master.js", "css/app.css", "sw.js"];
+  function serverText(f) {
+    return fetch(`${f}?fresh=${Date.now()}`, { cache: "no-store" }).then(r => r.ok ? r.text() : null).catch(() => null);
+  }
   async function checkFreshness() {
-    const files = ["index.html", "js/app.js", "js/calculators/construction-master.js", "css/app.css"];
     if (location.protocol === "file:") return { ok: false, fileProtocol: true, stale: [] };
-    if (!("caches" in window)) return { ok: true, note: "Offline cache not available on this address; files come straight from the server.", stale: [] };
     const stale = [];
-    for (const f of files) {
+    for (const f of KEY_FILES) {
       try {
-        const cached = await caches.match(new URL(f, location.href).href);
-        if (!cached) continue;
-        const [a, b] = await Promise.all([
-          cached.clone().text(),
-          fetch(`${f}?fresh=${Date.now()}`, { cache: "no-store" }).then(r => r.ok ? r.text() : null)
-        ]);
-        if (b !== null && a !== b) stale.push(f);
+        const server = await serverText(f);
+        if (server === null) continue;
+        let differs = false;
+        if ("caches" in window) {
+          const cached = await caches.match(new URL(f, location.href).href);
+          if (cached && (await cached.clone().text()) !== server) differs = true;
+        }
+        const normal = await fetch(f).then(r => r.ok ? r.text() : null).catch(() => null);
+        if (normal !== null && normal !== server) differs = true;
+        if (differs) stale.push(f);
       } catch (e) { /* ignore a single file problem */ }
     }
-    return { ok: stale.length === 0, stale };
+    return { ok: stale.length === 0, stale, cacheApi: "caches" in window };
   }
+
+  // ---- Version detection (V9.23.13) --------------------------------------
+  // Versions are read from the real files, never hard-coded:
+  //   Server  = footer version in a fresh, uncached copy of index.html
+  //   Server service-worker cache name = CACHE in a fresh copy of sw.js
+  //   Loaded  = footer version of the calculator actually loaded in the test
+  //             frame (exactly what the tests will run against)
+  function versionFromHtml(html) {
+    const m = /<footer>\s*(V\d+(?:\.\d+)+)/.exec(html || "");
+    return m ? m[1] : null;
+  }
+  function versionFromSw(js) {
+    const m = /CACHE\s*=\s*"tims-calculators-v([\d-]+)"/.exec(js || "");
+    return m ? "V" + m[1].replace(/-/g, ".") : null;
+  }
+  async function detectVersions(host) {
+    const out = { server: null, serverSw: null, loaded: null, loadError: null };
+    const [html, sw] = await Promise.all([serverText("index.html"), serverText("sw.js")]);
+    out.server = versionFromHtml(html);
+    out.serverSw = versionFromSw(sw);
+    try {
+      const { doc } = await freshFrame(host);
+      const foot = doc.querySelector("footer");
+      const m = foot ? /(V\d+(?:\.\d+)+)/.exec(foot.textContent) : null;
+      out.loaded = m ? m[1] : null;
+    } catch (e) { out.loadError = e.message || String(e); }
+    return out;
+  }
+
   async function clearAppCache() {
+    // Read the app's own file list from the server copy of sw.js.
+    let files = KEY_FILES;
+    const sw = await serverText("sw.js");
+    const m = /FILES\s*=\s*(\[[^\]]*\])/.exec(sw || "");
+    if (m) { try { files = JSON.parse(m[1]).concat(["sw.js"]); } catch (e) { /* keep default list */ } }
     if ("serviceWorker" in navigator) {
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map(r => r.unregister()));
@@ -224,7 +266,9 @@
       const keys = await caches.keys();
       await Promise.all(keys.filter(k => k.startsWith("tims-calculators")).map(k => caches.delete(k)));
     }
+    // Refresh the browser's HTTP cache too (cache: "reload" always asks the server).
+    await Promise.all(files.map(f => fetch(f, { cache: "reload" }).catch(() => null)));
   }
 
-  window.TrestleRunner = { runOne, tokenize, matches, normExact, normLoose, checkFreshness, clearAppCache, freshFrame, readDisplay };
+  window.TrestleRunner = { runOne, tokenize, matches, normExact, normLoose, checkFreshness, detectVersions, clearAppCache, freshFrame, readDisplay };
 })();

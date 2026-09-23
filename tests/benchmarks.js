@@ -82,6 +82,9 @@ const KF = {
   dimPlusScalar: "V9.23.5: applyTyped() rejects any mixed-kind + or − (line 521). Physical: dimensional first operand ± plain number keeps the first operand's units.",
   error3: "V9.23.5: invalid dimensional operations show '0 ft 0 in' (history 'Invalid dimensional operation') instead of the physical 'Error 3'.",
   divZero: "V9.23.5: division by zero goes through the same invalid path and shows '0 ft 0 in' instead of 'Error 1'.",
+  clearDisplay: "R10: a cleared calculator displays '0 ft 0 in'; the physical calculator shows '0' (same cause as SPEC-01).",
+  missingOperand: "V9.23.12: an operator with no second number treats the missing operand as 0 (5 × = shows 0). Physical shows 5.",
+  repeatEquals: "V9.23.12: pressing = again after a completed calculation does nothing. Physical replays the last operator and operand #2.",
   sqrtOperand2: "V9.23.5: √ clears the pending operator (sqrtSquareKey line 1115) instead of supplying operand #2.",
   trigOperand2: "V9.23.5: Sine/Cos/Tan clear the pending operator (trigKey line 1013) instead of supplying operand #2.",
   circleAreaMemory: "V9.23.5: at the AREA stage circleDisplay() leaves result = diameter (line 1033), so Stor saves the diameter while showing the area text.",
@@ -122,7 +125,7 @@ T({ id:"CORE-11", category:"Core Arithmetic", name:"1/x: 3 Conv ÷",
 T({ id:"CORE-12", category:"Core Arithmetic", name:"1/x of zero is Error 1",
     keys:"0 Conv ÷", expect:"Error 1", status:VALIDATED, notes:"V9.11 physical benchmark." });
 T({ id:"CORE-13", category:"Core Arithmetic", name:"√ as operand #2: 10 × 144 √ =",
-    keys:"10 × 144 √ =", expect:"120", status:VALIDATED, knownFail:KF.sqrtOperand2,
+    keys:"10 × 144 √ =", expect:"120", status:VALIDATED,
     notes:"Physically confirmed after the audit." });
 T({ id:"CORE-17", category:"Core Arithmetic", name:"1/x as operand #2: 10 × 4 Conv ÷ =",
     keys:"10 × 4 Conv ÷ =", expect:"2.5", status:VALIDATED, notes:"Physically confirmed before V9.23.12." });
@@ -132,9 +135,35 @@ T({ id:"CORE-14", category:"Core Arithmetic", name:"Plain scalar division 10 ÷ 
     keys:"10 ÷ 0 =", expect:"Error 1", status:VALIDATED,
     notes:"Physically confirmed before V9.23.11." });
 T({ id:"CORE-15", category:"Core Arithmetic", name:"Operator with no second number: 5 × =",
-    keys:"5 × =", expect:"", status:PENDING, notes:"V9.23.5 treats the missing operand as 0. Physical may repeat 5 × 5." });
+    keys:"5 × =", expect:"5", status:VALIDATED, knownFail:KF.missingOperand,
+    notes:"Physically confirmed before V9.23.13: 5 × = shows 5 (NOT 25). The missing operand is not duplicated." });
 T({ id:"CORE-16", category:"Core Arithmetic", name:"Repeated equals: 5 × 5 = =",
-    keys:"5 × 5 = =", expect:"", status:PENDING, notes:"Does the physical calculator repeat the last operation (125)?" });
+    keys:"5 × 5 = =", expect:"125", status:VALIDATED, knownFail:KF.repeatEquals,
+    notes:"Physically confirmed before V9.23.13: first = 25, second = 125." });
+T({ id:"CORE-23", category:"Core Arithmetic", name:"Single C then = restores the completed result",
+    keys:"5 × 5 = C =", expect:"25", status:VALIDATED,
+    notes:"Physically confirmed before V9.23.13 release: C shows 0, the next = restores 25 (it does NOT replay × 5)." });
+T({ id:"CORE-24", category:"Core Arithmetic", name:"Single C, = restores, next = replays",
+    keys:"5 × 5 = C = =", expect:"125", status:VALIDATED,
+    notes:"Physically confirmed before V9.23.13 release: 25 → C → 25 → 125." });
+T({ id:"CORE-25", category:"Core Arithmetic", name:"Double C destroys the completed result and replay",
+    keys:"5 × 5 = C C =", expect:"0", status:VALIDATED, knownFail:KF.clearDisplay,
+    notes:"Physically confirmed before V9.23.13 release: final = shows 0. Trestle correctly keeps the result cleared; only the cleared-display text differs (R10, same cause as SPEC-01)." });
+T({ id:"CORE-26", category:"Core Arithmetic", name:"AC destroys the completed result and replay",
+    keys:"5 × 5 = Conv × =", expect:"0", status:VALIDATED, knownFail:KF.clearDisplay,
+    notes:"Physically confirmed before V9.23.13 release: final = shows 0. Trestle correctly keeps the result cleared; only the cleared-display text differs (R10, same cause as SPEC-01)." });
+T({ id:"CORE-19", category:"Core Arithmetic", name:"New digit after a completed result starts fresh",
+    steps:[ {keys:"5 × 5 =", expect:"25"}, {keys:"3", expect:"3"} ], status:VALIDATED,
+    notes:"Physically confirmed before V9.23.13." });
+T({ id:"CORE-20", category:"Core Arithmetic", name:"Operator replacement before operand #2: 5 × + 2 =",
+    keys:"5 × + 2 =", expect:"7", status:VALIDATED,
+    notes:"Physically confirmed before V9.23.13: + replaces the pending × because operand #2 was not entered." });
+T({ id:"CORE-21", category:"Core Arithmetic", name:"Repeated equals with addition: 5 + 2 = =",
+    steps:[ {keys:"5 + 2 =", expect:"7"}, {keys:"=", expect:"9"} ], status:VALIDATED,
+    notes:"Physically confirmed before V9.23.13." });
+T({ id:"CORE-22", category:"Core Arithmetic", name:"Replay state updates to the newest completed operation",
+    steps:[ {keys:"5 × 5 =", expect:"25"}, {keys:"+ 2 =", expect:"27"}, {keys:"=", expect:"29"} ], status:VALIDATED,
+    notes:"Physically confirmed before V9.23.13: the replay becomes + 2, replacing × 5." });
 
 /* ========================= DIMENSIONAL ARITHMETIC ======================== */
 T({ id:"DIM-01", category:"Dimensional Arithmetic", name:"Length × Length → Area",
@@ -199,6 +228,9 @@ T({ id:"DIM-24", category:"Dimensional Arithmetic", name:"Plain number ÷ length
     expect:"Error 3", status:VALIDATED, notes:"Physically confirmed before V9.23.11." });
 T({ id:"DIM-25", category:"Dimensional Arithmetic", name:"Length ÷ area", keys:"10 Feet ÷ 2 Sq Feet =",
     expect:"Error 3", status:VALIDATED, notes:"Physically confirmed before V9.23.11." });
+T({ id:"DIM-27", category:"Dimensional Arithmetic", name:"Dimensional repeated equals: 10 ft + 2 ft = =",
+    steps:[ {keys:"10 Feet + 2 Feet =", expect:"12 ft 0 in"}, {keys:"=", expect:"14 ft 0 in"} ], status:VALIDATED,
+    notes:"Physically confirmed before V9.23.13: the replayed operand keeps its dimensional state." });
 T({ id:"DIM-26", category:"Dimensional Arithmetic", name:"Invalid operation detected at the next operator: 3 + 5 ft +",
     keys:"3 + 5 Feet +", expect:"Error 3", status:VALIDATED,
     notes:"Physically confirmed: Error 3 appears when the second + is pressed. Before V9.23.11 the invalid operand was silently discarded (3 + 5 ft + 2 = gave 5)." });
@@ -327,8 +359,12 @@ T({ id:"TRIG-07", category:"Trig", name:"Inverse sine: 0.5 Conv Sine", keys:"0.5
 T({ id:"TRIG-08", category:"Trig", name:"Inverse cos: 0.5 Conv Cos", keys:"0.5 Conv Cos", expect:"DEG 60°", status:VALIDATED });
 T({ id:"TRIG-09", category:"Trig", name:"Inverse tan: 1 Conv Tan", keys:"1 Conv Tan", expect:"DEG 45°", status:VALIDATED });
 T({ id:"TRIG-10", category:"Trig", name:"Trig as operand #2: 10 ft × 30 Sine =",
-    keys:"10 Feet × 30 Sine =", expect:"5 ft 0 in", status:VALIDATED, knownFail:KF.trigOperand2,
+    keys:"10 Feet × 30 Sine =", expect:"5 ft 0 in", status:VALIDATED,
     notes:"Physically confirmed after the audit." });
+T({ id:"TRIG-11", category:"Trig", name:"Cos as operand #2: 10 ft × 60 Cos =",
+    keys:"10 Feet × 60 Cos =", expect:"5 ft 0 in", status:VALIDATED, notes:"Physically confirmed before V9.23.13." });
+T({ id:"TRIG-12", category:"Trig", name:"Tan as operand #2: 10 ft × 45 Tan =",
+    keys:"10 Feet × 45 Tan =", expect:"10 ft 0 in", status:VALIDATED, notes:"Physically confirmed before V9.23.13." });
 
 /* ============================== CIRCLE / ARC ============================= */
 T({ id:"CIRC-01", category:"Circle / Arc", name:"10 in Circ → DIA", keys:"10 Inch Circ", expect:"DIA 10 in", status:VALIDATED });

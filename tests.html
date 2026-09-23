@@ -70,6 +70,16 @@
   .progress div{height:100%;width:0;background:#2f80ed;transition:width .1s}
   textarea{width:100%;height:120px;background:#0d1326;color:var(--text);border:1px solid var(--line);border-radius:8px;font:12px ui-monospace,Consolas,monospace}
   .hidden{display:none}
+  .ready{border-radius:12px;padding:16px 18px;margin:10px 0 12px;border:3px solid var(--line);background:var(--panel)}
+  .ready .state{font-size:.8rem;font-weight:800;letter-spacing:.12em}
+  .ready .ver{font-size:2.1rem;font-weight:900;letter-spacing:.02em;margin:2px 0}
+  .ready .line{color:var(--text);margin:2px 0}
+  .ready .sub{color:var(--muted);font-size:.85rem}
+  .ready.ok{border-color:var(--pass);background:#0f2e1d} .ready.ok .state{color:#6fe3a0}
+  .ready.bad{border-color:var(--fail);background:#3a0d14} .ready.bad .state{color:#ff8a95}
+  .ready.warn{border-color:var(--known);background:#3a2a05} .ready.warn .state{color:#f2cf6b}
+  .ready button{margin-top:8px}
+  .linkbtn{background:none;border:none;color:var(--muted);text-decoration:underline;padding:4px 0;font-size:.8rem}
 </style>
 </head>
 <body>
@@ -81,8 +91,12 @@
 <div class="wrap">
 <main>
   <div id="protocolBanner" class="banner err hidden"></div>
-  <div id="freshBanner" class="banner info">Checking whether the offline cache matches the server…</div>
-  <div id="buildLine" class="banner info">Build under test: (loads when tests run)</div>
+  <div id="readyPanel" class="ready">
+    <div class="state">CHECKING VERSIONS…</div>
+    <div class="ver">Trestle —</div>
+    <div class="sub">Comparing the calculator loaded in this browser with the files on the server.</div>
+  </div>
+  <div id="buildLine" class="banner info">Build under test: (shown after tests run)</div>
 
   <div id="verdict" class="verdict idle">Press “Run all tests”.</div>
 
@@ -154,16 +168,63 @@
   }
 
   // ---- cache freshness ----
-  R.checkFreshness().then(f=>{
-    const el=$("#freshBanner");
-    if(f.fileProtocol){ el.className="banner err"; el.textContent="Cache check skipped (opened from a file)."; return; }
-    if(f.note){ el.className="banner info"; el.textContent=f.note; return; }
-    if(f.ok){ el.className="banner info"; el.textContent="Offline cache matches the server — testing the current files."; return; }
-    el.className="banner warn";
-    el.innerHTML=`<b>Warning: the app’s offline cache holds OLDER files than the server</b> (${esc(f.stale.join(", "))}). The tests would check the old build. `+
-      `<button id="clearCache">Load the latest files</button> <span class="note">(clears only this app’s offline copy; it rebuilds itself the next time the app opens)</span>`;
-    $("#clearCache").onclick=async()=>{ await R.clearAppCache(); location.reload(); };
-  });
+  // ---- Pre-test version check (V9.23.13) ----
+  // Loaded = footer of the calculator actually loaded in the test frame.
+  // Server = footer of a fresh, uncached index.html (and CACHE name in sw.js).
+  // Files  = offline cache + normal browser requests compared with the server.
+  $("#runAll").disabled=true;
+  const loadLatestHtml=`<button id="clearCache" class="primary">Load the latest files</button> <span class="sub">(clears only this app’s offline and browser copies; they rebuild the next time the app opens)</span>`;
+  function wireButtons(){
+    const c=$("#clearCache"); if(c) c.onclick=async()=>{ c.disabled=true; c.textContent="Loading latest files…"; await R.clearAppCache(); location.reload(); };
+    const a=$("#runAnyway"); if(a) a.onclick=()=>{ $("#runAll").disabled=false; a.textContent="Run button enabled — results may not reflect the server version"; };
+  }
+  async function preflight(){
+    const panel=$("#readyPanel");
+    if(location.protocol==="file:"){ panel.className="ready bad"; panel.innerHTML=`<div class="state">CANNOT TEST FROM A FILE</div><div class="sub">Open tests.html from the same web address as the calculator.</div>`; return; }
+    const [v,f]=await Promise.all([R.detectVersions($("#frameHost")), R.checkFreshness()]);
+    const n=B.length;
+    const swNote=(v.server && v.serverSw && v.serverSw!==v.server)
+      ? `<div class="sub">⚠ Server files disagree with each other: index.html says ${esc(v.server)}, sw.js cache name says ${esc(v.serverSw)}. Check the version bump.</div>` : "";
+    if(v.loadError){
+      panel.className="ready bad";
+      panel.innerHTML=`<div class="state">CALCULATOR DID NOT LOAD</div><div class="line">${esc(v.loadError)}</div>`;
+      return;
+    }
+    if(!v.server || !v.loaded){
+      panel.className="ready warn";
+      panel.innerHTML=`<div class="state">VERSION NOT CONFIRMED</div>
+        <div class="ver">Loaded: ${esc(v.loaded||"unknown")}</div>
+        <div class="line">Server: ${esc(v.server||"could not be read")}</div>
+        <div class="sub">The versions could not both be read, so this page cannot confirm you are testing the current deployment.</div>${swNote}
+        <button id="runAnyway" class="linkbtn">Run anyway</button>`;
+      wireButtons(); return;
+    }
+    if(v.loaded!==v.server){
+      panel.className="ready bad";
+      panel.innerHTML=`<div class="state">VERSION MISMATCH — DO NOT RUN TESTS YET</div>
+        <div class="ver">Loaded: ${esc(v.loaded)}</div>
+        <div class="ver">Server: ${esc(v.server)}</div>${swNote}
+        <div>${loadLatestHtml}</div>
+        <button id="runAnyway" class="linkbtn">Run anyway (not recommended)</button>`;
+      wireButtons(); return;
+    }
+    if(!f.ok){
+      panel.className="ready bad";
+      panel.innerHTML=`<div class="state">FILES OUT OF DATE — DO NOT RUN TESTS YET</div>
+        <div class="ver">Trestle ${esc(v.loaded)}</div>
+        <div class="line">The version labels match, but these loaded files differ from the server: ${esc(f.stale.join(", "))}</div>${swNote}
+        <div>${loadLatestHtml}</div>
+        <button id="runAnyway" class="linkbtn">Run anyway (not recommended)</button>`;
+      wireButtons(); return;
+    }
+    panel.className="ready ok";
+    panel.innerHTML=`<div class="state">READY TO TEST</div>
+      <div class="ver">Trestle ${esc(v.loaded)}</div>
+      <div class="line">Regression suite: ${n} tests</div>
+      <div class="line">Current application files loaded — loaded version matches the server (${esc(v.server)})${f.cacheApi?", and the offline and browser caches match the server files":", and browser requests match the server files"}.</div>${swNote}`;
+    $("#runAll").disabled=false;
+  }
+  preflight();
 
   // ---- render ----
   function renderAll(){
