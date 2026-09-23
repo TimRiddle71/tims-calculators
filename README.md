@@ -433,3 +433,8 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Minimal unit context added for the validated cases only (feet, mixed feet/inches, whole/decimal inches, metres, Sq Feet, Cu Feet). Inch-only and metre +/− results now display in inches (12 in) and metres (5 m). Units not physically tested (mm, yd, fractional inches, other Sq/Cu units, memory values, ×/÷ results) keep their previous behavior.
 - Unit context survives completed-result chaining (10 ft + 2 ft = + 3 = 15 ft 0 in), and repeated equals replays the converted dimensional operand (5 ft + 3 = = 11 ft 0 in).
 - Regression suite: CORE-01, CORE-15, CORE-16, DIM-10, DIM-19, DIM-23 graduated; DIM-14, DIM-16, DIM-17, DIM-18 NOW PASSING; added DIM-28 to DIM-38.
+
+## V9.23.15
+- Fractional-inch entries (for example 8 Inch 3/32) now carry inch unit context, so a plain second number inherits inches: 8 3/32 in + 2 = 10 3/32 in. Unitless fractions (no Inch key) remain unitless.
+- Inch +/− results keep the presentation of the first number: fractional/whole-inch first number → fractional inches (8 3/32 in + 2.5 = 10 19/32 in; 8 3/32 in + 27.5 in = 35 19/32 in); decimal-inch first number → decimal inches (8.5 in + 2 = 10.5 in; 8.5 in + 2 in = 10.5 in). The second number never changes the presentation.
+- Regression suite: DIM-14, DIM-16, DIM-17, DIM-18 graduated; FRAC-02 promoted from TRESTLE BASELINE to PHYSICAL VALIDATED with the physical result 35 19/32 in (was 2 ft 11 19/32 in); added DIM-39 to DIM-44.

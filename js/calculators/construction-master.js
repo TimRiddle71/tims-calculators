@@ -93,6 +93,11 @@ let clearedCompleted=null;
 // (so it survives chaining and repeated equals, e.g. 10 ft + 2 ft = + 3 = 15 ft).
 let accUnit=null;
 let resultUnit=null;
+// V9.23.15: inch PRESENTATION of operand #1 (physical: 8.5 in + 2 = 10.5 in;
+// 8 3/32 in + 2.5 = 10 19/32 in). true = decimal inches, false = whole/fractional.
+// Only meaningful while accUnit/resultUnit is "in"; operand #2 never changes it.
+let accInchDecimal=false;
+let resultInchDecimal=false;
 // Internal units per 1 inherited unit. Same values as feet() (×12), inches() (×1),
 // setLinearMetricUnit() m (×39.37007874015748), setSquareUnit() ft (144) and
 // setCubicUnit() ft (1728); only the validated contexts are listed.
@@ -102,10 +107,15 @@ const R2_LABEL={length:{ft:"ft",in:"in",m:"m"},area:{ft:"sq. ft."},volume:{ft:"c
 function typedUnitContext(){
   if(!hasUnits) return null;
   if(metricEntryUnit) return metricEntryUnit==="m" ? "m" : null;
-  const fractionUsed=fractionNumerator!==null || Math.abs(wholeInches-enteredInches-enteredFeet*12)>1e-9;
   if(hasFeet) return "ft";                                // feet or mixed feet/inches → FEET
-  if(hasInches && !fractionUsed) return "in";              // inch-only whole/decimal entry
+  if(hasInches) return "in";                               // inch-only entry: whole, decimal or fractional (V9.23.15)
   return null;
+}
+// V9.23.15: presentation of an inch entry — decimal only when typed with a
+// decimal point and no fraction (reuses the existing inchEntryWasDecimal flag).
+function typedInchDecimal(){
+  const fractionUsed=fractionNumerator!==null || Math.abs(wholeInches-enteredInches-enteredFeet*12)>1e-9;
+  return inchEntryWasDecimal && !fractionUsed;
 }
 // R2: dimensional operand #1 ± plain scalar operand #2 → the scalar becomes a
 // real dimensional operand in operand #1's unit. Asymmetric: scalar ± dimension
@@ -230,7 +240,9 @@ function render(){
   }else if(resultKind==="scalar"){
     $("#cmMain").textContent=dec(result,6);
   }else if(resultUnit==="in"){
-    $("#cmMain").textContent=inchesOnly(result);            // V9.23.14 (R2): 10 in + 2 in = 12 in
+    // V9.23.14 (R2): 10 in + 2 in = 12 in. V9.23.15: decimal-inch operand #1 keeps
+    // decimal presentation (same format as Conv → Inch decimal), otherwise fractional.
+    $("#cmMain").textContent=resultInchDecimal ? `${dec(result,6)} in` : inchesOnly(result);
   }else if(resultUnit==="m"){
     $("#cmMain").textContent=`${dec(result*0.0254,6)} m`;   // V9.23.14 (R2): 2 m + 3 m = 5 m
   }else{
@@ -289,6 +301,7 @@ function resetOperand(){
   resultChainable=false; replayArmed=false; // V9.23.13 (R1): any new entry/result ends chaining/replay.
   clearedCompleted=null; // V9.23.13 (R1): only the key right after a single C can restore it
   resultUnit=null; // V9.23.14 (R2): set again only where a validated result is produced
+  resultInchDecimal=false; // V9.23.15
 }
 function startFreshIfNeeded(){
   if(justEquals && op===null){
@@ -691,7 +704,11 @@ function setOp(next){
   const unitHere=fromMemory?null:(fromDimensionalResult?(resultChainable?resultUnit:null):typedUnitContext());
   recalledValue=null;
 
-  if(acc===null){ acc=v; accKind=kind; accUnit=unitHere; }
+  if(acc===null){
+    acc=v; accKind=kind; accUnit=unitHere;
+    // V9.23.15: presentation comes from operand #1 only.
+    accInchDecimal=fromMemory?false:(fromDimensionalResult?(resultChainable&&resultInchDecimal):typedInchDecimal());
+  }
   else if(op){
     const inh=inheritScalar(op,v,kind,text);
     const x=inh ? applyTyped(acc,accKind,inh.v,inh.kind,op) : applyTyped(acc,accKind,v,kind,op);
@@ -727,7 +744,7 @@ function equals(){
     const c=clearedCompleted;
     resetOperand(); // also clears clearedCompleted
     result=c.value; resultKind=c.kind; expressionParts=c.parts; lastReplay=c.replay;
-    resultUnit=c.unit||null; // V9.23.14 (R2)
+    resultUnit=c.unit||null; resultInchDecimal=!!c.inchDecimal; // V9.23.14 (R2) / V9.23.15
     justEquals=true; convArmed=false; render();
     replayArmed=true; resultChainable=true;
     return;
@@ -745,12 +762,12 @@ function equals(){
   // operator and operand #2, including its dimensional kind.
   if(op===null && !hasOperand() && !recalledValue && justEquals && replayArmed && lastReplay){
     const firstText=$("#cmMain").textContent;
-    const keepUnit=resultUnit; // V9.23.14 (R2): replay keeps the result's unit context
+    const keepUnit=resultUnit, keepInchDecimal=resultInchDecimal; // V9.23.14 (R2) / V9.23.15: replay keeps unit + presentation
     const x=applyTyped(result,resultKind,lastReplay.value,lastReplay.kind,lastReplay.op);
     if(!Number.isFinite(x.value)){ lastReplay=null; showError(x.error||3); return; }
     expressionParts=[firstText,operatorSymbol(lastReplay.op),lastReplay.text,"="];
     result=x.value; resultKind=x.kind;
-    resetOperand(); resultUnit=keepUnit; justEquals=true;convArmed=false;render();
+    resetOperand(); resultUnit=keepUnit; resultInchDecimal=keepInchDecimal; justEquals=true;convArmed=false;render();
     replayArmed=true; resultChainable=true;
     return;
   }
@@ -767,6 +784,7 @@ function equals(){
   recalledValue=null;
 
   let completedOperation=false, finalUnit=null;
+  const accInchDecimalAtEquals=accInchDecimal; // V9.23.15
   if(op && acc!==null){
     // V9.23.14 (R2): a plain scalar after a dimensional operand #1 (+/− only)
     // becomes a real dimensional operand; the replay stores the converted value.
@@ -790,6 +808,7 @@ function equals(){
   }
   acc=null;accKind=null;op=null;resetOperand();
   resultUnit=completedOperation?finalUnit:null; // V9.23.14 (R2): set before render() so 12 in / 5 m display
+  resultInchDecimal=(resultUnit==="in") && accInchDecimalAtEquals; // V9.23.15: operand #1 presentation
   justEquals=true;convArmed=false;render();
   replayArmed=completedOperation; resultChainable=completedOperation; // V9.23.13 (R1)
 }
@@ -1150,7 +1169,7 @@ function clearKey(){
   // that result and its replay recoverable. The next = restores the result
   // WITHOUT replaying; the = after that replays (physical: 5 × 5 = C = = → 25, 125).
   const keepCompleted=(!clearPending && !expMode && justEquals && op===null && replayArmed && lastReplay && !hasOperand() && !recalledValue)
-    ? {value:result, kind:resultKind, parts:[...expressionParts], replay:lastReplay, unit:resultUnit} : null;
+    ? {value:result, kind:resultKind, parts:[...expressionParts], replay:lastReplay, unit:resultUnit, inchDecimal:resultInchDecimal} : null;
   lastReplay=null; // V9.23.13 (R1): C clears the active replay (single C keeps a copy in clearedCompleted)
   percentJustApplied=false;
   if(expMode){ expMode=false; expBase=null; expDigits=""; expNegative=false; }

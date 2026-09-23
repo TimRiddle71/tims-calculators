@@ -201,16 +201,16 @@ T({ id:"DIM-12", category:"Dimensional Arithmetic", name:"Area ÷ Area → scala
 T({ id:"DIM-13", category:"Dimensional Arithmetic", name:"Volume ÷ Volume → scalar",
     keys:"120 Cu Feet ÷ 10 Cu Feet =", expect:"12", status:VALIDATED });
 T({ id:"DIM-14", category:"Dimensional Arithmetic", name:"Length + plain number keeps length",
-    keys:"5 Feet + 3 =", expect:"8 ft 0 in", status:VALIDATED, knownFail:KF.dimPlusScalar });
+    keys:"5 Feet + 3 =", expect:"8 ft 0 in", status:VALIDATED });
 T({ id:"DIM-15", category:"Dimensional Arithmetic", name:"Plain number + length is an error (asymmetric)",
     keys:"3 + 5 Feet =", expect:"Error 3", status:VALIDATED,
     notes:"This asymmetry is physically validated. Do not normalize it." });
 T({ id:"DIM-16", category:"Dimensional Arithmetic", name:"Length − plain number keeps length",
-    keys:"5 Feet − 3 =", expect:"2 ft 0 in", status:VALIDATED, knownFail:KF.dimPlusScalar });
+    keys:"5 Feet − 3 =", expect:"2 ft 0 in", status:VALIDATED });
 T({ id:"DIM-17", category:"Dimensional Arithmetic", name:"Area + plain number keeps area",
-    keys:"20 Sq Feet + 5 =", expect:"25 sq. ft.", match:"units-loose", status:VALIDATED, notes:"Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem.", knownFail:KF.chaining + " Also: " + KF.dimPlusScalar });
+    keys:"20 Sq Feet + 5 =", expect:"25 sq. ft.", match:"units-loose", status:VALIDATED, notes:"Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem." });
 T({ id:"DIM-18", category:"Dimensional Arithmetic", name:"Volume + plain number keeps volume",
-    keys:"20 Cu Feet + 5 =", expect:"25 cu. ft.", match:"units-loose", status:VALIDATED, notes:"Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem.", knownFail:KF.chaining + " Also: " + KF.dimPlusScalar });
+    keys:"20 Cu Feet + 5 =", expect:"25 cu. ft.", match:"units-loose", status:VALIDATED, notes:"Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem." });
 T({ id:"DIM-19", category:"Dimensional Arithmetic", name:"Length chaining: 10 ft + 2 ft = + 1 ft =",
     keys:"10 Feet + 2 Feet = + 1 Feet =", expect:"13 ft 0 in", status:VALIDATED });
 T({ id:"DIM-20", category:"Dimensional Arithmetic", name:"Sq armed then + : 5 Sq + 3 Feet =",
@@ -253,6 +253,18 @@ T({ id:"DIM-37", category:"Dimensional Arithmetic", name:"R2: computed result ke
     steps:[ {keys:"10 Feet + 2 Feet =", expect:"12 ft 0 in"}, {keys:"+ 3 =", expect:"15 ft 0 in"} ], status:VALIDATED, notes:"Physically confirmed before V9.23.14." });
 T({ id:"DIM-38", category:"Dimensional Arithmetic", name:"R2: repeated equals replays the inherited +3 ft",
     steps:[ {keys:"5 Feet + 3 =", expect:"8 ft 0 in"}, {keys:"=", expect:"11 ft 0 in"} ], status:VALIDATED, notes:"Physically confirmed before V9.23.14." });
+T({ id:"DIM-39", category:"Dimensional Arithmetic", name:"Inch result keeps inch context when chained: 10 in + 2 in = + 3 =",
+    steps:[ {keys:"10 Inch + 2 Inch =", expect:"12 in"}, {keys:"+ 3 =", expect:"15 in"} ], status:VALIDATED, notes:"Physically confirmed before V9.23.15." });
+T({ id:"DIM-40", category:"Dimensional Arithmetic", name:"Metre repeated equals replays the inherited +3 m: 2 m + 3 = =",
+    steps:[ {keys:"2 m + 3 =", expect:"5 m"}, {keys:"=", expect:"8 m"} ], status:VALIDATED, notes:"Physically confirmed before V9.23.15." });
+T({ id:"DIM-41", category:"Dimensional Arithmetic", name:"Fractional-inch entry: scalar inherits inches 8 3/32 in + 2 =",
+    keys:"8 Inch 3 / 32 + 2 =", expect:"10 3/32 in", status:VALIDATED, notes:"Physically confirmed before V9.23.15. The plain 2 means 2 inches." });
+T({ id:"DIM-42", category:"Dimensional Arithmetic", name:"Decimal-inch entry: scalar inherits inches 8.5 in + 2 =",
+    keys:"8.5 Inch + 2 =", expect:"10.5 in", status:VALIDATED, notes:"Physically confirmed before V9.23.15." });
+T({ id:"DIM-43", category:"Dimensional Arithmetic", name:"Fractional-inch operand #1 keeps fractional display: 8 3/32 in + 2.5 =",
+    keys:"8 Inch 3 / 32 + 2.5 =", expect:"10 19/32 in", status:VALIDATED, notes:"Physically confirmed before V9.23.15. The decimal 2.5 inherits inches but does not force decimal display." });
+T({ id:"DIM-44", category:"Dimensional Arithmetic", name:"Decimal-inch operand #1 keeps decimal display: 8.5 in + 2 in =",
+    keys:"8.5 Inch + 2 Inch =", expect:"10.5 in", status:VALIDATED, notes:"Physically confirmed before V9.23.15." });
 T({ id:"DIM-26", category:"Dimensional Arithmetic", name:"Invalid operation detected at the next operator: 3 + 5 ft +",
     keys:"3 + 5 Feet +", expect:"Error 3", status:VALIDATED,
     notes:"Physically confirmed: Error 3 appears when the second + is pressed. Before V9.23.11 the invalid operand was silently discarded (3 + 5 ft + 2 = gave 5)." });
@@ -312,8 +324,9 @@ T({ id:"CONV-21", category:"Unit Conversions", name:"Conv during an active calcu
 /* ================================ FRACTIONS ============================== */
 T({ id:"FRAC-01", category:"Fractions", name:"Numerator stays visible after /",
     keys:"2 Inch 19 /", expect:"2-19/ in", status:BASELINE, notes:"V9.17: numerator remains visible (2-19/)." });
-T({ id:"FRAC-02", category:"Fractions", name:"8 in 3/32 + 27.5 in =",
-    keys:"8 Inch 3 / 32 + 27.5 Inch =", expect:"2 ft 11 19/32 in", status:BASELINE });
+T({ id:"FRAC-02", category:"Fractions", name:"8 in 3/32 + 27.5 in = (inch-only sum stays in inches)",
+    keys:"8 Inch 3 / 32 + 27.5 Inch =", expect:"35 19/32 in", status:VALIDATED,
+    notes:"Physically confirmed before V9.23.15. Previously a TRESTLE BASELINE expecting 2 ft 11 19/32 in (the V9.23.5 display), which the physical calculator does not show." });
 T({ id:"FRAC-03", category:"Fractions", name:"25 ft 3 in + 8-3/32 in + 27.5 in = (V8.3 history example)",
     keys:"25 Feet 3 Inch + 8 Inch 3 / 32 + 27.5 Inch =", expect:"28 ft 2 19/32 in", status:BASELINE,
     notes:"Same value as the V9.17 physical benchmark 28 ft 2-19/32 in." });
