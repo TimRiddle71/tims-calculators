@@ -30,6 +30,8 @@ let squareArmed=false;
 // V9.21 linear metric/yard entry and conversion. Internal length unit remains inches.
 let metricEntryUnit=null;
 let metricEntryValue=null;
+// V9.21.3: remember whether an inch-only entry was typed with a decimal.
+let inchEntryWasDecimal=false;
 
 // V9.0 roof-triangle memory. Lengths are stored internally in inches.
 let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null, roofHipV=null;
@@ -211,7 +213,7 @@ function resetOperand(){
   entry=""; wholeInches=0; enteredFeet=0; enteredInches=0;
   hasFeet=false; hasInches=false; hasUnits=false;
   fractionNumerator=null; fractionDenominatorText="";
-  metricEntryUnit=null; metricEntryValue=null;
+  metricEntryUnit=null; metricEntryValue=null; inchEntryWasDecimal=false;
 }
 function startFreshIfNeeded(){
   if(justEquals && op===null){
@@ -392,6 +394,7 @@ function showConverted(unit){
   else vInches=raw;
 
   const repeatInch = unit==="in" && conversionMode==="inDecimal" && !live;
+  const repeatFeetFraction = unit==="ft" && conversionMode==="ftDecimal" && !live;
   // V9.20.1: the physical Trig Plus II displays linear metric -> Feet
   // as feet + fractional inches (e.g. 1 m -> 3 ft 3-3/8 in), not decimal feet.
   const metricToFeet = unit==="ft" && live && liveKind==="length" && metricEntryUnit!==null;
@@ -399,7 +402,8 @@ function showConverted(unit){
   // dimensional value converted to Feet as feet + fractional inches
   // (e.g. 50 in -> 4 ft 2 in). Mixed ft/in values keep the separately
   // validated decimal-feet behavior from V9.15.
-  const inchesOnlyToFeet = unit==="ft" && live && liveKind==="length" && hasInches && !hasFeet && metricEntryUnit===null;
+  const inchesOnlyToFeet = unit==="ft" && live && liveKind==="length" && hasInches && !hasFeet && metricEntryUnit===null && !inchEntryWasDecimal;
+  const decimalInchesToFeet = unit==="ft" && live && liveKind==="length" && hasInches && !hasFeet && metricEntryUnit===null && inchEntryWasDecimal;
 
   result=vInches;
   resetOperand();
@@ -414,11 +418,11 @@ function showConverted(unit){
   $("#cmFeet").textContent=`${dec(vInches/12,6)} ft`;
   $("#cmAlt").textContent="";
 
-  if(metricToFeet || inchesOnlyToFeet){
+  if(metricToFeet || inchesOnlyToFeet || repeatFeetFraction){
     conversionMode="ftInFraction";
     $("#cmMain").textContent=feetInches(vInches);
     $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
-  }else if(unit==="ft"){
+  }else if(unit==="ft" || decimalInchesToFeet){
     conversionMode="ftDecimal";
     $("#cmMain").textContent=`${dec(vInches/12,6)} ft`;
     $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
@@ -464,7 +468,9 @@ function inches(){
   }
 
   if(entry==="") return;
+  const inchText=entry;
   const n=Number(entry)||0;
+  inchEntryWasDecimal=inchText.includes(".");
   enteredInches+=n; hasInches=true; wholeInches+=n; hasUnits=true; entry="";
   render();
 }
