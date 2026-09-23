@@ -471,3 +471,12 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - MEM-06 now differs only in R7 precision; MEM-07 is reclassified as the R8 computed-area display unit (not a memory defect). Neither is fixed here.
 - Known gap, not addressed: memory does not yet carry R2 unit/presentation context (resultUnit, resultInchDecimal).
 - Regression suite: ROOF-10, ROOF-11 graduated; MEM-08, MEM-09 NOW PASSING; added MEM-10 (Stor completes +), MEM-11 (Jack value stored without label), MEM-12 (Stor after ÷ 0 shows Error 1).
+
+## V9.23.21
+- R8 computed-area display (numbers were already correct; only the displayed unit changes):
+  - Generic computed areas and volumes now read sq. ft. / cu. ft. (physical punctuation) instead of sq ft / cu ft.
+  - Circle AREA from a metre diameter displays in square metres (1 m Circ Circ → AREA 0.785398 sq. m). DIA and CIRC stages are unchanged.
+  - A separate area-only presentation unit (resultAreaUnit / accAreaUnit: "in", "m", or default square feet) carries a circle area's unit through area × number, area ÷ number and number × area, repeated =, the single-C restore, and M-1/M-2 (new memory field areaUnit, area results only). 10 in Circ Circ × 2 = → 157.079633 sq. in.
+  - Kept separate from the R2 resultUnit, so no new +/− inheritance for areas. Other combinations (e.g. inch × inch) keep square feet (not physically tested).
+- MEM-07 now differs only in R7 precision. CIRC-02 and MEM-06 precision unchanged.
+- Regression suite: MEM-08 to MEM-12 graduated; FMT-01 and CIRC-09 NOW PASSING.

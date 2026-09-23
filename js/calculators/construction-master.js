@@ -66,6 +66,7 @@ let rwallActive=false; // After Conv → Diag starts R/Wall, plain Diag advances
 let circleDiameter=null; // inches
 let circleAreaUnit="in"; // "in" for inch-only entry, otherwise "ft"
 let circleStage=0;
+let circleMetric=false; // V9.23.21 (R8)
 // V9.23.10 TEMPORARY: true only while the Circle AREA result is the active result.
 // Lets that physically validated result become operand #1 (10 in Circ Circ × 2 =
 // 157.0796 sq. in.). Remove this flag and its setOp() exception when R1 /
@@ -238,14 +239,29 @@ function liveExpression(){
   return bits.join(" ");
 }
 
+// V9.23.21 (R8): computed-area display text (physical punctuation sq. ft.; unit context in/m if known).
+let resultAreaUnit=null, accAreaUnit=null;
+function areaText(v){
+  if(resultAreaUnit==="in") return `${dec(v,6)} sq. in.`;
+  if(resultAreaUnit==="m") return `${dec(v/1550.0031000062,6)} sq. m`;
+  return `${dec(v/144,6)} sq. ft.`;
+}
+// V9.23.21 (R8): an area × or ÷ a plain number keeps the area's display unit (physical:
+// 10 in Circ Circ × 2 = 157.0796 sq. in.). Any other combination → default sq. ft.
+function areaUnitAfter(o,aKind,aUnit,bKind,bUnit,rKind){
+  if(rKind!=="area" || (o!=="multiply" && o!=="divide")) return null;
+  if(aKind==="area" && bKind==="scalar") return aUnit||null;
+  if(aKind==="scalar" && bKind==="area" && o==="multiply") return bUnit||null;
+  return null;
+}
 function render(){
   const live=hasOperand();
   if(live){
     $("#cmMain").textContent=liveOperandText();
   }else if(resultKind==="area"){
-    $("#cmMain").textContent=`${dec(result/144,6)} sq ft`;
+    $("#cmMain").textContent=areaText(result);
   }else if(resultKind==="volume"){
-    $("#cmMain").textContent=`${dec(result/1728,6)} cu ft`;
+    $("#cmMain").textContent=`${dec(result/1728,6)} cu. ft.`;
   }else if(resultKind==="scalar"){
     $("#cmMain").textContent=dec(result,6);
   }else if(resultUnit==="in"){
@@ -311,6 +327,7 @@ function resetOperand(){
   clearedCompleted=null; // V9.23.13 (R1): only the key right after a single C can restore it
   resultUnit=null; // V9.23.14 (R2): set again only where a validated result is produced
   resultInchDecimal=false; // V9.23.15
+  resultAreaUnit=null; // V9.23.21 (R8)
   // V9.23.16: DMS state belongs only to the DMS/DEG display dmsKey() produced.
   // Any new entry, result or clear supersedes it (physical: 30.5 d:m:s 45 Sine
   // d:m:s → DEG 0.707107°, also after C C and AC). Repeated d:m:s presses do not
@@ -718,10 +735,11 @@ function setOp(next){
   const text=fromMemory?memoryValueText(recalledValue):(fromDimensionalResult?$("#cmMain").textContent:finalizedOperandText());
   // V9.23.14 (R2): unit context of this operand (chained results carry resultUnit).
   const unitHere=fromMemory?null:(fromDimensionalResult?(resultChainable?resultUnit:null):typedUnitContext());
+  const areaUnitHere=fromMemory?(recalledValue.areaUnit||null):(fromDimensionalResult?resultAreaUnit:null); // V9.23.21 (R8)
   recalledValue=null;
 
   if(acc===null){
-    acc=v; accKind=kind; accUnit=unitHere;
+    acc=v; accKind=kind; accUnit=unitHere; accAreaUnit=areaUnitHere;
     // V9.23.15: presentation comes from operand #1 only.
     accInchDecimal=fromMemory?false:(fromDimensionalResult?(resultChainable&&resultInchDecimal):typedInchDecimal());
   }
@@ -732,6 +750,7 @@ function setOp(next){
     // operator is pressed (physical: 3 + 5 ft + = Error 3) instead of being
     // silently discarded.
     if(!Number.isFinite(x.value)){ showError(x.error||3); return; }
+    accAreaUnit=areaUnitAfter(op,accKind,accAreaUnit,kind,areaUnitHere,x.kind); // V9.23.21 (R8): before accKind changes
     acc=x.value; accKind=x.kind;
     accUnit=inh ? accUnit : combinedUnit(op,unitHere);
   }
@@ -760,7 +779,7 @@ function equals(){
     const c=clearedCompleted;
     resetOperand(); // also clears clearedCompleted
     result=c.value; resultKind=c.kind; expressionParts=c.parts; lastReplay=c.replay;
-    resultUnit=c.unit||null; resultInchDecimal=!!c.inchDecimal; // V9.23.14 (R2) / V9.23.15
+    resultUnit=c.unit||null; resultInchDecimal=!!c.inchDecimal; resultAreaUnit=c.areaUnit||null; // V9.23.14 (R2) / V9.23.15
     justEquals=true; convArmed=false; render();
     replayArmed=true; resultChainable=true;
     return;
@@ -778,12 +797,12 @@ function equals(){
   // operator and operand #2, including its dimensional kind.
   if(op===null && !hasOperand() && !recalledValue && justEquals && replayArmed && lastReplay){
     const firstText=$("#cmMain").textContent;
-    const keepUnit=resultUnit, keepInchDecimal=resultInchDecimal; // V9.23.14 (R2) / V9.23.15: replay keeps unit + presentation
+    const keepUnit=resultUnit, keepInchDecimal=resultInchDecimal, keepAreaUnit=resultAreaUnit; // V9.23.14 (R2) / V9.23.15: replay keeps unit + presentation
     const x=applyTyped(result,resultKind,lastReplay.value,lastReplay.kind,lastReplay.op);
     if(!Number.isFinite(x.value)){ lastReplay=null; showError(x.error||3); return; }
     expressionParts=[firstText,operatorSymbol(lastReplay.op),lastReplay.text,"="];
     result=x.value; resultKind=x.kind;
-    resetOperand(); resultUnit=keepUnit; resultInchDecimal=keepInchDecimal; justEquals=true;convArmed=false;render();
+    resetOperand(); resultUnit=keepUnit; resultInchDecimal=keepInchDecimal; resultAreaUnit=(x.kind==="area")?keepAreaUnit:null; justEquals=true;convArmed=false;render();
     replayArmed=true; resultChainable=true;
     return;
   }
@@ -797,6 +816,8 @@ function equals(){
   const kind=fromMemory?recalledValue.kind:operandKind();
   const text=fromMemory?memoryValueText(recalledValue):finalizedOperandText();
   const unit2=fromMemory?null:typedUnitContext(); // V9.23.14 (R2)
+  const areaUnit2=fromMemory?(recalledValue.areaUnit||null):null; // V9.23.21 (R8)
+  let finalAreaUnit=null;
   recalledValue=null;
 
   let completedOperation=false, finalUnit=null;
@@ -811,6 +832,7 @@ function equals(){
       expressionParts.push(text2,"=");
       result=x.value; resultKind=x.kind;
       finalUnit=inh ? accUnit : combinedUnit(op,unit2);
+      finalAreaUnit=areaUnitAfter(op,accKind,accAreaUnit,kind2,areaUnit2,x.kind); // V9.23.21 (R8)
       lastReplay={op,value:v2,kind:kind2,text:text2}; completedOperation=true; // V9.23.13 (R1)
     }else{
       lastReplay=null;
@@ -824,6 +846,7 @@ function equals(){
   }
   acc=null;accKind=null;op=null;resetOperand();
   resultUnit=completedOperation?finalUnit:null; // V9.23.14 (R2): set before render() so 12 in / 5 m display
+  resultAreaUnit=completedOperation?finalAreaUnit:null; // V9.23.21 (R8)
   resultInchDecimal=(resultUnit==="in") && accInchDecimalAtEquals; // V9.23.15: operand #1 presentation
   justEquals=true;convArmed=false;render();
   replayArmed=completedOperation; resultChainable=completedOperation; // V9.23.13 (R1)
@@ -1034,7 +1057,7 @@ function snapshotCurrentValue(){
   const valueEl=main ? main.querySelector(".cm-jack-value") : null;
   const display=((valueEl ? valueEl.textContent : main?.textContent) || "").trim();
   if(hasOperand()) return {value:operandValue(),kind:operandKind(),display};
-  if(justEquals || resultKind) return {value:result,kind:resultKind||"scalar",display};
+  if(justEquals || resultKind) return (resultKind==="area" && resultAreaUnit) ? {value:result,kind:"area",display,areaUnit:resultAreaUnit} : {value:result,kind:resultKind||"scalar",display};
   return null;
 }
 function memoryValueText(m){
@@ -1244,7 +1267,7 @@ function clearAll(){
   // V9.23.17 (R10): C C / AC leave a plain scalar zero (physical display: 0).
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="scalar";justEquals=false;convArmed=false;cubicArmed=false;squareArmed=false;expressionParts=[];
   roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null; roofRunScalar=false;roofRiseScalar=false;roofDiagScalar=false;
-  irregularPitchSlope=null; storArmed=false; storedCandidate=null; recallArmed=false; recalledValue=null; jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleDiameter=null; circleAreaUnit="in"; circleStage=0;
+  irregularPitchSlope=null; storArmed=false; storedCandidate=null; recallArmed=false; recalledValue=null; jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleDiameter=null; circleAreaUnit="in"; circleStage=0; circleMetric=false;
   clearPending=false;
   render();
 }
@@ -1253,7 +1276,7 @@ function clearKey(){
   // that result and its replay recoverable. The next = restores the result
   // WITHOUT replaying; the = after that replays (physical: 5 × 5 = C = = → 25, 125).
   const keepCompleted=(!clearPending && !expMode && justEquals && op===null && replayArmed && lastReplay && !hasOperand() && !recalledValue)
-    ? {value:result, kind:resultKind, parts:[...expressionParts], replay:lastReplay, unit:resultUnit, inchDecimal:resultInchDecimal} : null;
+    ? {value:result, kind:resultKind, parts:[...expressionParts], replay:lastReplay, unit:resultUnit, inchDecimal:resultInchDecimal, areaUnit:resultAreaUnit} : null;
   // V9.23.16: single C keeps DMS state exactly as before (not physically tested);
   // double C / AC clear it through clearAll() → resetOperand().
   const keepDmsValue=dmsValue, keepDmsStage=dmsStage;
@@ -1363,11 +1386,12 @@ function circleDisplay(stage){
     $("#cmFeet").textContent=`${dec(d/12,6)} ft`;
   }else if(stage===2){
     const areaIn2=Math.PI*Math.pow(d/2,2);
-    const area=circleAreaUnit==="in"?areaIn2:areaIn2/144;
-    const unit=circleAreaUnit==="in"?"sq. in.":"sq. feet";
+    const area=circleMetric?areaIn2/1550.0031000062:(circleAreaUnit==="in"?areaIn2:areaIn2/144);
+    const unit=circleMetric?"sq. m":(circleAreaUnit==="in"?"sq. in.":"sq. feet");
     // V9.23.10: physical Trig Plus II treats AREA as the active result
     // (10 in Circ Circ Conv Feet = AREA 0.545415 sq. ft.; × 2 = 157.0796 sq. in.).
     result=areaIn2; resultKind="area"; circleAreaResult=true;
+    resultAreaUnit=circleMetric?"m":(circleAreaUnit==="in"?"in":null); // V9.23.21 (R8)
     $("#cmHistory").textContent="Circle area";
     $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">AREA</span><span class="cm-jack-value">${dec(area,6)} ${unit}</span></span>`;
     $("#cmExact").previousElementSibling.textContent="SQUARE INCHES";
@@ -1413,6 +1437,7 @@ function circKey(){
     circleDiameter=operandValue();
     // Physical benchmark: inch-only diameter reports sq. in.; any feet entry reports sq. feet.
     circleAreaUnit=hasFeet?"ft":"in";
+    circleMetric=(metricEntryUnit==="m"); // V9.23.21 (R8)
     circleStage=1;
     circleDisplay(circleStage);
     return;

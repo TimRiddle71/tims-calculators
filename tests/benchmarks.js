@@ -100,6 +100,7 @@ const KF = {
   memLabel: "R6: Stor copies the whole display text, so a labeled roof result is stored as 'DIAG13 ft 0 in'.",
   memAreaPrecision: "R7 precision only: Trestle shows 78.539816 sq. in.; the physical shows 78.53982 sq. in.",
   areaDisplayUnit: "R8: computed areas always display in square feet (1.090831 sq ft) instead of the operand's square inches; also R7 precision.",
+  memAreaPrecision2: "R7 precision only: Trestle shows 157.079633 sq. in.; the physical shows 157.0796 sq. in.",
   missingOperand: "V9.23.12: an operator with no second number treats the missing operand as 0 (5 × = shows 0). Physical shows 5.",
   repeatEquals: "V9.23.12: pressing = again after a completed calculation does nothing. Physical replays the last operator and operand #2.",
   sqrtOperand2: "V9.23.5: √ clears the pending operator (sqrtSquareKey line 1115) instead of supplying operand #2.",
@@ -460,19 +461,19 @@ T({ id:"MEM-06", category:"Memory", name:"Circle AREA stored to M-1",
     keys:"10 Inch Circ Circ Stor 1", expect:"M-1 78.53982 sq. in.", status:VALIDATED, knownFail:KF.memAreaPrecision,
     notes:"Physically confirmed. Since V9.23.20 the AREA label is no longer stored; only R7 precision differs (78.539816 vs 78.53982)." });
 T({ id:"MEM-07", category:"Memory", name:"2 × stored circle area",
-    keys:"10 Inch Circ Circ Stor 1 C C 2 × Rcl 1 =", expect:"157.0796 sq. in.", status:VALIDATED, knownFail:KF.areaDisplayUnit,
-    notes:"Physically confirmed. Not a memory defect: Trestle computes 157.079633 sq in internally, and the same display occurs without memory (10 Inch Circ Circ × 2 =)." });
+    keys:"10 Inch Circ Circ Stor 1 C C 2 × Rcl 1 =", expect:"157.0796 sq. in.", status:VALIDATED, knownFail:KF.memAreaPrecision2,
+    notes:"Physically confirmed. Since V9.23.21 the square-inch unit is kept through Stor/Rcl and ×; only R7 precision differs (157.079633 vs 157.0796)." });
 T({ id:"MEM-09", category:"Memory", name:"Stored roof result keeps its value, not its label",
-    keys:"12 Feet Run 5 Feet Rise Diag Stor 1 Rcl 1", expect:"M-1 13 ft 0 in", status:VALIDATED, knownFail:KF.memLabel,
+    keys:"12 Feet Run 5 Feet Rise Diag Stor 1 Rcl 1", expect:"M-1 13 ft 0 in", status:VALIDATED,
     notes:"Physically confirmed Sept. 23, 2026 (V9.23.19). The DIAG identifier is display only; the memory display should not include it." });
 T({ id:"MEM-10", category:"Memory", name:"Stor completes pending +: 10 + 5 Stor 1 Rcl 1",
-    keys:"10 + 5 Stor 1 Rcl 1", expect:"M-1 15", status:VALIDATED, knownFail:KF.storPending, notes:"Physically confirmed before V9.23.20." });
+    keys:"10 + 5 Stor 1 Rcl 1", expect:"M-1 15", status:VALIDATED, notes:"Physically confirmed before V9.23.20." });
 T({ id:"MEM-11", category:"Memory", name:"Stored Jack result keeps its value, not its label",
-    keys:"12 Feet Run 5 Feet Rise Jack Stor 1 Rcl 1", expect:"M-1 11 ft 6 43/64 in", status:VALIDATED, knownFail:KF.memLabel, notes:"Physically confirmed before V9.23.20. The Jk identifier is not retained." });
+    keys:"12 Feet Run 5 Feet Rise Jack Stor 1 Rcl 1", expect:"M-1 11 ft 6 43/64 in", status:VALIDATED, notes:"Physically confirmed before V9.23.20. The Jk identifier is not retained." });
 T({ id:"MEM-12", category:"Memory", name:"Stor after a division-by-zero calculation shows Error 1",
-    keys:"10 ÷ 0 Stor 1", expect:"Error 1", status:VALIDATED, knownFail:KF.storPending, notes:"Physically confirmed before V9.23.20. The error is displayed and nothing is stored." });
+    keys:"10 ÷ 0 Stor 1", expect:"Error 1", status:VALIDATED, notes:"Physically confirmed before V9.23.20. The error is displayed and nothing is stored." });
 T({ id:"MEM-08", category:"Memory", name:"Stor completes pending arithmetic: 10 × 5 Stor 1",
-    keys:"10 × 5 Stor 1", expect:"M-1 50", status:VALIDATED, knownFail:KF.storPending, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    keys:"10 × 5 Stor 1", expect:"M-1 50", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ============================ DISPLAY FORMAT ============================= */
 T({ id:"FMT-01", category:"Display Format", name:"Computed area label: 3 ft (M-1) × 4 ft = shows 'sq. ft.'",
