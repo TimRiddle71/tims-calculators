@@ -559,6 +559,8 @@ function applyTyped(a,aKind,b,bKind,o){
     if(aKind==="length" && bKind==="length") return {value:a/b,kind:"scalar"};
     // V9.23.7: physically validated area ÷ area = scalar (24 sq. ft. ÷ 6 sq. ft. = 4).
     if(aKind==="area" && bKind==="area") return {value:a/b,kind:"scalar"};
+    // V9.23.9: physically validated volume ÷ volume = scalar (120 cu. ft. ÷ 10 cu. ft. = 12).
+    if(aKind==="volume" && bKind==="volume") return {value:a/b,kind:"scalar"};
     if(aKind==="scalar" && bKind==="scalar") return {value:a/b,kind:"scalar"};
   }
   return {value:NaN,kind:aKind};

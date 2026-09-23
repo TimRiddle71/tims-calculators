@@ -385,3 +385,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - The cubic operand keeps its entered label in the history (for example `120 cu. ft. ÷ 10 cu. ft.`), not a cubic-yard fallback.
 - Volume ÷ volume is NOT implemented yet (planned for V9.23.9). Error 3 is NOT implemented yet.
 - Regression suite: DIM-12 (area ÷ area, fixed in V9.23.7) graduated to an ordinary passing test; 0 unexpected failures.
+
+## V9.23.9
+- Added physically validated dimensional reduction: volume ÷ volume = scalar.
+- Physical benchmark: 120 cu. ft. ÷ 10 cu. ft. = 12.
+- One-line addition to applyTyped(); relies on the V9.23.8 Cu second-operand state fix. No other calculator behavior changed.
+- Regression suite: DIM-13 moves from KNOWN FAIL to NOW PASSING (to be graduated after live verification); 0 unexpected failures.
