@@ -362,3 +362,8 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Allows a completed cubic-volume result to become the first operand when division is pressed.
 - Adds validated dimensional reduction: volume ÷ area = length.
 - Preserves the V9.23.3 area ÷ length fix and prior validated behavior.
+
+## V9.23.5
+- Fixed Sq → unit when used as the second operand of an active calculation.
+- Preserves the pending operator and first dimensional operand through square-unit entry.
+- Physical benchmark target: 120 cu. ft. ÷ 30 sq. ft. = 4 ft 0 in.

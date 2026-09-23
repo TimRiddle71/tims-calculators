@@ -319,10 +319,24 @@ function setSquareUnit(unit){
   const n=Number(entry)||0;
   const factors={in:1,ft:144,yd:1296,m:1550.0031000062,mm:0.0015500031000062};
   const labels={in:"sq. in.",ft:"sq. ft.",yd:"sq. yd.",m:"sq. m",mm:"sq. mm"};
-  result=n*factors[unit]; resultKind="area"; justEquals=true; convArmed=false; squareArmed=false; cubicArmed=false;
-  resetOperand(); acc=null;accKind=null;op=null;expressionParts=[];
-  $("#cmMain").textContent=`${dec(n,6)} ${labels[unit]}`;
-  $("#cmHistory").textContent="Square unit entry";
+  const areaValue=n*factors[unit];
+  const areaDisplay=`${dec(n,6)} ${labels[unit]}`;
+  // V9.23.5: when Sq -> unit is used as operand #2, preserve the active
+  // arithmetic operation. The physical calculator keeps, for example,
+  // 120 cu. ft. ÷ pending while 30 -> Sq -> Feet becomes 30 sq. ft.
+  const inActiveCalculation=(op!==null && acc!==null);
+  result=areaValue; resultKind="area"; convArmed=false; squareArmed=false; cubicArmed=false;
+  resetOperand();
+  if(inActiveCalculation){
+    recalledValue={value:areaValue,kind:"area"};
+    justEquals=false;
+  }else{
+    recalledValue=null;
+    justEquals=true;
+    acc=null;accKind=null;op=null;expressionParts=[];
+  }
+  $("#cmMain").textContent=areaDisplay;
+  $("#cmHistory").textContent=inActiveCalculation ? `${expressionParts.join(" ")} ${areaDisplay}` : "Square unit entry";
   $("#cmExact").previousElementSibling.textContent="SQUARE INCHES";
   $("#cmFeet").previousElementSibling.textContent="SQUARE FEET";
   $("#cmExact").textContent=`${dec(result,6)} sq in`;
