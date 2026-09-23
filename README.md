@@ -480,3 +480,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
   - Kept separate from the R2 resultUnit, so no new +/− inheritance for areas. Other combinations (e.g. inch × inch) keep square feet (not physically tested).
 - MEM-07 now differs only in R7 precision. CIRC-02 and MEM-06 precision unchanged.
 - Regression suite: MEM-08 to MEM-12 graduated; FMT-01 and CIRC-09 NOW PASSING.
+
+## V9.23.22
+- Conv → Inch order: after Conv → Feet (decimal feet), the first Conv → Inch shows decimal inches and the next shows fractional inches (physical: 28.21615 ft → 338.5938 in → 338 19/32 in). CONV-20 now differs only in R7 precision.
+- Conv → Feet with a pending calculation and a second number completes the calculation first (the second number stays as entered), then shows the result in feet (physical: 10 ft × 2 Conv Feet → 20 ft immediately; 5 × 2 Conv Feet → 10 ft). A following = does not repeat the operation. Conv → Inch / m / mm / Yds during a pending calculation are unchanged (not physically tested).
+- A fraction finished with the Inch key keeps its fraction in the display and history (physical: 3 / 32 Inch → 0 3/32 in; 8 Inch 3 / 32 Inch → 8 3/32 in). The zero-whole history format is fixed (0 3/32 in, not 03/32 in). Numeric values were already correct.
+- Recorded for later: inchesOnly() can still show 03/32 in for tiny inch-only calculated results (not physically tested).
+- Regression suite: FMT-01, CIRC-09 graduated; CONV-21, FRAC-04 NOW PASSING; added CONV-22, CONV-23 (Conv Feet timing and = behavior).

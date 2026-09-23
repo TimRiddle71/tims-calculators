@@ -101,6 +101,7 @@ const KF = {
   memAreaPrecision: "R7 precision only: Trestle shows 78.539816 sq. in.; the physical shows 78.53982 sq. in.",
   areaDisplayUnit: "R8: computed areas always display in square feet (1.090831 sq ft) instead of the operand's square inches; also R7 precision.",
   memAreaPrecision2: "R7 precision only: Trestle shows 157.079633 sq. in.; the physical shows 157.0796 sq. in.",
+  convPrecision: "R7 precision only: Trestle shows 28.216146 ft and 338.59375 in; the physical shows 28.21615 ft and 338.5938 in. (The Conv → Inch order was fixed in V9.23.22.)",
   missingOperand: "V9.23.12: an operator with no second number treats the missing operand as 0 (5 × = shows 0). Physical shows 5.",
   repeatEquals: "V9.23.12: pressing = again after a completed calculation does nothing. Physical replays the last operator and operand #2.",
   sqrtOperand2: "V9.23.5: √ clears the pending operator (sqrtSquareKey line 1115) instead of supplying operand #2.",
@@ -335,7 +336,7 @@ T({ id:"CONV-19", category:"Unit Conversions", name:"1 sq. m → Conv Feet",
     keys:"1 Sq m Conv Feet", expect:"10.76391 sq. ft.", status:BASELINE });
 T({ id:"CONV-20", category:"Unit Conversions", name:"Conversion chain 28 ft 2-19/32 in → ft → in → fractional in",
     steps:[ {keys:"28 Feet 2 Inch 19 / 32 Conv Feet", expect:"28.21615 ft"}, {keys:"Conv Inch", expect:"338.5938 in"}, {keys:"Conv Inch", expect:"338 19/32 in"} ],
-    status:VALIDATED, knownFail:KF.convChain, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    status:VALIDATED, knownFail:KF.convPrecision, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 T({ id:"CONV-21", category:"Unit Conversions", name:"Conv Feet on operand #2 keeps the pending ×: 10 ft × 2 Conv Feet =",
     keys:"10 Feet × 2 Conv Feet =", expect:"20 ft", status:VALIDATED, knownFail:KF.convOperand2, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
@@ -348,6 +349,12 @@ T({ id:"FRAC-02", category:"Fractions", name:"8 in 3/32 + 27.5 in = (inch-only s
 T({ id:"FRAC-03", category:"Fractions", name:"25 ft 3 in + 8-3/32 in + 27.5 in = (V8.3 history example)",
     keys:"25 Feet 3 Inch + 8 Inch 3 / 32 + 27.5 Inch =", expect:"28 ft 2 19/32 in", status:BASELINE,
     notes:"Same value as the V9.17 physical benchmark 28 ft 2-19/32 in." });
+T({ id:"CONV-22", category:"Unit Conversions", name:"Conv Feet completes the pending calculation immediately: 10 ft × 2 Conv Feet",
+    steps:[ {keys:"10 Feet × 2 Conv Feet", expect:"20 ft"}, {keys:"=", expect:"20 ft"} ], status:VALIDATED, knownFail:KF.convOperand2,
+    notes:"Physically confirmed before V9.23.22. 20 ft appears BEFORE =, and = does not repeat the ×2. The 2 stays a plain number (not 2 ft)." });
+T({ id:"CONV-23", category:"Unit Conversions", name:"Conv Feet completes a plain-number calculation: 5 × 2 Conv Feet",
+    steps:[ {keys:"5 × 2 Conv Feet", expect:"10 ft"}, {keys:"=", expect:"10 ft"} ], status:VALIDATED, knownFail:KF.convOperand2,
+    notes:"Physically confirmed before V9.23.22." });
 T({ id:"FRAC-04", category:"Fractions", name:"Fraction finished with Inch: 3 / 32 Inch",
     keys:"3 / 32 Inch", expect:"0 3/32 in", status:VALIDATED, knownFail:KF.fracOnlyInch, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
@@ -442,7 +449,7 @@ T({ id:"CIRC-07", category:"Circle / Arc", name:"Arc 360°", keys:"10 Inch Circ 
 T({ id:"CIRC-08", category:"Circle / Arc", name:"One C keeps the circle diameter for Arc",
     keys:"10 Inch Circ C 90 Conv Circ", expect:"ARC 7 55/64 in", status:VALIDATED, notes:"V9.9: one C preserves the stored diameter." });
 T({ id:"CIRC-09", category:"Circle / Arc", name:"Metric diameter area: 1 m Circ Circ",
-    keys:"1 m Circ Circ", expect:"AREA 0.785398 sq. m", status:VALIDATED, knownFail:KF.circMetric, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    keys:"1 m Circ Circ", expect:"AREA 0.785398 sq. m", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ================================= MEMORY ================================ */
 T({ id:"MEM-01", category:"Memory", name:"M1 = 3 ft; 4 ft × Rcl 1 =",
@@ -477,7 +484,7 @@ T({ id:"MEM-08", category:"Memory", name:"Stor completes pending arithmetic: 10 
 
 /* ============================ DISPLAY FORMAT ============================= */
 T({ id:"FMT-01", category:"Display Format", name:"Computed area label: 3 ft (M-1) × 4 ft = shows 'sq. ft.'",
-    keys:"3 Feet Stor 1 4 Feet × Rcl 1 =", expect:"12 sq. ft.", status:VALIDATED, knownFail:KF.areaLabel,
+    keys:"3 Feet Stor 1 4 Feet × Rcl 1 =", expect:"12 sq. ft.", status:VALIDATED,
     notes:"Exact physical display recorded in the audit prompt. The math is already correct in V9.23.5 (12); only the label punctuation differs. Computed volumes ('cu ft' vs 'cu. ft.') follow the same code path." });
 
 /* ========================= TRESTLE UI FORMATTING ========================= */

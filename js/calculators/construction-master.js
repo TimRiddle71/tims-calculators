@@ -10,6 +10,7 @@ let hasInches=false;
 let hasUnits=false;
 let fractionNumerator=null;
 let fractionDenominatorText="";
+let inchFractionN=null, inchFractionD=null; // V9.23.22: fraction finished with the Inch key
 
 // V9.23.17 (R10): power-on state is a plain scalar zero (physical display: 0).
 let acc=null, accKind=null, op=null, result=0, resultKind="scalar", justEquals=false, convArmed=false;
@@ -199,6 +200,7 @@ function liveOperandText(){
       parts.push(`${inchText} in`);
       return parts.join(" ");
     }
+    if(inchFractionN!==null) inchText += ` ${inchFractionN}/${inchFractionD}`; // V9.23.22: 3/32 Inch → 0 3/32 in
     parts.push(`${inchText} in`);
   }
 
@@ -219,11 +221,12 @@ function finalizedOperandText(){
   let inchVal=enteredInches;
   if(fractionNumerator!==null && Number(fractionDenominatorText)>0)
     inchVal += fractionNumerator/Number(fractionDenominatorText);
+  if(inchFractionN!==null) inchVal += inchFractionN/inchFractionD; // V9.23.22
 
   if(hasInches || (fractionNumerator!==null && Number(fractionDenominatorText)>0)){
     const f=roundedFraction(inchVal,64);
     let body=String(f.whole);
-    if(f.n) body+=`${f.whole?" ":""}${f.n}/${f.d}`;
+    if(f.n) body+=` ${f.n}/${f.d}`; // V9.23.22: 0 3/32 in (was "03/32")
     parts.push(`${body} in`);
   } else if(entry!==""){
     parts.push(entry);
@@ -321,6 +324,7 @@ function resetOperand(){
   entry=""; wholeInches=0; enteredFeet=0; enteredInches=0;
   hasFeet=false; hasInches=false; hasUnits=false;
   fractionNumerator=null; fractionDenominatorText="";
+  inchFractionN=null; inchFractionD=null; // V9.23.22
   metricEntryUnit=null; metricEntryValue=null; inchEntryWasDecimal=false;
   circleAreaResult=false; // V9.23.10 temporary: any new entry/result ends the Circle AREA exception.
   resultChainable=false; replayArmed=false; // V9.23.13 (R1): any new entry/result ends chaining/replay.
@@ -591,7 +595,9 @@ function showConverted(unit){
     // inches, matching the physical Trig Plus II. Keep the unrounded internal
     // inch value so 80.333 -> 80 21/64 -> 80.333 rather than converting the
     // rounded fraction back to a different decimal value.
-    if(conversionMode==="inFraction" && !live){
+    // V9.23.22: after Conv → Feet (decimal feet), the first Conv → Inch shows decimal inches
+    // (physical 28.21615 ft → 338.5938 in → 338 19/32 in).
+    if((conversionMode==="inFraction" || conversionMode==="ftDecimal") && !live){
       conversionMode="inDecimal";
       $("#cmMain").textContent=`${dec(vInches,6)} in`;
     }else{
@@ -609,6 +615,11 @@ function showConverted(unit){
 function feet(){
   if(squareArmed){ setSquareUnit("ft"); return; }
   if(cubicArmed){ setCubicUnit("ft"); return; }
+  // V9.23.22: Conv → Feet with a pending calculation and a second number first
+  // COMPLETES the calculation with the second number as entered, then shows the
+  // completed result in feet (physical: 10 ft × 2 Conv Feet → 20 ft immediately;
+  // 5 × 2 Conv Feet → 10 ft; a following = leaves it unchanged).
+  if(convArmed && op!==null && acc!==null && (hasOperand() || recalledValue)){ convFeetCompletesPending(); return; }
   if(convArmed && resultKind==="area" && !hasOperand()){ showSquareConverted("ft"); return; }
   if(convArmed && resultKind==="volume" && !hasOperand()){ showCubicConverted("ft"); return; }
   if(convArmed){ showConverted("ft"); return; }
@@ -617,6 +628,19 @@ function feet(){
   const n=Number(entry)||0;
   enteredFeet+=n; hasFeet=true; wholeInches+=n*12; hasUnits=true; entry="";
   render();
+}
+function convFeetCompletesPending(){
+  equals();                      // same completion path as = (R2/R3/errors apply)
+  if(errorShown || op!==null) return; // error shown, or calculation could not complete
+  // A completed plain-number result is presented as decimal feet, matching the
+  // existing rule for a plain number followed by Conv → Feet (5 × 2 → 10 ft).
+  if(resultKind==="scalar"){ result=result*12; resultKind="length"; }
+  // Present the completed result. showConverted()/showSquareConverted()/
+  // showCubicConverted() also clear the repeat-equals state, so a following =
+  // does not replay the consumed operation.
+  if(resultKind==="area") showSquareConverted("ft");
+  else if(resultKind==="volume") showCubicConverted("ft");
+  else showConverted("ft");
 }
 function inches(){
   if(squareArmed){ setSquareUnit("in"); return; }
@@ -631,6 +655,7 @@ function inches(){
     if(den>0){
       wholeInches+=fractionNumerator/den;
       hasInches=true; hasUnits=true;
+      inchFractionN=fractionNumerator; inchFractionD=den; // V9.23.22: keep it for display/history
     }
     fractionNumerator=null; fractionDenominatorText=""; entry="";
     render(); return;
