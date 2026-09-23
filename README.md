@@ -216,3 +216,13 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Replaced the oversized font-rendered radical with a smaller SVG radical modeled after the physical Trig Plus II key.
 - Keeps the gold `x²` label and locked keypad geometry unchanged.
 - Service-worker cache bumped to V9.10.1.
+
+
+## V9.11 — Reciprocal (1/x)
+
+- Built from the validated V9.10.1 baseline.
+- Added physically validated gold `1/x` behavior on `Conv → ÷`.
+- Physical benchmarks: `4 → Conv → ÷ = 0.25`, `3 → Conv → ÷ = 0.333333`, and `0 → Conv → ÷ = Error 1`.
+- Uses the established six-decimal result formatting with unnecessary trailing zeros removed.
+- Updated stale in-app/footer version labels to V9.11.
+- Service-worker cache bumped to V9.11.

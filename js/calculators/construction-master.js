@@ -724,6 +724,39 @@ function sqrtSquareKey(square=false){
   $("#cmFeet").textContent="—";
 }
 
+function reciprocalKey(){
+  // V9.11 physical benchmarks: 4 → Conv → ÷ = 0.25;
+  // 3 → Conv → ÷ = 0.333333; 0 → Conv → ÷ = Error 1.
+  convArmed=false;
+  if(!hasOperand() || hasUnits){
+    $("#cmAlt").textContent="Enter a unitless value first.";
+    return;
+  }
+  const input=operandValue();
+  if(input===0){
+    resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
+    resultKind="scalar"; result=0;
+    $("#cmHistory").textContent="Reciprocal";
+    $("#cmMain").textContent="Error 1";
+    $("#cmAlt").textContent="";
+    $("#cmExact").previousElementSibling.textContent="VALUE";
+    $("#cmFeet").previousElementSibling.textContent="VALUE";
+    $("#cmExact").textContent="—";
+    $("#cmFeet").textContent="—";
+    return;
+  }
+  const value=1/input;
+  resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
+  resultKind="scalar"; result=value;
+  $("#cmHistory").textContent=`Reciprocal ${dec(input,6)}`;
+  $("#cmMain").textContent=dec(value,6);
+  $("#cmAlt").textContent="";
+  $("#cmExact").previousElementSibling.textContent="VALUE";
+  $("#cmFeet").previousElementSibling.textContent="VALUE";
+  $("#cmExact").textContent=dec(value,6);
+  $("#cmFeet").textContent="—";
+}
+
 function secondaryNotValidated(name){
   convArmed=false;
   $("#cmAlt").textContent=`${name} recognized — function not yet validated.`;
@@ -736,6 +769,7 @@ function secondaryKey(name){
   if(name==="rwall"){ convArmed=false; rwallKey(); return true; }
   if(name==="arc"){ arcKey(); return true; }
   if(name==="square"){ sqrtSquareKey(true); return true; }
+  if(name==="reciprocal"){ reciprocalKey(); return true; }
   const labels={rwall:"R/Wall",arc:"Arc",square:"x²",ftin:"Ft-In",exp:"EXP",reciprocal:"1/x",ac:"AC",pi:"π",sign:"+/−"};
   secondaryNotValidated(labels[name]||name); return true;
 }
