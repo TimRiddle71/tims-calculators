@@ -538,7 +538,7 @@ function fraction(){
 }
 function applyTyped(a,aKind,b,bKind,o){
   if(o==="add" || o==="subtract"){
-    if(aKind!==bKind) return {value:NaN,kind:aKind};
+    if(aKind!==bKind) return {value:NaN,kind:aKind,error:3};
     return {value:o==="add"?a+b:a-b,kind:aKind};
   }
   if(o==="multiply"){
@@ -554,7 +554,7 @@ function applyTyped(a,aKind,b,bKind,o){
     if(aKind==="scalar" && bKind==="scalar") return {value:a*b,kind:"scalar"};
   }
   if(o==="divide"){
-    if(b===0) return {value:NaN,kind:aKind};
+    if(b===0) return {value:NaN,kind:aKind,error:1};
     if(aKind==="length" && bKind==="scalar") return {value:a/b,kind:"length"};
     if(aKind==="area" && bKind==="scalar") return {value:a/b,kind:"area"};
     if(aKind==="volume" && bKind==="scalar") return {value:a/b,kind:"volume"};
@@ -569,7 +569,24 @@ function applyTyped(a,aKind,b,bKind,o){
     if(aKind==="volume" && bKind==="volume") return {value:a/b,kind:"scalar"};
     if(aKind==="scalar" && bKind==="scalar") return {value:a/b,kind:"scalar"};
   }
-  return {value:NaN,kind:aKind};
+  // V9.23.11 (R4): any unsupported dimensional combination is physical Error 3.
+  return {value:NaN,kind:aKind,error:3};
+}
+// V9.23.11 (R4): physical Trig Plus II error display. Error 1 = divide by zero,
+// Error 3 = invalid dimensional operation. Not latched: the pending calculation
+// is cleared and justEquals is set, so the next number starts a fresh
+// calculation without C (physical: Error 3 → 2 + 2 = 4).
+function showError(code){
+  resetOperand(); acc=null; accKind=null; op=null; convArmed=false; justEquals=true;
+  result=0; resultKind="length";
+  expressionParts=[code===1?"Division by zero":"Invalid dimensional operation"];
+  $("#cmHistory").textContent=expressionParts[0];
+  $("#cmMain").textContent=`Error ${code}`;
+  $("#cmAlt").textContent="";
+  $("#cmExact").previousElementSibling.textContent="VALUE";
+  $("#cmFeet").previousElementSibling.textContent="VALUE";
+  $("#cmExact").textContent="—";
+  $("#cmFeet").textContent="—";
 }
 function setOp(next){
   percentJustApplied=false;
@@ -595,7 +612,11 @@ function setOp(next){
   if(acc===null){ acc=v; accKind=kind; }
   else if(op){
     const x=applyTyped(acc,accKind,v,kind,op);
-    if(Number.isFinite(x.value)){ acc=x.value; accKind=x.kind; }
+    // V9.23.11 (R4): an invalid pending operation is reported when the next
+    // operator is pressed (physical: 3 + 5 ft + = Error 3) instead of being
+    // silently discarded.
+    if(!Number.isFinite(x.value)){ showError(x.error||3); return; }
+    acc=x.value; accKind=x.kind;
   }
   result=acc; resultKind=accKind || "length";
 
@@ -633,8 +654,8 @@ function equals(){
       expressionParts.push(text,"=");
       result=x.value; resultKind=x.kind;
     }else{
-      expressionParts=["Invalid dimensional operation"];
-      result=0; resultKind="length";
+      showError(x.error||3); // V9.23.11 (R4): Error 1 or Error 3
+      return;
     }
   }else{
     expressionParts=[text,"="];

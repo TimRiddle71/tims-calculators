@@ -398,3 +398,11 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Adds a TEMPORARY circle-only exception (circleAreaResult) so the AREA result can become operand #1. This is not general result chaining; remove it when R1 is implemented.
 - Known display differences left for later root causes: AREA label lost after Conv, sq ft vs sq. in. for computed results (R8), precision (R7), memory tag text (R6).
 - Regression suite: DIM-13 graduated to an ordinary passing test; MEM-07 remains KNOWN FAIL with a corrected internal value; 0 unexpected failures.
+
+## V9.23.11
+- Implemented physical error handling (audit root cause R4).
+- Divide by zero shows `Error 1`; invalid/incompatible dimensional operations show `Error 3`.
+- applyTyped() now returns the error classification instead of a generic invalid result.
+- Errors are detected both at `=` and when the next operator is pressed (physical: 3 + 5 ft + = Error 3); the invalid operand is no longer silently discarded.
+- Errors are not latched: entering a new number starts a fresh calculation without C (physical: Error 3 → 2 + 2 = 4).
+- Regression suite: DIM-11, DIM-15, DIM-20, DIM-21 now pass (NOW PASSING, graduate after live verification); CORE-14, DIM-23, DIM-24, DIM-25 promoted to PHYSICAL VALIDATED (DIM-23 is a KNOWN FAIL until R1, because × after a Sq-entered area is still ignored); added DIM-26 (mid-chain Error 3) and SPEC-05 (error recovery). DIM-14 and DIM-16 now show Error 3 but remain KNOWN FAIL pending R2.

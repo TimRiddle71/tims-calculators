@@ -125,8 +125,8 @@ T({ id:"CORE-13", category:"Core Arithmetic", name:"√ as operand #2: 10 × 144
     keys:"10 × 144 √ =", expect:"120", status:VALIDATED, knownFail:KF.sqrtOperand2,
     notes:"Physically confirmed after the audit." });
 T({ id:"CORE-14", category:"Core Arithmetic", name:"Plain scalar division 10 ÷ 0 =",
-    keys:"10 ÷ 0 =", expect:"", status:PENDING,
-    notes:"Only the dimensional case (10 ft ÷ 0) has been physically tested. Expected: probably Error 1 — confirm." });
+    keys:"10 ÷ 0 =", expect:"Error 1", status:VALIDATED,
+    notes:"Physically confirmed before V9.23.11." });
 T({ id:"CORE-15", category:"Core Arithmetic", name:"Operator with no second number: 5 × =",
     keys:"5 × =", expect:"", status:PENDING, notes:"V9.23.5 treats the missing operand as 0. Physical may repeat 5 × 5." });
 T({ id:"CORE-16", category:"Core Arithmetic", name:"Repeated equals: 5 × 5 = =",
@@ -189,11 +189,15 @@ T({ id:"DIM-22", category:"Dimensional Arithmetic", name:"Computed volume ÷ len
     keys:"10 Feet × 8 Feet × 3 Feet = ÷ 10 Feet =", expect:"24 sq. ft.", match:"units-loose", status:VALIDATED,
     notes:"Same physically validated volume ÷ length rule reached through a computed volume. Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem." });
 T({ id:"DIM-23", category:"Dimensional Arithmetic", name:"Area × Area", keys:"4 Sq Feet × 2 Sq Feet =",
-    expect:"", status:PENDING, notes:"Probably an error — confirm which Error number." });
+    expect:"Error 3", status:VALIDATED, knownFail:KF.chaining,
+    notes:"Physically confirmed before V9.23.11. The Error 3 rule exists in V9.23.11, but the × after a Sq-entered area is still ignored by the R1 gate, so the calculation never reaches it." });
 T({ id:"DIM-24", category:"Dimensional Arithmetic", name:"Plain number ÷ length", keys:"10 ÷ 2 Feet =",
-    expect:"", status:PENDING });
+    expect:"Error 3", status:VALIDATED, notes:"Physically confirmed before V9.23.11." });
 T({ id:"DIM-25", category:"Dimensional Arithmetic", name:"Length ÷ area", keys:"10 Feet ÷ 2 Sq Feet =",
-    expect:"", status:PENDING });
+    expect:"Error 3", status:VALIDATED, notes:"Physically confirmed before V9.23.11." });
+T({ id:"DIM-26", category:"Dimensional Arithmetic", name:"Invalid operation detected at the next operator: 3 + 5 ft +",
+    keys:"3 + 5 Feet +", expect:"Error 3", status:VALIDATED,
+    notes:"Physically confirmed: Error 3 appears when the second + is pressed. Before V9.23.11 the invalid operand was silently discarded (3 + 5 ft + 2 = gave 5)." });
 
 /* ============================ UNIT CONVERSIONS =========================== */
 T({ id:"CONV-01", category:"Unit Conversions", name:"25.5 in → Conv Feet toggles decimal ↔ ft-in",
@@ -416,5 +420,8 @@ T({ id:"SPEC-02", category:"Special / Clear Behavior", name:"AC clears roof: Dia
 T({ id:"SPEC-03", category:"Special / Clear Behavior", name:"One C keeps roof geometry",
     keys:"12 Feet Run 5 Feet Rise C Diag", expect:"13 ft 0 in", status:BASELINE,
     notes:"V9.x: one C keeps stored roof geometry (code comment in clearKey)." });
+T({ id:"SPEC-05", category:"Special / Clear Behavior", name:"Error 3 is not latched: new entry starts fresh without C",
+    steps:[ {keys:"3 + 5 Feet +", expect:"Error 3"}, {keys:"2 + 2 =", expect:"4"} ], status:VALIDATED,
+    notes:"Physically confirmed: while Error 3 is displayed, 2 + 2 = gives 4 without pressing C." });
 T({ id:"SPEC-04", category:"Special / Clear Behavior", name:"C C then Diag (roof cleared)",
     keys:"12 Feet Run 5 Feet Rise C C Diag", expect:"", status:PENDING });
