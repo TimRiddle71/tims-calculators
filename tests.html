@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trestle Regression Tests</title>
+<!-- This page is NOT part of the app and is NOT in the service-worker cache (sw.js). -->
+<style>
+  :root{--bg:#0b1020;--panel:#131a2e;--line:#26304d;--text:#e6e9f2;--muted:#9aa3b8;
+        --pass:#1f9d55;--fail:#d62839;--known:#e0a100;--pending:#6b7280;--now:#2f80ed}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{padding:18px 20px 8px}
+  h1{margin:0;font-size:1.4rem;letter-spacing:.04em}
+  header p{margin:4px 0 0;color:var(--muted)}
+  .wrap{display:grid;grid-template-columns:1fr 380px;gap:16px;padding:0 20px 40px}
+  @media(max-width:1000px){.wrap{grid-template-columns:1fr}.side{order:-1}}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .card small{display:block;color:var(--muted);font-size:.72rem;letter-spacing:.06em}
+  .card b{font-size:1.7rem}
+  .card.pass b{color:var(--pass)} .card.fail b{color:var(--fail)} .card.known b{color:var(--known)}
+  .card.pending b{color:#b8bfcc} .card.now b{color:var(--now)}
+  .card .sub{font-size:.78rem;color:var(--muted)}
+  .verdict{border-radius:10px;padding:12px 14px;font-weight:700;margin:6px 0 12px;border:2px solid var(--line)}
+  .verdict.ok{background:#0f2e1d;border-color:var(--pass)}
+  .verdict.bad{background:#3a0d14;border-color:var(--fail)}
+  .verdict.idle{background:var(--panel)}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+  button{font:inherit;border-radius:8px;border:1px solid var(--line);background:#1d2742;color:var(--text);padding:8px 14px;cursor:pointer}
+  button.primary{background:#2f80ed;border-color:#2f80ed;font-weight:700}
+  button:disabled{opacity:.5;cursor:default}
+  label.chk{color:var(--muted);display:flex;gap:6px;align-items:center}
+  .banner{border-radius:10px;padding:10px 12px;margin:8px 0;border:1px solid}
+  .banner.warn{background:#3a2a05;border-color:var(--known)}
+  .banner.err{background:#3a0d14;border-color:var(--fail)}
+  .banner.info{background:var(--panel);border-color:var(--line);color:var(--muted)}
+  section.cat{margin-top:18px}
+  section.cat h2{font-size:1.05rem;margin:0 0 6px;display:flex;gap:10px;align-items:center}
+  section.cat h2 .counts{font-size:.8rem;color:var(--muted);font-weight:400}
+  .test{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--pending);border-radius:8px;padding:10px 12px;margin:8px 0}
+  .test.PASS{border-left-color:var(--pass)}
+  .test.UNEXPECTED{border-left-color:var(--fail);background:#2a0c12;border-color:var(--fail)}
+  .test.KNOWN{border-left-color:var(--known)}
+  .test.NOW{border-left-color:var(--now)}
+  .test.PENDING{border-left-color:var(--pending)}
+  .top{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .badge{font-size:.72rem;font-weight:800;padding:3px 8px;border-radius:999px;letter-spacing:.05em;white-space:nowrap}
+  .badge.PASS{background:var(--pass)} .badge.UNEXPECTED{background:var(--fail)}
+  .badge.KNOWN{background:var(--known);color:#1b1400} .badge.NOW{background:var(--now)}
+  .badge.PENDING{background:var(--pending)} .badge.WAIT{background:#1d2742;color:var(--muted)}
+  .tid{color:var(--muted);font-size:.8rem;font-family:ui-monospace,Consolas,monospace}
+  .tname{font-weight:700}
+  .status{font-size:.72rem;color:var(--muted);margin-left:auto}
+  .keys{margin:6px 0;display:flex;flex-wrap:wrap;gap:4px}
+  .key{font-family:ui-monospace,Consolas,monospace;font-size:.8rem;background:#0d1326;border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+  table.steps{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:4px}
+  table.steps th{text-align:left;color:var(--muted);font-weight:500;font-size:.72rem;letter-spacing:.05em;padding:3px 6px}
+  table.steps td{padding:4px 6px;border-top:1px solid var(--line);vertical-align:top;font-family:ui-monospace,Consolas,monospace}
+  td.ok{color:#6fe3a0} td.no{color:#ff8a95;font-weight:700} td.na{color:var(--muted)}
+  .note{font-size:.8rem;color:var(--muted);margin-top:6px}
+  .kf{font-size:.8rem;color:#f2cf6b;margin-top:6px}
+  .errline{font-size:.85rem;color:#ff8a95;margin-top:6px}
+  .side{position:sticky;top:10px;align-self:start}
+  .side .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
+  .side h3{margin:0 0 6px;font-size:.9rem;color:var(--muted);font-weight:500}
+  #frameHost{height:640px;overflow:hidden;border-radius:8px;background:#000}
+  .trestle-frame{width:100%;height:100%;border:0;background:#fff}
+  .progress{height:6px;background:#0d1326;border-radius:3px;overflow:hidden;margin:6px 0}
+  .progress div{height:100%;width:0;background:#2f80ed;transition:width .1s}
+  textarea{width:100%;height:120px;background:#0d1326;color:var(--text);border:1px solid var(--line);border-radius:8px;font:12px ui-monospace,Consolas,monospace}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>TRESTLE — Regression Tests</h1>
+  <p>Presses the real Trestle keys and compares the display with the physical Trig Plus II benchmarks in <code>tests/benchmarks.js</code>.</p>
+</header>
+
+<div class="wrap">
+<main>
+  <div id="protocolBanner" class="banner err hidden"></div>
+  <div id="freshBanner" class="banner info">Checking whether the offline cache matches the server…</div>
+  <div id="buildLine" class="banner info">Build under test: (loads when tests run)</div>
+
+  <div id="verdict" class="verdict idle">Press “Run all tests”.</div>
+
+  <div class="cards">
+    <div class="card"><small>TOTAL TESTS</small><b id="cTotal">0</b></div>
+    <div class="card pass"><small>PASSED</small><b id="cPass">0</b><div class="sub" id="cPassSub"></div></div>
+    <div class="card fail"><small>FAILED</small><b id="cFail">0</b><div class="sub" id="cFailSub">known + unexpected</div></div>
+    <div class="card known"><small>KNOWN BASELINE FAIL</small><b id="cKnown">0</b></div>
+    <div class="card fail"><small>UNEXPECTED FAIL</small><b id="cUnexp">0</b><div class="sub">possible regression</div></div>
+    <div class="card pending"><small>PENDING / NEEDS PHYSICAL TEST</small><b id="cPending">0</b></div>
+    <div class="card now"><small>NOW PASSING</small><b id="cNow">0</b><div class="sub">known fail fixed</div></div>
+  </div>
+
+  <div class="toolbar">
+    <button id="runAll" class="primary">Run all tests</button>
+    <button id="copyReport" disabled>Copy text report</button>
+    <label class="chk"><input type="checkbox" id="onlyProblems"> Show only failures &amp; now-passing</label>
+    <label class="chk"><input type="checkbox" id="hideFrame"> Hide live calculator</label>
+  </div>
+  <div class="progress"><div id="bar"></div></div>
+  <div id="progressText" class="note"></div>
+
+  <div id="results"></div>
+  <textarea id="reportText" class="hidden" readonly></textarea>
+</main>
+
+<aside class="side">
+  <div class="panel">
+    <h3>Live calculator under test</h3>
+    <div id="frameHost"></div>
+    <p class="note">Each test loads a fresh copy of the real app (index.html) so no test can affect another.</p>
+  </div>
+  <div class="panel" style="margin-top:10px">
+    <h3>What the colors mean</h3>
+    <p class="note"><span class="badge PASS">PASS</span> matches the benchmark.<br><br>
+    <span class="badge UNEXPECTED">UNEXPECTED FAIL</span> something that used to match no longer does — treat as a regression.<br><br>
+    <span class="badge KNOWN">KNOWN FAIL</span> a physically confirmed behavior this version doesn’t implement yet.<br><br>
+    <span class="badge NOW">NOW PASSING</span> a known failure now matches — remove its <code>knownFail</code> line.<br><br>
+    <span class="badge PENDING">PENDING</span> needs a physical test; shows what Trestle does today, never counted as a failure.</p>
+  </div>
+</aside>
+</div>
+
+<script src="tests/benchmarks.js"></script>
+<script src="tests/runner.js"></script>
+<script>
+(function(){
+  "use strict";
+  const $=s=>document.querySelector(s);
+  const R=window.TrestleRunner, B=window.TRESTLE_BENCHMARKS||[];
+  const BADGE={ "PASS":["PASS","PASS"], "UNEXPECTED FAIL":["UNEXPECTED","UNEXPECTED FAIL"], "KNOWN FAIL":["KNOWN","KNOWN FAIL"],
+                "NOW PASSING":["NOW","NOW PASSING"], "PENDING":["PENDING","PENDING"] };
+  let results=[];
+
+  const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const keyChips=keys=>R.tokenize(keys).length ? String(keys).trim().split(/\s+/).map(k=>`<span class="key">${esc(k)}</span>`).join("") : "";
+
+  // Duplicate-id guard: makes a typo in benchmarks.js obvious.
+  const seen=new Set(), dups=[];
+  B.forEach(t=>{ if(seen.has(t.id)) dups.push(t.id); seen.add(t.id); });
+
+  if(location.protocol==="file:"){
+    const b=$("#protocolBanner"); b.classList.remove("hidden");
+    b.innerHTML="This page was opened directly from a file. Browsers block the app from loading that way. Open <b>tests.html</b> from the same web address you use for the calculator (for example <code>…/tims-calculators/tests.html</code>).";
+  }
+  if(dups.length){
+    const b=$("#protocolBanner"); b.classList.remove("hidden");
+    b.innerHTML="Duplicate test ids in tests/benchmarks.js: "+esc(dups.join(", "));
+  }
+
+  // ---- cache freshness ----
+  R.checkFreshness().then(f=>{
+    const el=$("#freshBanner");
+    if(f.fileProtocol){ el.className="banner err"; el.textContent="Cache check skipped (opened from a file)."; return; }
+    if(f.note){ el.className="banner info"; el.textContent=f.note; return; }
+    if(f.ok){ el.className="banner info"; el.textContent="Offline cache matches the server — testing the current files."; return; }
+    el.className="banner warn";
+    el.innerHTML=`<b>Warning: the app’s offline cache holds OLDER files than the server</b> (${esc(f.stale.join(", "))}). The tests would check the old build. `+
+      `<button id="clearCache">Load the latest files</button> <span class="note">(clears only this app’s offline copy; it rebuilds itself the next time the app opens)</span>`;
+    $("#clearCache").onclick=async()=>{ await R.clearAppCache(); location.reload(); };
+  });
+
+  // ---- render ----
+  function renderAll(){
+    const only=$("#onlyProblems").checked;
+    const byCat=new Map();
+    B.forEach(t=>{ if(!byCat.has(t.category)) byCat.set(t.category,[]); byCat.get(t.category).push(t); });
+    let html="";
+    for(const [cat,tests] of byCat){
+      const rs=tests.map(t=>results.find(r=>r.id===t.id));
+      const c=o=>rs.filter(r=>r&&r.outcome===o).length;
+      const shown=tests.filter((t,i)=>!only || (rs[i] && ["UNEXPECTED FAIL","KNOWN FAIL","NOW PASSING"].includes(rs[i].outcome)));
+      if(!shown.length) continue;
+      html+=`<section class="cat"><h2>${esc(cat)} <span class="counts">${tests.length} tests · ${c("PASS")} pass · ${c("KNOWN FAIL")} known · ${c("UNEXPECTED FAIL")} unexpected · ${c("PENDING")} pending${c("NOW PASSING")?" · "+c("NOW PASSING")+" now passing":""}</span></h2>`;
+      for(const t of shown) html+=renderTest(t, results.find(r=>r.id===t.id));
+      html+=`</section>`;
+    }
+    $("#results").innerHTML=html;
+  }
+  function renderTest(t,r){
+    const steps=t.steps||[{keys:t.keys,expect:t.expect}];
+    const [cls,label]=r?BADGE[r.outcome]:["WAIT","NOT RUN"];
+    const allKeys=steps.map(s=>s.keys).join("  ");
+    let rows="";
+    steps.forEach((s,i)=>{
+      const rs=r&&r.steps[i];
+      const passCell=!rs?`<td class="na">—</td>`:(rs.pass===null?`<td class="na">(shown only)</td>`:(rs.pass?`<td class="ok">PASS</td>`:`<td class="no">FAIL</td>`));
+      rows+=`<tr><td>${keyChips(s.keys)}</td><td>${esc(s.expect||"—")}</td><td class="${rs?(rs.pass===false?"no":(rs.pass?"ok":"na")):"na"}">${esc(rs?rs.actual:"")}</td>${passCell}</tr>`;
+    });
+    return `<div class="test ${cls}">
+      <div class="top"><span class="badge ${cls}">${label}</span><span class="tid">${esc(t.id)}</span><span class="tname">${esc(t.name)}</span>
+      <span class="status">${esc(t.status)}${t.match==="units-loose"?" · loose unit punctuation":""}${t.match==="trestle-exact"?" · Trestle UI formatting (commas checked)":""}</span></div>
+      <table class="steps"><tr><th>KEY SEQUENCE</th><th>EXPECTED</th><th>ACTUAL (main display)</th><th>RESULT</th></tr>${rows}</table>
+      ${r&&r.history?`<div class="note">History line after test: ${esc(r.history)}</div>`:""}
+      ${t.knownFail?`<div class="kf">Known baseline failure: ${esc(t.knownFail)}</div>`:""}
+      ${t.notes?`<div class="note">${esc(t.notes)}</div>`:""}
+      ${r&&r.error?`<div class="errline">${esc(r.error)}</div>`:""}
+    </div>`;
+  }
+  function updateCounts(){
+    const c=o=>results.filter(r=>r.outcome===o).length;
+    const pass=c("PASS"), now=c("NOW PASSING"), known=c("KNOWN FAIL"), unexp=c("UNEXPECTED FAIL"), pend=c("PENDING");
+    $("#cTotal").textContent=B.length;
+    $("#cPass").textContent=pass+now; $("#cPassSub").textContent=now?`incl. ${now} now passing`:"";
+    $("#cFail").textContent=known+unexp; $("#cKnown").textContent=known; $("#cUnexp").textContent=unexp;
+    $("#cPending").textContent=pend; $("#cNow").textContent=now;
+    return {pass,now,known,unexp,pend};
+  }
+
+  function textReport(build){
+    const n=updateCounts();
+    const lines=[`TRESTLE REGRESSION REPORT — ${new Date().toLocaleString()}`,`Build under test: ${build}`,
+      `TOTAL ${B.length} | PASSED ${n.pass+n.now} (now passing ${n.now}) | FAILED ${n.known+n.unexp} (known ${n.known}, unexpected ${n.unexp}) | PENDING ${n.pend}`,""];
+    for(const o of ["UNEXPECTED FAIL","NOW PASSING","KNOWN FAIL","PENDING"]){
+      const rs=results.filter(r=>r.outcome===o); if(!rs.length) continue;
+      lines.push(`== ${o} (${rs.length}) ==`);
+      rs.forEach(r=>{ lines.push(`${r.id}  ${r.name}`); r.steps.forEach(s=>lines.push(`   keys: ${s.keys}\n   expected: ${s.expect||"—"}\n   actual:   ${s.actual}`)); if(r.error) lines.push(`   error: ${r.error}`); });
+      lines.push("");
+    }
+    return lines.join("\n");
+  }
+
+  let buildText="(unknown)";
+  async function runAll(){
+    $("#runAll").disabled=true; $("#copyReport").disabled=true;
+    results=[]; renderAll(); updateCounts();
+    $("#verdict").className="verdict idle"; $("#verdict").textContent="Running…";
+    const host=$("#frameHost");
+    for(let i=0;i<B.length;i++){
+      const t=B[i];
+      $("#progressText").textContent=`Running ${i+1} of ${B.length}: ${t.id} ${t.name}`;
+      const r=await R.runOne(t,host);
+      if(i===0){
+        try{ const f=host.querySelector("iframe").contentDocument.querySelector("footer"); buildText=f?f.textContent.trim():"(no footer)"; }catch(e){}
+        $("#buildLine").textContent="Build under test: "+buildText;
+      }
+      results.push(r);
+      $("#bar").style.width=((i+1)/B.length*100)+"%";
+      if(i%5===4||i===B.length-1){ renderAll(); updateCounts(); }
+    }
+    const n=updateCounts(); renderAll();
+    const v=$("#verdict");
+    if(n.unexp){ v.className="verdict bad"; v.textContent=`✖ ${n.unexp} UNEXPECTED FAILURE${n.unexp>1?"S":""} — something changed that used to match. Review the red tests before shipping.`; }
+    else { v.className="verdict ok"; v.textContent=`✔ No unexpected failures. ${n.known} known baseline failure${n.known===1?"":"s"}, ${n.now} now passing, ${n.pend} pending physical tests.`; }
+    $("#progressText").textContent=`Finished ${B.length} tests.`;
+    $("#reportText").value=textReport(buildText);
+    window.TRESTLE_TEST_RESULTS={build:buildText,counts:n,results};
+    $("#runAll").disabled=false; $("#copyReport").disabled=false;
+  }
+
+  $("#runAll").onclick=runAll;
+  $("#onlyProblems").onchange=renderAll;
+  $("#hideFrame").onchange=e=>{ $("#frameHost").style.height=e.target.checked?"0":"640px"; };
+  $("#copyReport").onclick=async()=>{
+    const ta=$("#reportText");
+    try{ await navigator.clipboard.writeText(ta.value); $("#copyReport").textContent="Copied ✔"; }
+    catch(e){ ta.classList.remove("hidden"); ta.select(); $("#copyReport").textContent="Select-all shown below"; }
+    setTimeout(()=>$("#copyReport").textContent="Copy text report",2500);
+  };
+  updateCounts(); renderAll();
+})();
+</script>
+</body>
+</html>
