@@ -404,6 +404,9 @@ function showConverted(unit){
   // validated decimal-feet behavior from V9.15.
   const inchesOnlyToFeet = unit==="ft" && live && liveKind==="length" && hasInches && !hasFeet && metricEntryUnit===null && !inchEntryWasDecimal;
   const decimalInchesToFeet = unit==="ft" && live && liveKind==="length" && hasInches && !hasFeet && metricEntryUnit===null && inchEntryWasDecimal;
+  // V9.21.6: A directly entered decimal feet value toggles to feet + fractional inches
+  // on the first Conv → Feet press, matching the physical Trig Plus II.
+  const directFeetToFraction = unit==="ft" && live && liveKind==="scalar";
 
   result=vInches;
   resetOperand();
@@ -418,7 +421,7 @@ function showConverted(unit){
   $("#cmFeet").textContent=`${dec(vInches/12,6)} ft`;
   $("#cmAlt").textContent="";
 
-  if(metricToFeet || inchesOnlyToFeet || repeatFeetFraction){
+  if(metricToFeet || inchesOnlyToFeet || directFeetToFraction || repeatFeetFraction){
     conversionMode="ftInFraction";
     $("#cmMain").textContent=feetInches(vInches);
     $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
