@@ -155,7 +155,7 @@ T({ id:"DIM-08", category:"Dimensional Arithmetic", name:"Sq prompt as operand #
     keys:"120 Cu Feet ÷ 30 Sq", expect:"30 sq.", status:VALIDATED, knownFail:KF.sqPrompt,
     notes:"Physical display observed during the V9.23.5 investigation." });
 T({ id:"DIM-09", category:"Dimensional Arithmetic", name:"Volume ÷ Length → Area (120 cu. ft. ÷ 10 ft)",
-    keys:"120 Cu Feet ÷ 10 Feet =", expect:"12 sq. ft.", match:"units-loose", status:VALIDATED, knownFail:KF.volLen,
+    keys:"120 Cu Feet ÷ 10 Feet =", expect:"12 sq. ft.", match:"units-loose", status:VALIDATED,
     notes:"Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem." });
 T({ id:"DIM-10", category:"Dimensional Arithmetic", name:"Area × Length → Volume from Sq entry",
     keys:"24 Sq Feet × 6 Feet =", expect:"144 cu. ft.", match:"units-loose", status:VALIDATED, knownFail:KF.chaining,
@@ -186,7 +186,7 @@ T({ id:"DIM-20", category:"Dimensional Arithmetic", name:"Sq armed then + : 5 Sq
 T({ id:"DIM-21", category:"Dimensional Arithmetic", name:"Length ÷ 0 is Error 1",
     keys:"10 Feet ÷ 0 =", expect:"Error 1", status:VALIDATED, knownFail:KF.divZero });
 T({ id:"DIM-22", category:"Dimensional Arithmetic", name:"Computed volume ÷ length (10×8×3 = ÷ 10 ft)",
-    keys:"10 Feet × 8 Feet × 3 Feet = ÷ 10 Feet =", expect:"24 sq. ft.", match:"units-loose", status:VALIDATED, knownFail:KF.volLen,
+    keys:"10 Feet × 8 Feet × 3 Feet = ÷ 10 Feet =", expect:"24 sq. ft.", match:"units-loose", status:VALIDATED,
     notes:"Same physically validated volume ÷ length rule reached through a computed volume. Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem." });
 T({ id:"DIM-23", category:"Dimensional Arithmetic", name:"Area × Area", keys:"4 Sq Feet × 2 Sq Feet =",
     expect:"", status:PENDING, notes:"Probably an error — confirm which Error number." });

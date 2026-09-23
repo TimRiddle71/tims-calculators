@@ -543,6 +543,8 @@ function applyTyped(a,aKind,b,bKind,o){
     // V9.23.6: physically validated volume ÷ length = area (120 cu. ft. ÷ 10 ft = 12 sq. ft.).
     if(aKind==="volume" && bKind==="length") return {value:a/b,kind:"area"};
     if(aKind==="length" && bKind==="length") return {value:a/b,kind:"scalar"};
+    // V9.23.7: physically validated area ÷ area = scalar (24 sq. ft. ÷ 6 sq. ft. = 4).
+    if(aKind==="area" && bKind==="area") return {value:a/b,kind:"scalar"};
     if(aKind==="scalar" && bKind==="scalar") return {value:a/b,kind:"scalar"};
   }
   return {value:NaN,kind:aKind};

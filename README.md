@@ -373,3 +373,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Physical benchmark: 120 cu. ft. ÷ 10 ft = 12 sq. ft.
 - One-line addition to applyTyped(); no other calculator behavior changed.
 - Regression suite (tests.html): DIM-09 and DIM-22 move from KNOWN FAIL to NOW PASSING; 0 unexpected failures.
+
+## V9.23.7
+- Added physically validated dimensional reduction: area ÷ area = scalar.
+- Physical benchmark: 24 sq. ft. ÷ 6 sq. ft. = 4.
+- One-line addition to applyTyped(); no other calculator behavior changed.
+- Regression suite: DIM-09 and DIM-22 (volume ÷ length, fixed in V9.23.6) graduated to ordinary passing tests; DIM-12 moves from KNOWN FAIL to NOW PASSING; 0 unexpected failures.
