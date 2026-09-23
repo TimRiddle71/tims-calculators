@@ -464,3 +464,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - A recalled Diag now supplies the second number of a pending calculation instead of clearing it (physical: 12 ft Run 5 ft Rise 5 ft × Diag → DIAG 13 ft 0 in, then = → 65 sq. ft.). The DIAG label is display only; the final result is an ordinary area. Other roof keys during arithmetic are unchanged (not physically tested).
 - Added MEM-09 (stored roof result should recall as M-1 13 ft 0 in); it remains a known failure for the later memory-label repair.
 - Regression suite: 12 V9.23.18 tests graduated; added ROOF-10, ROOF-11 (NOW PASSING) and MEM-09 (known fail).
+
+## V9.23.20
+- Memory stores a result's value, not its temporary function label (physical: AREA, DIAG and Jk are not retained after M-1). The stored numeric value and kind are unchanged.
+- Stor first completes a valid pending calculation, reusing the = logic (physical: 10 × 5 Stor 1 → M-1 50; 10 + 5 Stor 1 → M-1 15). If that produces an error, the error is shown and nothing is stored (10 ÷ 0 Stor 1 → Error 1). With no second number (10 × Stor 1) behavior is unchanged. Stor does not leave a repeat-equals state behind.
+- MEM-06 now differs only in R7 precision; MEM-07 is reclassified as the R8 computed-area display unit (not a memory defect). Neither is fixed here.
+- Known gap, not addressed: memory does not yet carry R2 unit/presentation context (resultUnit, resultInchDecimal).
+- Regression suite: ROOF-10, ROOF-11 graduated; MEM-08, MEM-09 NOW PASSING; added MEM-10 (Stor completes +), MEM-11 (Jack value stored without label), MEM-12 (Stor after ÷ 0 shows Error 1).

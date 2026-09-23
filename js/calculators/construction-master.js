@@ -89,6 +89,9 @@ let lastReplay=null; // {op, value, kind, text}
 // {value, kind, parts, replay}. Double C and AC destroy it (via clearAll /
 // resetOperand); any other new entry or result also ends it (resetOperand).
 let clearedCompleted=null;
+// V9.23.20: true while an Error 1 / Error 3 display is the current state
+// (set by showError(), cleared by resetOperand() on the next entry/result).
+let errorShown=false;
 // V9.23.14 (R2) unit context, limited to physically validated cases.
 //   "ft" = feet or mixed feet/inches length entry, or Sq Feet / Cu Feet entry
 //   "in" = whole/decimal inch-only length entry (no feet, no fraction)
@@ -313,6 +316,7 @@ function resetOperand(){
   // d:m:s → DEG 0.707107°, also after C C and AC). Repeated d:m:s presses do not
   // call resetOperand(), so validated DEG ↔ DMS cycling is unaffected.
   dmsValue=null; dmsStage=null;
+  errorShown=false; // V9.23.20
 }
 function startFreshIfNeeded(){
   if(justEquals && op===null){
@@ -670,6 +674,7 @@ function applyTyped(a,aKind,b,bKind,o){
 // calculation without C (physical: Error 3 → 2 + 2 = 4).
 function showError(code){
   resetOperand(); acc=null; accKind=null; op=null; convArmed=false; justEquals=true;
+  errorShown=true; // V9.23.20
   result=0; resultKind="length";
   expressionParts=[code===1?"Division by zero":"Invalid dimensional operation"];
   $("#cmHistory").textContent=expressionParts[0];
@@ -1022,7 +1027,12 @@ function regularPitchSlope(){
   return null;
 }
 function snapshotCurrentValue(){
-  const display=$("#cmMain")?.textContent?.trim()||"";
+  // V9.23.20: a tagged display (AREA, DIAG, Jk, DEG, PI, M-1 …) is drawn as a separate
+  // label span and value span. Memory stores only the VALUE text; the function label
+  // is display metadata (physical: AREA, DIAG and Jk are not retained after M-1).
+  const main=$("#cmMain");
+  const valueEl=main ? main.querySelector(".cm-jack-value") : null;
+  const display=((valueEl ? valueEl.textContent : main?.textContent) || "").trim();
   if(hasOperand()) return {value:operandValue(),kind:operandKind(),display};
   if(justEquals || resultKind) return {value:result,kind:resultKind||"scalar",display};
   return null;
@@ -1063,6 +1073,20 @@ function showMemory(label,m){
   }
 }
 function storeKey(){
+  // V9.23.20: Stor first completes a valid pending calculation (an operator AND a
+  // second number), reusing equals() so R2/R3/dimensional/error rules all apply
+  // (physical: 10 × 5 Stor 1 → M-1 50; 10 + 5 Stor 1 → M-1 15). With no second
+  // number (10 × Stor 1) the previous behavior is unchanged.
+  if(op!==null && acc!==null && (hasOperand() || recalledValue)){
+    equals();
+    if(errorShown){
+      // Physical: 10 ÷ 0 Stor 1 → Error 1. Nothing is stored; the register key
+      // that follows is consumed without replacing the error display.
+      storArmed=true; storedCandidate=null; recallArmed=false;
+      return;
+    }
+    if(op!==null) return; // calculation could not be completed (e.g. unfinished fraction)
+  }
   const snap=snapshotCurrentValue();
   if(!snap) return;
   storedCandidate={...snap};
@@ -1071,7 +1095,7 @@ function storeKey(){
   setSpecialDisplay("Stor","STOR","Press 1 or 2 for memory, or Jack for O.C. spacing.");
 }
 function storeRegister(n){
-  if(!storedCandidate) return;
+  if(!storedCandidate){ storArmed=false; return; } // V9.23.20: Stor after an error stores nothing
   memoryRegisters[n]={...storedCandidate};
   const m=memoryRegisters[n];
   storArmed=false; storedCandidate=null; recalledValue={...m};

@@ -98,6 +98,8 @@ const KF = {
   roofUnitless: "V9.23.18 displays unitless Run/Rise but does not store them in the roof geometry.",
   roofOperand2: "Roof recall clears the pending calculation instead of supplying operand #2.",
   memLabel: "R6: Stor copies the whole display text, so a labeled roof result is stored as 'DIAG13 ft 0 in'.",
+  memAreaPrecision: "R7 precision only: Trestle shows 78.539816 sq. in.; the physical shows 78.53982 sq. in.",
+  areaDisplayUnit: "R8: computed areas always display in square feet (1.090831 sq ft) instead of the operand's square inches; also R7 precision.",
   missingOperand: "V9.23.12: an operator with no second number treats the missing operand as 0 (5 × = shows 0). Physical shows 5.",
   repeatEquals: "V9.23.12: pressing = again after a completed calculation does nothing. Physical replays the last operator and operand #2.",
   sqrtOperand2: "V9.23.5: √ clears the pending operator (sqrtSquareKey line 1115) instead of supplying operand #2.",
@@ -368,10 +370,10 @@ T({ id:"ROOF-09", category:"Roof", name:"Diag with no roof data",
     keys:"Diag", expect:"DIAG 0", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers)." });
 T({ id:"ROOF-10", category:"Roof", name:"Unitless Run and Rise are stored: 12 Run 5 Rise Diag",
     steps:[ {keys:"12 Run", expect:"RUN 12"}, {keys:"5 Rise", expect:"RISE 5"}, {keys:"Diag", expect:"DIAG 13"} ],
-    status:VALIDATED, knownFail:KF.roofUnitless, notes:"Physically confirmed Sept. 23, 2026 (V9.23.19). Unitless roof geometry stays unitless." });
+    status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.19). Unitless roof geometry stays unitless." });
 T({ id:"ROOF-11", category:"Roof", name:"Diag as operand #2: 5 ft × Diag =",
     steps:[ {keys:"12 Feet Run 5 Feet Rise 5 Feet × Diag", expect:"DIAG 13 ft 0 in"}, {keys:"=", expect:"65 sq. ft."} ],
-    match:"units-loose", status:VALIDATED, knownFail:KF.roofOperand2,
+    match:"units-loose", status:VALIDATED,
     notes:"Physically confirmed Sept. 23, 2026 (V9.23.19). Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01." });
 T({ id:"ROOF-07", category:"Roof", name:"Roof recall during arithmetic: 5 ft × Diag",
     keys:"12 Feet Run 5 Feet Rise 5 Feet × Diag", expect:"DIAG 13 ft 0 in", status:VALIDATED,
@@ -455,12 +457,20 @@ T({ id:"MEM-04", category:"Memory", name:"C C keeps M-1",
 T({ id:"MEM-05", category:"Memory", name:"AC zeros M-1",
     keys:"25 Stor 1 Conv × 100 + Rcl 1 =", expect:"100", status:VALIDATED });
 T({ id:"MEM-06", category:"Memory", name:"Circle AREA stored to M-1",
-    keys:"10 Inch Circ Circ Stor 1", expect:"M-1 78.53982 sq. in.", status:VALIDATED, knownFail:KF.circleAreaMemory + " Display also: " + KF.precision7 + " Also, the stored display text runs the tag into the value ('M-1 AREA78.539816 sq. in.') because snapshotCurrentValue() copies #cmMain text without a space." });
+    keys:"10 Inch Circ Circ Stor 1", expect:"M-1 78.53982 sq. in.", status:VALIDATED, knownFail:KF.memAreaPrecision,
+    notes:"Physically confirmed. Since V9.23.20 the AREA label is no longer stored; only R7 precision differs (78.539816 vs 78.53982)." });
 T({ id:"MEM-07", category:"Memory", name:"2 × stored circle area",
-    keys:"10 Inch Circ Circ Stor 1 C C 2 × Rcl 1 =", expect:"157.0796 sq. in.", status:VALIDATED, knownFail:KF.circleAreaMemory });
+    keys:"10 Inch Circ Circ Stor 1 C C 2 × Rcl 1 =", expect:"157.0796 sq. in.", status:VALIDATED, knownFail:KF.areaDisplayUnit,
+    notes:"Physically confirmed. Not a memory defect: Trestle computes 157.079633 sq in internally, and the same display occurs without memory (10 Inch Circ Circ × 2 =)." });
 T({ id:"MEM-09", category:"Memory", name:"Stored roof result keeps its value, not its label",
     keys:"12 Feet Run 5 Feet Rise Diag Stor 1 Rcl 1", expect:"M-1 13 ft 0 in", status:VALIDATED, knownFail:KF.memLabel,
     notes:"Physically confirmed Sept. 23, 2026 (V9.23.19). The DIAG identifier is display only; the memory display should not include it." });
+T({ id:"MEM-10", category:"Memory", name:"Stor completes pending +: 10 + 5 Stor 1 Rcl 1",
+    keys:"10 + 5 Stor 1 Rcl 1", expect:"M-1 15", status:VALIDATED, knownFail:KF.storPending, notes:"Physically confirmed before V9.23.20." });
+T({ id:"MEM-11", category:"Memory", name:"Stored Jack result keeps its value, not its label",
+    keys:"12 Feet Run 5 Feet Rise Jack Stor 1 Rcl 1", expect:"M-1 11 ft 6 43/64 in", status:VALIDATED, knownFail:KF.memLabel, notes:"Physically confirmed before V9.23.20. The Jk identifier is not retained." });
+T({ id:"MEM-12", category:"Memory", name:"Stor after a division-by-zero calculation shows Error 1",
+    keys:"10 ÷ 0 Stor 1", expect:"Error 1", status:VALIDATED, knownFail:KF.storPending, notes:"Physically confirmed before V9.23.20. The error is displayed and nothing is stored." });
 T({ id:"MEM-08", category:"Memory", name:"Stor completes pending arithmetic: 10 × 5 Stor 1",
     keys:"10 × 5 Stor 1", expect:"M-1 50", status:VALIDATED, knownFail:KF.storPending, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
