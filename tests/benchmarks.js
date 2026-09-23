@@ -124,6 +124,10 @@ T({ id:"CORE-12", category:"Core Arithmetic", name:"1/x of zero is Error 1",
 T({ id:"CORE-13", category:"Core Arithmetic", name:"√ as operand #2: 10 × 144 √ =",
     keys:"10 × 144 √ =", expect:"120", status:VALIDATED, knownFail:KF.sqrtOperand2,
     notes:"Physically confirmed after the audit." });
+T({ id:"CORE-17", category:"Core Arithmetic", name:"1/x as operand #2: 10 × 4 Conv ÷ =",
+    keys:"10 × 4 Conv ÷ =", expect:"2.5", status:VALIDATED, notes:"Physically confirmed before V9.23.12." });
+T({ id:"CORE-18", category:"Core Arithmetic", name:"x² as operand #2: 10 × 2 Conv √ =",
+    keys:"10 × 2 Conv √ =", expect:"40", status:VALIDATED, notes:"Physically confirmed before V9.23.12." });
 T({ id:"CORE-14", category:"Core Arithmetic", name:"Plain scalar division 10 ÷ 0 =",
     keys:"10 ÷ 0 =", expect:"Error 1", status:VALIDATED,
     notes:"Physically confirmed before V9.23.11." });
@@ -161,7 +165,7 @@ T({ id:"DIM-10", category:"Dimensional Arithmetic", name:"Area × Length → Vol
     keys:"24 Sq Feet × 6 Feet =", expect:"144 cu. ft.", match:"units-loose", status:VALIDATED, knownFail:KF.chaining,
     notes:"Physically confirmed after the audit. Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem." });
 T({ id:"DIM-11", category:"Dimensional Arithmetic", name:"Length × Volume is an error",
-    keys:"10 Feet × 3 Cu Feet =", expect:"Error 3", status:VALIDATED, knownFail:KF.cuOperand2,
+    keys:"10 Feet × 3 Cu Feet =", expect:"Error 3", status:VALIDATED,
     notes:"Physically confirmed. Do NOT assume a higher-dimensional result." });
 T({ id:"DIM-12", category:"Dimensional Arithmetic", name:"Area ÷ Area → scalar",
     keys:"24 Sq Feet ÷ 6 Sq Feet =", expect:"4", status:VALIDATED });
@@ -170,7 +174,7 @@ T({ id:"DIM-13", category:"Dimensional Arithmetic", name:"Volume ÷ Volume → s
 T({ id:"DIM-14", category:"Dimensional Arithmetic", name:"Length + plain number keeps length",
     keys:"5 Feet + 3 =", expect:"8 ft 0 in", status:VALIDATED, knownFail:KF.dimPlusScalar });
 T({ id:"DIM-15", category:"Dimensional Arithmetic", name:"Plain number + length is an error (asymmetric)",
-    keys:"3 + 5 Feet =", expect:"Error 3", status:VALIDATED, knownFail:KF.error3,
+    keys:"3 + 5 Feet =", expect:"Error 3", status:VALIDATED,
     notes:"This asymmetry is physically validated. Do not normalize it." });
 T({ id:"DIM-16", category:"Dimensional Arithmetic", name:"Length − plain number keeps length",
     keys:"5 Feet − 3 =", expect:"2 ft 0 in", status:VALIDATED, knownFail:KF.dimPlusScalar });
@@ -181,10 +185,10 @@ T({ id:"DIM-18", category:"Dimensional Arithmetic", name:"Volume + plain number 
 T({ id:"DIM-19", category:"Dimensional Arithmetic", name:"Length chaining: 10 ft + 2 ft = + 1 ft =",
     keys:"10 Feet + 2 Feet = + 1 Feet =", expect:"13 ft 0 in", status:VALIDATED, knownFail:KF.chaining });
 T({ id:"DIM-20", category:"Dimensional Arithmetic", name:"Sq armed then + : 5 Sq + 3 Feet =",
-    keys:"5 Sq + 3 Feet =", expect:"Error 3", status:VALIDATED, knownFail:KF.sqSticky,
+    keys:"5 Sq + 3 Feet =", expect:"Error 3", status:VALIDATED,
     notes:"Physically observed result only. Do not infer more behavior from this sequence." });
 T({ id:"DIM-21", category:"Dimensional Arithmetic", name:"Length ÷ 0 is Error 1",
-    keys:"10 Feet ÷ 0 =", expect:"Error 1", status:VALIDATED, knownFail:KF.divZero });
+    keys:"10 Feet ÷ 0 =", expect:"Error 1", status:VALIDATED });
 T({ id:"DIM-22", category:"Dimensional Arithmetic", name:"Computed volume ÷ length (10×8×3 = ÷ 10 ft)",
     keys:"10 Feet × 8 Feet × 3 Feet = ÷ 10 Feet =", expect:"24 sq. ft.", match:"units-loose", status:VALIDATED,
     notes:"Same physically validated volume ÷ length rule reached through a computed volume. Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem." });

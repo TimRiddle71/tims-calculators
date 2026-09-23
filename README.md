@@ -406,3 +406,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Errors are detected both at `=` and when the next operator is pressed (physical: 3 + 5 ft + = Error 3); the invalid operand is no longer silently discarded.
 - Errors are not latched: entering a new number starts a fresh calculation without C (physical: Error 3 → 2 + 2 = 4).
 - Regression suite: DIM-11, DIM-15, DIM-20, DIM-21 now pass (NOW PASSING, graduate after live verification); CORE-14, DIM-23, DIM-24, DIM-25 promoted to PHYSICAL VALIDATED (DIM-23 is a KNOWN FAIL until R1, because × after a Sq-entered area is still ignored); added DIM-26 (mid-chain Error 3) and SPEC-05 (error recovery). DIM-14 and DIM-16 now show Error 3 but remain KNOWN FAIL pending R2.
+
+## V9.23.12
+- Implemented function-as-operand-#2 behavior (audit root cause R3) for the physically validated function family: √, x², normal Sine/Cos/Tan, and 1/x.
+- When a calculation is pending, the function transforms the second number and keeps the first number and the pending operator.
+- Physical benchmarks: 10 × 144 √ = 120; 10 ft × 30 Sine = 5 ft 0 in; 10 × 4 1/x = 2.5; 10 × 2 x² = 40.
+- Standalone function behavior is unchanged. Inverse trig (Conv Sine/Cos/Tan) as operand #2 is not yet physically tested and is unchanged.
+- Regression suite: DIM-11, DIM-15, DIM-20, DIM-21 graduated; CORE-13 and TRIG-10 NOW PASSING; added CORE-17 (1/x) and CORE-18 (x²); 0 unexpected failures.

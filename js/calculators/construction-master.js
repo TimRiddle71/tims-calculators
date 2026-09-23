@@ -1035,6 +1035,27 @@ function back(){
   }else if(entry) entry=entry.slice(0,-1);
   render();
 }
+// V9.23.12 (R3): physically validated function-as-operand-#2 behavior.
+// When a calculation is pending, √, x², normal Sine/Cos/Tan and 1/x transform
+// operand #2 and KEEP operand #1 and the pending operator
+// (physical: 10 × 144 √ = 120; 10 ft × 30 Sine = 5 ft 0 in; 10 × 4 1/x = 2.5;
+// 10 × 2 x² = 40). The transformed value is supplied through recalledValue with
+// a display label (the same operand-#2 pattern used by Sq/Cu entry), so full
+// precision is kept for the arithmetic while history shows the displayed value.
+function functionPendingCalculation(){ return op!==null && acc!==null; }
+function supplyFunctionOperand(value){
+  const shown=dec(value,6);
+  resetOperand();
+  result=value; resultKind="scalar"; justEquals=false; convArmed=false;
+  recalledValue={value,kind:"scalar",display:shown};
+  $("#cmMain").textContent=shown;
+  $("#cmHistory").textContent=`${expressionParts.join(" ")} ${shown}`;
+  $("#cmAlt").textContent="";
+  $("#cmExact").previousElementSibling.textContent="VALUE";
+  $("#cmFeet").previousElementSibling.textContent="VALUE";
+  $("#cmExact").textContent=shown;
+  $("#cmFeet").textContent="—";
+}
 function trigKey(which){
   // V9.7: physical Trig Plus II validation established degree-mode trig and
   // Conv + trig as the inverse function. Only typed scalar input is mapped.
@@ -1062,6 +1083,9 @@ function trigKey(which){
     else value=Math.tan(rad);
   }
   if(!Number.isFinite(value)) return;
+  // V9.23.12 (R3): normal trig as operand #2. Inverse trig (Conv) is not yet
+  // physically tested as operand #2, so it keeps its existing behavior.
+  if(!inverse && functionPendingCalculation()){ supplyFunctionOperand(value); return; }
   resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
   resultKind="scalar"; result=value;
   const name={sin:"Sine",cos:"Cos",tan:"Tan"}[which];
@@ -1167,6 +1191,7 @@ function sqrtSquareKey(square=false){
   }
   const value=square ? input*input : Math.sqrt(input);
   if(!Number.isFinite(value)) return;
+  if(functionPendingCalculation()){ supplyFunctionOperand(value); return; } // V9.23.12 (R3): √ / x² as operand #2
   resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
   resultKind="scalar"; result=value;
   $("#cmHistory").textContent=square?`Square ${dec(input,6)}`:`Square root ${dec(input,6)}`;
@@ -1226,6 +1251,7 @@ function reciprocalKey(){
     return;
   }
   const value=1/input;
+  if(functionPendingCalculation()){ supplyFunctionOperand(value); return; } // V9.23.12 (R3): 1/x as operand #2
   resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
   resultKind="scalar"; result=value;
   $("#cmHistory").textContent=`Reciprocal ${dec(input,6)}`;
