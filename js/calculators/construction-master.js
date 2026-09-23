@@ -770,6 +770,12 @@ function secondaryKey(name){
   if(name==="arc"){ arcKey(); return true; }
   if(name==="square"){ sqrtSquareKey(true); return true; }
   if(name==="reciprocal"){ reciprocalKey(); return true; }
+  if(name==="ac"){
+    // V9.12 physical validation: Conv → × (gold AC) immediately clears
+    // current input/results and all stored geometry/settings, displaying 0.
+    clearAll();
+    return true;
+  }
   const labels={rwall:"R/Wall",arc:"Arc",square:"x²",ftin:"Ft-In",exp:"EXP",reciprocal:"1/x",ac:"AC",pi:"π",sign:"+/−"};
   secondaryNotValidated(labels[name]||name); return true;
 }

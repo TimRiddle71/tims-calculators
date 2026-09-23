@@ -226,3 +226,11 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Uses the established six-decimal result formatting with unnecessary trailing zeros removed.
 - Updated stale in-app/footer version labels to V9.11.
 - Service-worker cache bumped to V9.11.
+
+
+## V9.12 — AC
+- Added validated gold AC behavior: `Conv → ×`.
+- AC immediately clears the current entry/result and all stored Trestle geometry/settings.
+- Physical benchmark: after storing 12 ft Run and 5 ft Rise, `Conv → ×` displays `0`; pressing `Diag` afterward displays `DIAG 0`.
+- Updated in-app/footer version labels to V9.12.
+- Service-worker cache bumped to V9.12.
