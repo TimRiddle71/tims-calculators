@@ -564,11 +564,16 @@ function equals(){
     render();
     return;
   }
-  if(!hasOperand() && !(op && acc!==null)) return;
+  if(!hasOperand() && !recalledValue && !(op && acc!==null)) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
 
-  const v=operandValue(), kind=operandKind();
-  const text=finalizedOperandText();
+  // V9.23.1: Rcl inside an active calculation supplies the recalled value
+  // as the current operand without destroying the pending operator.
+  const fromMemory=!hasOperand() && recalledValue;
+  const v=fromMemory?recalledValue.value:operandValue();
+  const kind=fromMemory?recalledValue.kind:operandKind();
+  const text=fromMemory?memoryValueText(recalledValue):finalizedOperandText();
+  recalledValue=null;
 
   if(op && acc!==null){
     const x=applyTyped(acc,accKind,v,kind,op);
@@ -793,13 +798,25 @@ function storeRegister(n){
 }
 function recallKey(){
   storArmed=false; storedCandidate=null; recallArmed=true; recalledValue=null; convArmed=false;
-  resetOperand(); justEquals=false; expressionParts=[];
+  // V9.23.1: when Rcl is used after an operator, preserve acc/op/expressionParts.
+  // The recalled register becomes the pending operand for = or another operator.
+  const inActiveCalculation=(op!==null && acc!==null);
+  resetOperand(); justEquals=false;
+  if(!inActiveCalculation) expressionParts=[];
   setSpecialDisplay("Rcl","RCL","Press 1 or 2 to recall memory.");
 }
 function recallRegister(n){
   const m=memoryRegisters[n]||{value:0,kind:"scalar"};
   recallArmed=false; recalledValue={...m};
-  showMemory(`M-${n}`,m);
+  if(op!==null && acc!==null){
+    // Display the physical M-n recall while retaining the active calculation state.
+    result=m.value; resultKind=m.kind;
+    $("#cmHistory").textContent=`M-${n}`;
+    $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">M-${n}</span><span class="cm-jack-value">${memoryValueText(m)}</span></span>`;
+    $("#cmAlt").textContent="";
+  }else{
+    showMemory(`M-${n}`,m);
+  }
 }
 function storeIrregularPitch(){
   if(!hasOperand()) return;

@@ -339,3 +339,8 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Arithmetic percentage: `200 × 10 % = 20`, `200 ÷ 10 % = 2000`, `200 + 10 % = 220`, `200 − 10 % = 180`.
 - Percentage arithmetic preserves dimensional type, e.g. `10 ft × 50 % = 5 ft 0 in`.
 - Repeated standalone `%` enters an invalid/error state rather than inventing another percentage operation.
+
+
+## V9.23.1
+- Fixed Rcl during an active calculation so the recalled M-1/M-2 value becomes the pending operand without clearing the existing operator/accumulator.
+- Preserves previously validated V9.23 percentage and V9.22 memory behavior.
