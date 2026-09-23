@@ -758,14 +758,21 @@ function reciprocalKey(){
 }
 
 function piKey(){
-  // V9.13 physical benchmarks: Conv → + = PI 3.141593;
-  // 2 → × → Conv → + → = = 6.283185. Keep full Math.PI internally.
+  // V9.13.1: π must behave like a typed scalar operand. Do not use
+  // setLabeledDisplay(), because that helper intentionally clears acc/op.
+  // Physical benchmark: 2 → × → Conv → + → = = 6.283185.
   convArmed=false;
   resetOperand();
-  entry=String(Math.PI);
+  entry=String(Math.PI); // keep full precision internally
   resultKind="scalar";
   justEquals=false;
-  setLabeledDisplay("Pi","PI",dec(Math.PI,6),"");
+  $("#cmHistory").textContent="Pi";
+  $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">PI</span><span class="cm-jack-value">${dec(Math.PI,6)}</span></span>`;
+  $("#cmAlt").textContent="";
+  $("#cmExact").previousElementSibling.textContent="EXACT INCHES";
+  $("#cmFeet").previousElementSibling.textContent="DECIMAL FEET";
+  $("#cmExact").textContent="—";
+  $("#cmFeet").textContent="—";
 }
 
 function secondaryNotValidated(name){
