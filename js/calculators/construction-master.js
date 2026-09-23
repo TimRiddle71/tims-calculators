@@ -60,6 +60,11 @@ let rwallActive=false; // After Conv → Diag starts R/Wall, plain Diag advances
 let circleDiameter=null; // inches
 let circleAreaUnit="in"; // "in" for inch-only entry, otherwise "ft"
 let circleStage=0;
+// V9.23.10 TEMPORARY: true only while the Circle AREA result is the active result.
+// Lets that physically validated result become operand #1 (10 in Circ Circ × 2 =
+// 157.0796 sq. in.). Remove this flag and its setOp() exception when R1 /
+// general completed-result chaining is implemented.
+let circleAreaResult=false;
 
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
@@ -219,6 +224,7 @@ function resetOperand(){
   hasFeet=false; hasInches=false; hasUnits=false;
   fractionNumerator=null; fractionDenominatorText="";
   metricEntryUnit=null; metricEntryValue=null; inchEntryWasDecimal=false;
+  circleAreaResult=false; // V9.23.10 temporary: any new entry/result ends the Circle AREA exception.
 }
 function startFreshIfNeeded(){
   if(justEquals && op===null){
@@ -571,7 +577,12 @@ function setOp(next){
   // result/resultKind rather than the live operand fields. Allow a completed
   // area or volume to become the dividend when ÷ is pressed.
   const fromDimensionalResult=!hasOperand() && !recalledValue && justEquals &&
-    (resultKind==="area" || resultKind==="volume") && next==="divide";
+    ((resultKind==="area" || resultKind==="volume") && next==="divide" ||
+     // V9.23.10 TEMPORARY, deliberately narrow exception: the Circle AREA result
+     // may become operand #1 for any operator, reproducing physically validated
+     // Circle AREA chaining. This is NOT general result chaining. Remove when
+     // R1 / general completed-result chaining is implemented.
+     (circleAreaResult && resultKind==="area"));
   if(!hasOperand() && !recalledValue && !fromDimensionalResult) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
 
@@ -1062,6 +1073,9 @@ function circleDisplay(stage){
     const areaIn2=Math.PI*Math.pow(d/2,2);
     const area=circleAreaUnit==="in"?areaIn2:areaIn2/144;
     const unit=circleAreaUnit==="in"?"sq. in.":"sq. feet";
+    // V9.23.10: physical Trig Plus II treats AREA as the active result
+    // (10 in Circ Circ Conv Feet = AREA 0.545415 sq. ft.; × 2 = 157.0796 sq. in.).
+    result=areaIn2; resultKind="area"; circleAreaResult=true;
     $("#cmHistory").textContent="Circle area";
     $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">AREA</span><span class="cm-jack-value">${dec(area,6)} ${unit}</span></span>`;
     $("#cmExact").previousElementSibling.textContent="SQUARE INCHES";

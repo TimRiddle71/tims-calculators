@@ -391,3 +391,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Physical benchmark: 120 cu. ft. ÷ 10 cu. ft. = 12.
 - One-line addition to applyTyped(); relies on the V9.23.8 Cu second-operand state fix. No other calculator behavior changed.
 - Regression suite: DIM-13 moves from KNOWN FAIL to NOW PASSING (to be graduated after live verification); 0 unexpected failures.
+
+## V9.23.10
+- Fixed Circle AREA internal state (audit root cause R5): after Circ → Circ, the active result is the area (square inches, kind "area") instead of the hidden diameter.
+- Physical benchmarks: 10 in Circ Circ Conv Feet = AREA 0.545415 sq. ft.; 10 in Circ Circ × 2 = 157.0796 sq. in.
+- Adds a TEMPORARY circle-only exception (circleAreaResult) so the AREA result can become operand #1. This is not general result chaining; remove it when R1 is implemented.
+- Known display differences left for later root causes: AREA label lost after Conv, sq ft vs sq. in. for computed results (R8), precision (R7), memory tag text (R6).
+- Regression suite: DIM-13 graduated to an ordinary passing test; MEM-07 remains KNOWN FAIL with a corrected internal value; 0 unexpected failures.
