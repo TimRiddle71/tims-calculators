@@ -269,7 +269,9 @@ function showCubicConverted(unit){
   const labels={ft:"cu. ft.",yd:"cu. yd.",m:"cu. m",mm:"cu. mm"};
   const v=result/factors[unit];
   convArmed=false; conversionMode=null; justEquals=true;
-  $("#cmMain").textContent=`${dec(v,6)} ${labels[unit]}`;
+  // Physical benchmark: 1 cu. m → Conv → Feet displays 35.31467 cu. ft.
+  const shown = unit==="ft" && Math.abs(v-Math.round(v))>1e-12 ? dec(v,5) : dec(v,6);
+  $("#cmMain").textContent=`${shown} ${labels[unit]}`;
   $("#cmHistory").textContent=`Converted to ${labels[unit]}`;
   $("#cmExact").previousElementSibling.textContent="CUBIC INCHES";
   $("#cmFeet").previousElementSibling.textContent="CUBIC FEET";
@@ -1101,10 +1103,11 @@ function secondaryKey(name){
   secondaryNotValidated(labels[name]||name); return true;
 }
 function conv(){
-  // Conv arms the gold secondary layer. Feet/Inch still perform the validated
-  // conversion behavior when selected next.
+  // Conv is a modifier only. Arm the gold secondary layer without re-rendering
+  // the main value; re-rendering would expose the internal base-unit value and
+  // look like a conversion happened before the destination key was pressed.
   convArmed=true;
-  render();
+  $("#cmAlt").textContent="CONV — choose next key";
 }
 
 export function initConstruction(){

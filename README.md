@@ -283,3 +283,8 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Corrected linear metric `Conv → Feet` to match the physical Trig Plus II: display feet + fractional inches instead of decimal feet.
 - Example: `1 m → Conv → Feet` displays `3 ft 3-3/8 in`.
 - Preserves validated decimal-feet conversion behavior for non-metric workflows.
+
+
+## V9.20.2
+- Fixed Conv modifier so pressing Conv alone preserves the currently displayed value/unit and waits for the destination/function key.
+- Matched validated cubic-meter to cubic-feet display precision: 1 cu. m → Conv → Feet = 35.31467 cu. ft.
