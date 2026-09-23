@@ -379,3 +379,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Physical benchmark: 24 sq. ft. ÷ 6 sq. ft. = 4.
 - One-line addition to applyTyped(); no other calculator behavior changed.
 - Regression suite: DIM-09 and DIM-22 (volume ÷ length, fixed in V9.23.6) graduated to ordinary passing tests; DIM-12 moves from KNOWN FAIL to NOW PASSING; 0 unexpected failures.
+
+## V9.23.8
+- State-management prerequisite: Cu → unit used as the second operand no longer discards the pending arithmetic operation (same pattern as the V9.23.5 Sq fix).
+- The cubic operand keeps its entered label in the history (for example `120 cu. ft. ÷ 10 cu. ft.`), not a cubic-yard fallback.
+- Volume ÷ volume is NOT implemented yet (planned for V9.23.9). Error 3 is NOT implemented yet.
+- Regression suite: DIM-12 (area ÷ area, fixed in V9.23.7) graduated to an ordinary passing test; 0 unexpected failures.

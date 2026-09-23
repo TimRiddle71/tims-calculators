@@ -265,10 +265,24 @@ function setCubicUnit(unit){
   const n=Number(entry)||0;
   const factors={in:1,ft:1728,yd:46656,m:61023.7440947323,mm:0.0000610237440947323};
   const labels={in:"cu. in.",ft:"cu. ft.",yd:"cu. yd.",m:"cu. m",mm:"cu. mm"};
-  result=n*factors[unit]; resultKind="volume"; justEquals=true; convArmed=false; cubicArmed=false;
-  resetOperand(); acc=null;accKind=null;op=null;expressionParts=[];
-  $("#cmMain").textContent=`${dec(n,6)} ${labels[unit]}`;
-  $("#cmHistory").textContent="Cubic unit entry";
+  const volumeDisplay=`${dec(n,6)} ${labels[unit]}`;
+  // V9.23.8: when Cu -> unit is used as operand #2, preserve the active
+  // arithmetic operation (same pattern as V9.23.5 Sq entry). The display
+  // label keeps the history in the entered cubic unit rather than the
+  // memoryValueText() cubic-yard fallback.
+  const inActiveCalculation=(op!==null && acc!==null);
+  result=n*factors[unit]; resultKind="volume"; convArmed=false; cubicArmed=false;
+  resetOperand();
+  if(inActiveCalculation){
+    recalledValue={value:result,kind:"volume",display:volumeDisplay};
+    justEquals=false;
+  }else{
+    recalledValue=null;
+    justEquals=true;
+    acc=null;accKind=null;op=null;expressionParts=[];
+  }
+  $("#cmMain").textContent=volumeDisplay;
+  $("#cmHistory").textContent=inActiveCalculation ? `${expressionParts.join(" ")} ${volumeDisplay}` : "Cubic unit entry";
   $("#cmExact").previousElementSibling.textContent="CUBIC INCHES";
   $("#cmFeet").previousElementSibling.textContent="CUBIC FEET";
   $("#cmExact").textContent=`${dec(result,6)} cu in`;

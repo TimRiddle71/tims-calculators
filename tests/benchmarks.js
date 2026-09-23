@@ -164,7 +164,7 @@ T({ id:"DIM-11", category:"Dimensional Arithmetic", name:"Length × Volume is an
     keys:"10 Feet × 3 Cu Feet =", expect:"Error 3", status:VALIDATED, knownFail:KF.cuOperand2,
     notes:"Physically confirmed. Do NOT assume a higher-dimensional result." });
 T({ id:"DIM-12", category:"Dimensional Arithmetic", name:"Area ÷ Area → scalar",
-    keys:"24 Sq Feet ÷ 6 Sq Feet =", expect:"4", status:VALIDATED, knownFail:KF.areaArea });
+    keys:"24 Sq Feet ÷ 6 Sq Feet =", expect:"4", status:VALIDATED });
 T({ id:"DIM-13", category:"Dimensional Arithmetic", name:"Volume ÷ Volume → scalar",
     keys:"120 Cu Feet ÷ 10 Cu Feet =", expect:"12", status:VALIDATED, knownFail:KF.volVol });
 T({ id:"DIM-14", category:"Dimensional Arithmetic", name:"Length + plain number keeps length",
