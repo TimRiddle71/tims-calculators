@@ -356,3 +356,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - 24 sq. ft. ÷ 6 ft = 4 ft 0 in.
 - 100 sq. ft. ÷ 20 ft = 5 ft 0 in.
 - Preserves prior V9.23.2 behavior.
+
+
+## V9.23.4
+- Allows a completed cubic-volume result to become the first operand when division is pressed.
+- Adds validated dimensional reduction: volume ÷ area = length.
+- Preserves the V9.23.3 area ÷ length fix and prior validated behavior.

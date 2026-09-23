@@ -525,6 +525,7 @@ function applyTyped(a,aKind,b,bKind,o){
     if(aKind==="area" && bKind==="scalar") return {value:a/b,kind:"area"};
     if(aKind==="volume" && bKind==="scalar") return {value:a/b,kind:"volume"};
     if(aKind==="area" && bKind==="length") return {value:a/b,kind:"length"};
+    if(aKind==="volume" && bKind==="area") return {value:a/b,kind:"length"};
     if(aKind==="length" && bKind==="length") return {value:a/b,kind:"scalar"};
     if(aKind==="scalar" && bKind==="scalar") return {value:a/b,kind:"scalar"};
   }
@@ -532,17 +533,18 @@ function applyTyped(a,aKind,b,bKind,o){
 }
 function setOp(next){
   percentJustApplied=false;
-  // V9.23.3: Sq-unit entry stores the completed area in result/resultKind
-  // rather than the live operand fields. Allow that completed area to become
-  // the dividend when ÷ is pressed (e.g. 24 sq ft ÷ 6 ft = 4 ft).
-  const fromAreaResult=!hasOperand() && !recalledValue && justEquals && resultKind==="area" && next==="divide";
-  if(!hasOperand() && !recalledValue && !fromAreaResult) return;
+  // V9.23.4: Sq/Cu unit entry stores a completed dimensional value in
+  // result/resultKind rather than the live operand fields. Allow a completed
+  // area or volume to become the dividend when ÷ is pressed.
+  const fromDimensionalResult=!hasOperand() && !recalledValue && justEquals &&
+    (resultKind==="area" || resultKind==="volume") && next==="divide";
+  if(!hasOperand() && !recalledValue && !fromDimensionalResult) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
 
   const fromMemory=!hasOperand() && recalledValue;
-  const v=fromMemory?recalledValue.value:(fromAreaResult?result:operandValue());
-  const kind=fromMemory?recalledValue.kind:(fromAreaResult?resultKind:operandKind());
-  const text=fromMemory?memoryValueText(recalledValue):(fromAreaResult?$("#cmMain").textContent:finalizedOperandText());
+  const v=fromMemory?recalledValue.value:(fromDimensionalResult?result:operandValue());
+  const kind=fromMemory?recalledValue.kind:(fromDimensionalResult?resultKind:operandKind());
+  const text=fromMemory?memoryValueText(recalledValue):(fromDimensionalResult?$("#cmMain").textContent:finalizedOperandText());
   recalledValue=null;
 
   if(acc===null){ acc=v; accKind=kind; }
