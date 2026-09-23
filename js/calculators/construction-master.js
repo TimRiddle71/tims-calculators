@@ -42,6 +42,10 @@ let jackOC=16;
 let irregularPitchSlope=null; // rise/run, e.g. 8/12
 let storArmed=false;
 let storedCandidate=null;
+// V9.22 general memories. The physical Trig Plus II exposes M-1 and M-2.
+let memoryRegisters={1:{value:0,kind:"scalar"},2:{value:0,kind:"scalar"}};
+let recallArmed=false;
+let recalledValue=null;
 let jackMode="jk";
 let jackIndex=0;
 let clearPending=false; // First C clears the current entry/result; second consecutive C clears all.
@@ -222,12 +226,15 @@ function startFreshIfNeeded(){
 }
 function digit(d){
   conversionMode=null;
+  if(storArmed && (d==="1" || d==="2")){ storeRegister(Number(d)); return; }
+  if(recallArmed && (d==="1" || d==="2")){ recallRegister(Number(d)); return; }
   if(expMode){
     expDigits=(expDigits==="0")?d:expDigits+d;
     renderExp();
     return;
   }
   rwallActive=false;
+  recalledValue=null; recallArmed=false;
   startFreshIfNeeded();
   if(fractionNumerator!==null) fractionDenominatorText+=d;
   else entry=(entry==="0")?d:entry+d;
@@ -521,11 +528,13 @@ function applyTyped(a,aKind,b,bKind,o){
   return {value:NaN,kind:aKind};
 }
 function setOp(next){
-  if(!hasOperand()) return;
+  if(!hasOperand() && !recalledValue) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
 
-  const v=operandValue(), kind=operandKind();
-  const text=finalizedOperandText();
+  const fromMemory=!hasOperand() && recalledValue;
+  const v=fromMemory?recalledValue.value:operandValue(), kind=fromMemory?recalledValue.kind:operandKind();
+  const text=fromMemory?memoryValueText(recalledValue):finalizedOperandText();
+  recalledValue=null;
 
   if(acc===null){ acc=v; accKind=kind; }
   else if(op){
@@ -680,12 +689,71 @@ function regularPitchSlope(){
   if(roofPitch!==null) return Math.tan(roofPitch*Math.PI/180);
   return null;
 }
+function snapshotCurrentValue(){
+  const display=$("#cmMain")?.textContent?.trim()||"";
+  if(hasOperand()) return {value:operandValue(),kind:operandKind(),display};
+  if(justEquals || resultKind) return {value:result,kind:resultKind||"scalar",display};
+  return null;
+}
+function memoryValueText(m){
+  if(!m) return "0";
+  if(m.display) return m.display;
+  if(m.kind==="length") return feetInches(m.value);
+  if(m.kind==="area") return `${dec(m.value/144,6)} sq. ft.`;
+  if(m.kind==="volume") return `${dec(m.value/46656,6)} cu. yd.`;
+  return dec(m.value,6);
+}
+function showMemory(label,m){
+  resetOperand(); acc=null; accKind=null; op=null; convArmed=false; justEquals=false;
+  result=m.value; resultKind=m.kind; expressionParts=[];
+  $("#cmHistory").textContent=label;
+  $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">${label}</span><span class="cm-jack-value">${memoryValueText(m)}</span></span>`;
+  $("#cmAlt").textContent="";
+  if(m.kind==="length"){
+    $("#cmExact").previousElementSibling.textContent="EXACT INCHES";
+    $("#cmFeet").previousElementSibling.textContent="DECIMAL FEET";
+    $("#cmExact").textContent=`${dec(m.value,6)} in`;
+    $("#cmFeet").textContent=`${dec(m.value/12,6)} ft`;
+  }else if(m.kind==="area"){
+    $("#cmExact").previousElementSibling.textContent="SQUARE INCHES";
+    $("#cmFeet").previousElementSibling.textContent="SQUARE FEET";
+    $("#cmExact").textContent=`${dec(m.value,6)} sq in`;
+    $("#cmFeet").textContent=`${dec(m.value/144,6)} sq ft`;
+  }else if(m.kind==="volume"){
+    $("#cmExact").previousElementSibling.textContent="CUBIC INCHES";
+    $("#cmFeet").previousElementSibling.textContent="CUBIC FEET";
+    $("#cmExact").textContent=`${dec(m.value,6)} cu in`;
+    $("#cmFeet").textContent=`${dec(m.value/1728,6)} cu ft`;
+  }else{
+    $("#cmExact").previousElementSibling.textContent="VALUE";
+    $("#cmFeet").previousElementSibling.textContent="VALUE";
+    $("#cmExact").textContent=dec(m.value,6); $("#cmFeet").textContent="—";
+  }
+}
 function storeKey(){
-  if(!hasOperand()) return;
-  storedCandidate=operandValue();
-  storArmed=true;
+  const snap=snapshotCurrentValue();
+  if(!snap) return;
+  storedCandidate={...snap};
+  storArmed=true; recallArmed=false; recalledValue=null;
   resetOperand(); justEquals=false; expressionParts=[];
-  setSpecialDisplay("Stor","STOR","Press Jack to store O.C. spacing.");
+  setSpecialDisplay("Stor","STOR","Press 1 or 2 for memory, or Jack for O.C. spacing.");
+}
+function storeRegister(n){
+  if(!storedCandidate) return;
+  memoryRegisters[n]={...storedCandidate};
+  const m=memoryRegisters[n];
+  storArmed=false; storedCandidate=null; recalledValue={...m};
+  showMemory(`M-${n}`,m);
+}
+function recallKey(){
+  storArmed=false; storedCandidate=null; recallArmed=true; recalledValue=null; convArmed=false;
+  resetOperand(); justEquals=false; expressionParts=[];
+  setSpecialDisplay("Rcl","RCL","Press 1 or 2 to recall memory.");
+}
+function recallRegister(n){
+  const m=memoryRegisters[n]||{value:0,kind:"scalar"};
+  recallArmed=false; recalledValue={...m};
+  showMemory(`M-${n}`,m);
 }
 function storeIrregularPitch(){
   if(!hasOperand()) return;
@@ -740,7 +808,7 @@ function showJack(kind,index){
 }
 function jackKey(forceIrregular=false){
   if(storArmed){
-    if(storedCandidate>0) jackOC=storedCandidate;
+    if(storedCandidate && storedCandidate.kind==="length" && storedCandidate.value>0) jackOC=storedCandidate.value;
     storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0;
     setLabeledDisplay("Stor → Jack","OC",inchesOnly(jackOC),"Jack on-center spacing stored.");
     return;
@@ -795,7 +863,7 @@ function rwallKey(){
 function clearAll(){
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;cubicArmed=false;squareArmed=false;expressionParts=[];
   roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
-  irregularPitchSlope=null; storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleDiameter=null; circleAreaUnit="in"; circleStage=0;
+  irregularPitchSlope=null; storArmed=false; storedCandidate=null; recallArmed=false; recalledValue=null; jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleDiameter=null; circleAreaUnit="in"; circleStage=0;
   clearPending=false;
   render();
 }
@@ -805,7 +873,7 @@ function clearKey(){
   // Match the Trig Plus II: one C clears only the current entry/result state.
   // Stored roof geometry, pitches and Jack O.C. remain available.
   resetOperand(); acc=null; accKind=null; op=null; result=0; resultKind="length";
-  justEquals=false; convArmed=false; cubicArmed=false; squareArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null;
+  justEquals=false; convArmed=false; cubicArmed=false; squareArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null; recallArmed=false; recalledValue=null;
   expMode=false; expBase=null; expDigits=""; expNegative=false;
   jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleStage=0;
   // Physical Trig Plus II: one C preserves the stored circle diameter; double C clears it via clearAll().
@@ -1126,8 +1194,8 @@ function secondaryKey(name){
   if(name==="reciprocal"){ reciprocalKey(); return true; }
   if(name==="exp"){ expKey(); return true; }
   if(name==="ac"){
-    // V9.12 physical validation: Conv → × (gold AC) immediately clears
-    // current input/results and all stored geometry/settings, displaying 0.
+    // V9.22 physical validation: AC also zeros M-1 and M-2; double-C does not.
+    memoryRegisters={1:{value:0,kind:"scalar"},2:{value:0,kind:"scalar"}};
     clearAll();
     return true;
   }
@@ -1159,6 +1227,7 @@ export function initConstruction(){
   document.querySelector('[data-cm="conv"]').addEventListener("click",conv);
   document.querySelectorAll("[data-cm-roof]").forEach(b=>b.addEventListener("click",()=>roofKey(b.dataset.cmRoof)));
   document.querySelector('[data-cm="stor"]').addEventListener("click",storeKey);
+  document.querySelector('[data-cm="rcl"]').addEventListener("click",recallKey);
   document.querySelectorAll("[data-cm-trig]").forEach(b=>b.addEventListener("click",()=>trigKey(b.dataset.cmTrig)));
   document.querySelector('[data-cm="cu"]').addEventListener("click",cubicKey);
   document.querySelector('[data-cm="sq"]').addEventListener("click",squareKey);

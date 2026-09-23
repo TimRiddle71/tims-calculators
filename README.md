@@ -328,6 +328,6 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Direct decimal-foot entry now toggles to feet + fractional inches on the first Conv → Feet press, matching the physical Trig Plus II.
 
 
-## V9.21.8
+## V9.22
 - Matched physical Trig Plus II `Conv → Inch` cycling: decimal inches convert to nearest 1/64-inch display, and the next `Conv → Inch` restores the original decimal-inch value.
 - Preserves the unrounded internal value (for example, 80.333 → 80 21/64 → 80.333).
