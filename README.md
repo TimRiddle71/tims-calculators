@@ -208,3 +208,11 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Uses the established six-decimal result formatting with unnecessary trailing zeros removed.
 - Activated and visually corrected the √ key while preserving the locked five-column keypad geometry.
 - Service-worker cache bumped to V9.10.
+
+
+## V9.10.1 — Square-root key visual polish
+
+- Visual-only follow-up to V9.10; calculator math is unchanged.
+- Replaced the oversized font-rendered radical with a smaller SVG radical modeled after the physical Trig Plus II key.
+- Keeps the gold `x²` label and locked keypad geometry unchanged.
+- Service-worker cache bumped to V9.10.1.

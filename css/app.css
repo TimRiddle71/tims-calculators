@@ -72,5 +72,6 @@
 #constructionView .cm-jack-tag{flex:0 0 auto;text-align:left}
 #constructionView .cm-jack-value{flex:1 1 auto;text-align:right}
 
-/* V9.10: make the validated square-root key read like the physical Trig Plus II key. */
-.cm-physical-grid .cm-radical{font-family:"Times New Roman",serif;font-size:1.55em;font-weight:400;line-height:1}
+/* V9.10.1: smaller physical-style radical. SVG keeps the long overbar consistent across PC/iPhone fonts. */
+.cm-physical-grid .cm-radical{width:32px;height:24px;display:block;margin:auto;overflow:visible}
+.cm-physical-grid .cm-radical path{fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
