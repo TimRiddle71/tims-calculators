@@ -444,3 +444,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - AC (Conv ×) now also aborts EXP entry (2 EXP 3, AC, 5 = → 5) and restores the 16 in default Jack O.C. Double C keeps a custom Jack O.C. (physically validated).
 - Regression suite: all 13 former PENDING tests reclassified with physical results (PCT-07 PASS; the rest PHYSICAL VALIDATED known failures until their repair versions); added DMS-06 and DMS-07. JACK-07, EXP-04, DMS-05, DMS-06, DMS-07 NOW PASSING. 0 pending.
 - Recorded for future releases: power-on display is physically plain 0 (R10); a normal Diag physically displays DIAG 13 ft 0 in (roof labels).
+
+## V9.23.17
+- R10: the calculator's zero state is now a plain scalar 0 at power-on, after C, after C C and after AC (physical display: 0), instead of 0 ft 0 in.
+- Fixed at the source: the initial state and the clear routines (clearKey/clearAll) now set a scalar zero; render() is unchanged. The static starting text in index.html now also reads 0.
+- Unchanged: single C still keeps the hidden completed result (5 × 5 = C = = → 25, 125); C C keeps M-1/M-2; AC clears memory, EXP, DMS and restores the 16 in Jack O.C.
+- SPEC-02 and SPEC-04 now show 0 instead of 0 ft 0 in but remain known failures (they need a DIAG 0 roof recall with its label — later roof repair).
+- Regression suite: JACK-07, EXP-04, DMS-05, DMS-06, DMS-07 graduated; CORE-25, CORE-26, SPEC-01 NOW PASSING; added SPEC-06 (power-on display, no keys pressed).

@@ -11,7 +11,8 @@ let hasUnits=false;
 let fractionNumerator=null;
 let fractionDenominatorText="";
 
-let acc=null, accKind=null, op=null, result=0, resultKind="length", justEquals=false, convArmed=false;
+// V9.23.17 (R10): power-on state is a plain scalar zero (physical display: 0).
+let acc=null, accKind=null, op=null, result=0, resultKind="scalar", justEquals=false, convArmed=false;
 let conversionMode=null; // null, ftDecimal, inDecimal, or inFraction.
 
 // V9.16 EXP entry: mantissa × 10^exponent.
@@ -1164,7 +1165,8 @@ function rwallKey(){
 function clearAll(){
   lastReplay=null; clearedCompleted=null; // V9.23.13 (R1): C C / AC destroy the completed result and replay state
   percentJustApplied=false;
-  resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;cubicArmed=false;squareArmed=false;expressionParts=[];
+  // V9.23.17 (R10): C C / AC leave a plain scalar zero (physical display: 0).
+  resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="scalar";justEquals=false;convArmed=false;cubicArmed=false;squareArmed=false;expressionParts=[];
   roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
   irregularPitchSlope=null; storArmed=false; storedCandidate=null; recallArmed=false; recalledValue=null; jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleDiameter=null; circleAreaUnit="in"; circleStage=0;
   clearPending=false;
@@ -1185,7 +1187,9 @@ function clearKey(){
   if(clearPending){ clearAll(); return; }
   // Match the Trig Plus II: one C clears only the current entry/result state.
   // Stored roof geometry, pitches and Jack O.C. remain available.
-  resetOperand(); acc=null; accKind=null; op=null; result=0; resultKind="length";
+  // V9.23.17 (R10): the visible single-C result is a plain scalar zero (physical display: 0);
+  // the hidden completed result is still kept in clearedCompleted.
+  resetOperand(); acc=null; accKind=null; op=null; result=0; resultKind="scalar";
   justEquals=false; convArmed=false; cubicArmed=false; squareArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null; recallArmed=false; recalledValue=null;
   expMode=false; expBase=null; expDigits=""; expNegative=false;
   jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleStage=0;

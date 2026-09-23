@@ -381,7 +381,7 @@ T({ id:"JACK-05", category:"Jack / Irregular Jack", name:"Ir/Pitch stores irregu
 T({ id:"JACK-06", category:"Jack / Irregular Jack", name:"Irregular Jack with 8/12 adjoining pitch",
     keys:"12 Feet Run 5 Feet Rise 8 Inch Conv Hip/V Conv Jack", expect:"IJ 1 8 ft 0 9/64 in", status:BASELINE });
 T({ id:"JACK-07", category:"Jack / Irregular Jack", name:"AC restores the 16 in Jack O.C.",
-    keys:"24 Inch Stor Jack Conv × 12 Feet Run 5 Feet Rise Jack", expect:"Jk 1 11 ft 6 43/64 in", status:VALIDATED, knownFail:KF.acJackOC,
+    keys:"24 Inch Stor Jack Conv × 12 Feet Run 5 Feet Rise Jack", expect:"Jk 1 11 ft 6 43/64 in", status:VALIDATED,
     notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification). Double C, by contrast, keeps a custom O.C. (physical: Jk 1 10 ft 10 in)." });
 
 /* ================================= R/WALL ================================ */
@@ -488,7 +488,7 @@ T({ id:"EXP-02", category:"EXP", name:"2 EXP −3 =", keys:"2 Conv / 3 Conv − 
     notes:"Physically confirmed: 2 → Conv → / → 3 → Conv → − → = displays 0.002." });
 T({ id:"EXP-03", category:"EXP", name:"1.5 EXP 4 =", keys:"1.5 Conv / 4 =", expect:"15000", status:VALIDATED, notes:"Physical display has no comma (permanent rule)." });
 T({ id:"EXP-04", category:"EXP", name:"AC during EXP entry",
-    keys:"2 Conv / 3 Conv × 5 =", expect:"5", status:VALIDATED, knownFail:KF.acExp, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    keys:"2 Conv / 3 Conv × 5 =", expect:"5", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ================================== DMS ================================== */
 T({ id:"DMS-01", category:"DMS", name:"30.5 d:m:s cycles DEG → DMS → DEG",
@@ -498,11 +498,11 @@ T({ id:"DMS-02", category:"DMS", name:"30.5125° → DMS", keys:"30.5125 d:m:s d
 T({ id:"DMS-03", category:"DMS", name:"Seconds round: 30.5126°", keys:"30.5126 d:m:s d:m:s", expect:"DMS 30.30.45°", status:VALIDATED });
 T({ id:"DMS-04", category:"DMS", name:"Seconds round: 30.5127°", keys:"30.5127 d:m:s d:m:s", expect:"DMS 30.30.46°", status:VALIDATED });
 T({ id:"DMS-06", category:"DMS", name:"A new function result supersedes old DMS state (no clear)",
-    keys:"30.5 d:m:s 45 Sine d:m:s", expect:"DEG 0.707107°", status:VALIDATED, knownFail:KF.staleDms, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    keys:"30.5 d:m:s 45 Sine d:m:s", expect:"DEG 0.707107°", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 T({ id:"DMS-07", category:"DMS", name:"Double C clears DMS state",
-    keys:"30.5 d:m:s C C 45 Sine d:m:s", expect:"DEG 0.707107°", status:VALIDATED, knownFail:KF.staleDms, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    keys:"30.5 d:m:s C C 45 Sine d:m:s", expect:"DEG 0.707107°", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 T({ id:"DMS-05", category:"DMS", name:"AC clears DMS state",
-    keys:"30.5 d:m:s Conv × 45 Sine d:m:s", expect:"DEG 0.707107°", status:VALIDATED, knownFail:KF.staleDms, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    keys:"30.5 d:m:s Conv × 45 Sine d:m:s", expect:"DEG 0.707107°", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ========================= SPECIAL / CLEAR BEHAVIOR ====================== */
 T({ id:"SPEC-01", category:"Special / Clear Behavior", name:"AC display", keys:"12 Feet Run 5 Feet Rise Conv ×", expect:"0",
@@ -515,5 +515,8 @@ T({ id:"SPEC-03", category:"Special / Clear Behavior", name:"One C keeps roof ge
 T({ id:"SPEC-05", category:"Special / Clear Behavior", name:"Error 3 is not latched: new entry starts fresh without C",
     steps:[ {keys:"3 + 5 Feet +", expect:"Error 3"}, {keys:"2 + 2 =", expect:"4"} ], status:VALIDATED,
     notes:"Physically confirmed: while Error 3 is displayed, 2 + 2 = gives 4 without pressing C." });
+T({ id:"SPEC-06", category:"Special / Clear Behavior", name:"Power-on display (no keys pressed)",
+    keys:"", expect:"0", status:VALIDATED, knownFail:KF.clearDisplay,
+    notes:"Physically confirmed: turning the calculator on shows a plain 0." });
 T({ id:"SPEC-04", category:"Special / Clear Behavior", name:"C C then Diag (roof cleared)",
     keys:"12 Feet Run 5 Feet Rise C C Diag", expect:"DIAG 0", status:VALIDATED, knownFail:KF.roofNoData, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
