@@ -99,7 +99,7 @@ const KF = {
 
 /* ============================ CORE ARITHMETIC ============================ */
 T({ id:"CORE-01", category:"Core Arithmetic", name:"Result chaining: 5 × 5 = × 2 =",
-    keys:"5 × 5 = × 2 =", expect:"50", status:VALIDATED, knownFail:KF.chaining,
+    keys:"5 × 5 = × 2 =", expect:"50", status:VALIDATED,
     notes:"Physically confirmed after the V9.23.5 audit." });
 T({ id:"CORE-02", category:"Core Arithmetic", name:"Negative operand: 10 + 3 +/− =",
     keys:"10 + 3 Conv − =", expect:"7", status:VALIDATED, notes:"V9.14 physical benchmark." });
@@ -135,10 +135,10 @@ T({ id:"CORE-14", category:"Core Arithmetic", name:"Plain scalar division 10 ÷ 
     keys:"10 ÷ 0 =", expect:"Error 1", status:VALIDATED,
     notes:"Physically confirmed before V9.23.11." });
 T({ id:"CORE-15", category:"Core Arithmetic", name:"Operator with no second number: 5 × =",
-    keys:"5 × =", expect:"5", status:VALIDATED, knownFail:KF.missingOperand,
+    keys:"5 × =", expect:"5", status:VALIDATED,
     notes:"Physically confirmed before V9.23.13: 5 × = shows 5 (NOT 25). The missing operand is not duplicated." });
 T({ id:"CORE-16", category:"Core Arithmetic", name:"Repeated equals: 5 × 5 = =",
-    keys:"5 × 5 = =", expect:"125", status:VALIDATED, knownFail:KF.repeatEquals,
+    keys:"5 × 5 = =", expect:"125", status:VALIDATED,
     notes:"Physically confirmed before V9.23.13: first = 25, second = 125." });
 T({ id:"CORE-23", category:"Core Arithmetic", name:"Single C then = restores the completed result",
     keys:"5 × 5 = C =", expect:"25", status:VALIDATED,
@@ -191,7 +191,7 @@ T({ id:"DIM-09", category:"Dimensional Arithmetic", name:"Volume ÷ Length → A
     keys:"120 Cu Feet ÷ 10 Feet =", expect:"12 sq. ft.", match:"units-loose", status:VALIDATED,
     notes:"Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem." });
 T({ id:"DIM-10", category:"Dimensional Arithmetic", name:"Area × Length → Volume from Sq entry",
-    keys:"24 Sq Feet × 6 Feet =", expect:"144 cu. ft.", match:"units-loose", status:VALIDATED, knownFail:KF.chaining,
+    keys:"24 Sq Feet × 6 Feet =", expect:"144 cu. ft.", match:"units-loose", status:VALIDATED,
     notes:"Physically confirmed after the audit. Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem." });
 T({ id:"DIM-11", category:"Dimensional Arithmetic", name:"Length × Volume is an error",
     keys:"10 Feet × 3 Cu Feet =", expect:"Error 3", status:VALIDATED,
@@ -212,7 +212,7 @@ T({ id:"DIM-17", category:"Dimensional Arithmetic", name:"Area + plain number ke
 T({ id:"DIM-18", category:"Dimensional Arithmetic", name:"Volume + plain number keeps volume",
     keys:"20 Cu Feet + 5 =", expect:"25 cu. ft.", match:"units-loose", status:VALIDATED, notes:"Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem.", knownFail:KF.chaining + " Also: " + KF.dimPlusScalar });
 T({ id:"DIM-19", category:"Dimensional Arithmetic", name:"Length chaining: 10 ft + 2 ft = + 1 ft =",
-    keys:"10 Feet + 2 Feet = + 1 Feet =", expect:"13 ft 0 in", status:VALIDATED, knownFail:KF.chaining });
+    keys:"10 Feet + 2 Feet = + 1 Feet =", expect:"13 ft 0 in", status:VALIDATED });
 T({ id:"DIM-20", category:"Dimensional Arithmetic", name:"Sq armed then + : 5 Sq + 3 Feet =",
     keys:"5 Sq + 3 Feet =", expect:"Error 3", status:VALIDATED,
     notes:"Physically observed result only. Do not infer more behavior from this sequence." });
@@ -222,7 +222,7 @@ T({ id:"DIM-22", category:"Dimensional Arithmetic", name:"Computed volume ÷ len
     keys:"10 Feet × 8 Feet × 3 Feet = ÷ 10 Feet =", expect:"24 sq. ft.", match:"units-loose", status:VALIDATED,
     notes:"Same physically validated volume ÷ length rule reached through a computed volume. Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01, so this test only fails for the math/state problem." });
 T({ id:"DIM-23", category:"Dimensional Arithmetic", name:"Area × Area", keys:"4 Sq Feet × 2 Sq Feet =",
-    expect:"Error 3", status:VALIDATED, knownFail:KF.chaining,
+    expect:"Error 3", status:VALIDATED,
     notes:"Physically confirmed before V9.23.11. The Error 3 rule exists in V9.23.11, but the × after a Sq-entered area is still ignored by the R1 gate, so the calculation never reaches it." });
 T({ id:"DIM-24", category:"Dimensional Arithmetic", name:"Plain number ÷ length", keys:"10 ÷ 2 Feet =",
     expect:"Error 3", status:VALIDATED, notes:"Physically confirmed before V9.23.11." });
@@ -231,6 +231,28 @@ T({ id:"DIM-25", category:"Dimensional Arithmetic", name:"Length ÷ area", keys:
 T({ id:"DIM-27", category:"Dimensional Arithmetic", name:"Dimensional repeated equals: 10 ft + 2 ft = =",
     steps:[ {keys:"10 Feet + 2 Feet =", expect:"12 ft 0 in"}, {keys:"=", expect:"14 ft 0 in"} ], status:VALIDATED,
     notes:"Physically confirmed before V9.23.13: the replayed operand keeps its dimensional state." });
+T({ id:"DIM-28", category:"Dimensional Arithmetic", name:"R2: negative length result 3 ft − 5 =",
+    keys:"3 Feet − 5 =", expect:"-2 ft 0 in", status:VALIDATED, notes:"Physically confirmed before V9.23.14." });
+T({ id:"DIM-29", category:"Dimensional Arithmetic", name:"R2: decimal scalar inherits feet 5 ft + 2.5 =",
+    keys:"5 Feet + 2.5 =", expect:"7 ft 6 in", status:VALIDATED, notes:"Physically confirmed before V9.23.14." });
+T({ id:"DIM-30", category:"Dimensional Arithmetic", name:"R2: area − scalar 20 sq. ft. − 5 =",
+    keys:"20 Sq Feet − 5 =", expect:"15 sq. ft.", match:"units-loose", status:VALIDATED, notes:"Physically confirmed before V9.23.14. Unit punctuation (sq. ft. / cu. ft. vs sq ft / cu ft) is checked separately by FMT-01, so this test isolates the R2 arithmetic." });
+T({ id:"DIM-31", category:"Dimensional Arithmetic", name:"R2: volume − scalar 20 cu. ft. − 5 =",
+    keys:"20 Cu Feet − 5 =", expect:"15 cu. ft.", match:"units-loose", status:VALIDATED, notes:"Physically confirmed before V9.23.14. Unit punctuation (sq. ft. / cu. ft. vs sq ft / cu ft) is checked separately by FMT-01, so this test isolates the R2 arithmetic." });
+T({ id:"DIM-32", category:"Dimensional Arithmetic", name:"R2: scalar inherits inches 10 in + 2 =",
+    keys:"10 Inch + 2 =", expect:"12 in", status:VALIDATED, notes:"Physically confirmed before V9.23.14. The plain 2 means 2 inches." });
+T({ id:"DIM-33", category:"Dimensional Arithmetic", name:"R2: scalar inherits metres 2 m + 3 =",
+    keys:"2 m + 3 =", expect:"5 m", status:VALIDATED, notes:"Physically confirmed before V9.23.14. The plain 3 means 3 metres." });
+T({ id:"DIM-34", category:"Dimensional Arithmetic", name:"Inch-only result stays in inches: 10 in + 2 in =",
+    keys:"10 Inch + 2 Inch =", expect:"12 in", status:VALIDATED, notes:"Physically confirmed before V9.23.14." });
+T({ id:"DIM-35", category:"Dimensional Arithmetic", name:"Metre result stays in metres: 2 m + 3 m =",
+    keys:"2 m + 3 m =", expect:"5 m", status:VALIDATED, notes:"Physically confirmed before V9.23.14." });
+T({ id:"DIM-36", category:"Dimensional Arithmetic", name:"R2: mixed ft-in first operand → scalar inherits FEET",
+    keys:"5 Feet 6 Inch + 3 =", expect:"8 ft 6 in", status:VALIDATED, notes:"Physically confirmed before V9.23.14. The 3 means 3 ft, not 3 in." });
+T({ id:"DIM-37", category:"Dimensional Arithmetic", name:"R2: computed result keeps unit context for chaining",
+    steps:[ {keys:"10 Feet + 2 Feet =", expect:"12 ft 0 in"}, {keys:"+ 3 =", expect:"15 ft 0 in"} ], status:VALIDATED, notes:"Physically confirmed before V9.23.14." });
+T({ id:"DIM-38", category:"Dimensional Arithmetic", name:"R2: repeated equals replays the inherited +3 ft",
+    steps:[ {keys:"5 Feet + 3 =", expect:"8 ft 0 in"}, {keys:"=", expect:"11 ft 0 in"} ], status:VALIDATED, notes:"Physically confirmed before V9.23.14." });
 T({ id:"DIM-26", category:"Dimensional Arithmetic", name:"Invalid operation detected at the next operator: 3 + 5 ft +",
     keys:"3 + 5 Feet +", expect:"Error 3", status:VALIDATED,
     notes:"Physically confirmed: Error 3 appears when the second + is pressed. Before V9.23.11 the invalid operand was silently discarded (3 + 5 ft + 2 = gave 5)." });

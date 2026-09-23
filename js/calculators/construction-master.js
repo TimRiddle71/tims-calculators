@@ -83,6 +83,45 @@ let lastReplay=null; // {op, value, kind, text}
 // {value, kind, parts, replay}. Double C and AC destroy it (via clearAll /
 // resetOperand); any other new entry or result also ends it (resetOperand).
 let clearedCompleted=null;
+// V9.23.14 (R2) unit context, limited to physically validated cases.
+//   "ft" = feet or mixed feet/inches length entry, or Sq Feet / Cu Feet entry
+//   "in" = whole/decimal inch-only length entry (no feet, no fraction)
+//   "m"  = metre length entry
+//   null = any other or unknown context (mm, yd, fractional inches, memory,
+//          other Sq/Cu units, ×/÷ results, mixed-unit sums) → behavior unchanged
+// accUnit belongs to the pending accumulator; resultUnit to a completed result
+// (so it survives chaining and repeated equals, e.g. 10 ft + 2 ft = + 3 = 15 ft).
+let accUnit=null;
+let resultUnit=null;
+// Internal units per 1 inherited unit. Same values as feet() (×12), inches() (×1),
+// setLinearMetricUnit() m (×39.37007874015748), setSquareUnit() ft (144) and
+// setCubicUnit() ft (1728); only the validated contexts are listed.
+const R2_INHERIT={length:{ft:12,in:1,m:39.37007874015748},area:{ft:144},volume:{ft:1728}};
+const R2_LABEL={length:{ft:"ft",in:"in",m:"m"},area:{ft:"sq. ft."},volume:{ft:"cu. ft."}};
+// Unit context of the operand currently being typed (read before resetOperand()).
+function typedUnitContext(){
+  if(!hasUnits) return null;
+  if(metricEntryUnit) return metricEntryUnit==="m" ? "m" : null;
+  const fractionUsed=fractionNumerator!==null || Math.abs(wholeInches-enteredInches-enteredFeet*12)>1e-9;
+  if(hasFeet) return "ft";                                // feet or mixed feet/inches → FEET
+  if(hasInches && !fractionUsed) return "in";              // inch-only whole/decimal entry
+  return null;
+}
+// R2: dimensional operand #1 ± plain scalar operand #2 → the scalar becomes a
+// real dimensional operand in operand #1's unit. Asymmetric: scalar ± dimension
+// is untouched (still Error 3). + and − only.
+function inheritScalar(o,v,kind,text){
+  if((o==="add" || o==="subtract") && kind==="scalar" && accKind && accKind!=="scalar" &&
+     accUnit && R2_INHERIT[accKind] && R2_INHERIT[accKind][accUnit]){
+    return {v:v*R2_INHERIT[accKind][accUnit], kind:accKind, text:`${text} ${R2_LABEL[accKind][accUnit]}`, unit:accUnit};
+  }
+  return null;
+}
+// Unit context of the accumulator after combining with operand #2.
+function combinedUnit(o,unit2){
+  if(o!=="add" && o!=="subtract") return null;       // ×, ÷: unchanged behavior, no unit context
+  return (accUnit && unit2===accUnit) ? accUnit : null;
+}
 
 // Separate human-facing expression history from normalized calculation values.
 let expressionParts=[];
@@ -190,6 +229,10 @@ function render(){
     $("#cmMain").textContent=`${dec(result/1728,6)} cu ft`;
   }else if(resultKind==="scalar"){
     $("#cmMain").textContent=dec(result,6);
+  }else if(resultUnit==="in"){
+    $("#cmMain").textContent=inchesOnly(result);            // V9.23.14 (R2): 10 in + 2 in = 12 in
+  }else if(resultUnit==="m"){
+    $("#cmMain").textContent=`${dec(result*0.0254,6)} m`;   // V9.23.14 (R2): 2 m + 3 m = 5 m
   }else{
     $("#cmMain").textContent=feetInches(result);
   }
@@ -245,6 +288,7 @@ function resetOperand(){
   circleAreaResult=false; // V9.23.10 temporary: any new entry/result ends the Circle AREA exception.
   resultChainable=false; replayArmed=false; // V9.23.13 (R1): any new entry/result ends chaining/replay.
   clearedCompleted=null; // V9.23.13 (R1): only the key right after a single C can restore it
+  resultUnit=null; // V9.23.14 (R2): set again only where a validated result is produced
 }
 function startFreshIfNeeded(){
   if(justEquals && op===null){
@@ -307,6 +351,7 @@ function setCubicUnit(unit){
     justEquals=true;
     acc=null;accKind=null;op=null;expressionParts=[];
     resultChainable=true; // V9.23.13 (R1): completed cubic entry can start a calculation
+    resultUnit=unit==="ft"?"ft":null; // V9.23.14 (R2): 20 cu. ft. + 5 = 25 cu. ft.
   }
   $("#cmMain").textContent=volumeDisplay;
   $("#cmHistory").textContent=inActiveCalculation ? `${expressionParts.join(" ")} ${volumeDisplay}` : "Cubic unit entry";
@@ -376,6 +421,7 @@ function setSquareUnit(unit){
     justEquals=true;
     acc=null;accKind=null;op=null;expressionParts=[];
     resultChainable=true; // V9.23.13 (R1): physical 24 sq. ft. × 6 ft = 144 cu. ft.
+    resultUnit=unit==="ft"?"ft":null; // V9.23.14 (R2): 20 sq. ft. + 5 = 25 sq. ft.
   }
   $("#cmMain").textContent=areaDisplay;
   $("#cmHistory").textContent=inActiveCalculation ? `${expressionParts.join(" ")} ${areaDisplay}` : "Square unit entry";
@@ -641,16 +687,20 @@ function setOp(next){
   const v=fromMemory?recalledValue.value:(fromDimensionalResult?result:operandValue());
   const kind=fromMemory?recalledValue.kind:(fromDimensionalResult?resultKind:operandKind());
   const text=fromMemory?memoryValueText(recalledValue):(fromDimensionalResult?$("#cmMain").textContent:finalizedOperandText());
+  // V9.23.14 (R2): unit context of this operand (chained results carry resultUnit).
+  const unitHere=fromMemory?null:(fromDimensionalResult?(resultChainable?resultUnit:null):typedUnitContext());
   recalledValue=null;
 
-  if(acc===null){ acc=v; accKind=kind; }
+  if(acc===null){ acc=v; accKind=kind; accUnit=unitHere; }
   else if(op){
-    const x=applyTyped(acc,accKind,v,kind,op);
+    const inh=inheritScalar(op,v,kind,text);
+    const x=inh ? applyTyped(acc,accKind,inh.v,inh.kind,op) : applyTyped(acc,accKind,v,kind,op);
     // V9.23.11 (R4): an invalid pending operation is reported when the next
     // operator is pressed (physical: 3 + 5 ft + = Error 3) instead of being
     // silently discarded.
     if(!Number.isFinite(x.value)){ showError(x.error||3); return; }
     acc=x.value; accKind=x.kind;
+    accUnit=inh ? accUnit : combinedUnit(op,unitHere);
   }
   result=acc; resultKind=accKind || "length";
 
@@ -677,6 +727,7 @@ function equals(){
     const c=clearedCompleted;
     resetOperand(); // also clears clearedCompleted
     result=c.value; resultKind=c.kind; expressionParts=c.parts; lastReplay=c.replay;
+    resultUnit=c.unit||null; // V9.23.14 (R2)
     justEquals=true; convArmed=false; render();
     replayArmed=true; resultChainable=true;
     return;
@@ -694,11 +745,12 @@ function equals(){
   // operator and operand #2, including its dimensional kind.
   if(op===null && !hasOperand() && !recalledValue && justEquals && replayArmed && lastReplay){
     const firstText=$("#cmMain").textContent;
+    const keepUnit=resultUnit; // V9.23.14 (R2): replay keeps the result's unit context
     const x=applyTyped(result,resultKind,lastReplay.value,lastReplay.kind,lastReplay.op);
     if(!Number.isFinite(x.value)){ lastReplay=null; showError(x.error||3); return; }
     expressionParts=[firstText,operatorSymbol(lastReplay.op),lastReplay.text,"="];
     result=x.value; resultKind=x.kind;
-    resetOperand();justEquals=true;convArmed=false;render();
+    resetOperand(); resultUnit=keepUnit; justEquals=true;convArmed=false;render();
     replayArmed=true; resultChainable=true;
     return;
   }
@@ -711,15 +763,21 @@ function equals(){
   const v=fromMemory?recalledValue.value:operandValue();
   const kind=fromMemory?recalledValue.kind:operandKind();
   const text=fromMemory?memoryValueText(recalledValue):finalizedOperandText();
+  const unit2=fromMemory?null:typedUnitContext(); // V9.23.14 (R2)
   recalledValue=null;
 
-  let completedOperation=false;
+  let completedOperation=false, finalUnit=null;
   if(op && acc!==null){
-    const x=applyTyped(acc,accKind,v,kind,op);
+    // V9.23.14 (R2): a plain scalar after a dimensional operand #1 (+/− only)
+    // becomes a real dimensional operand; the replay stores the converted value.
+    const inh=inheritScalar(op,v,kind,text);
+    const v2=inh?inh.v:v, kind2=inh?inh.kind:kind, text2=inh?inh.text:text;
+    const x=applyTyped(acc,accKind,v2,kind2,op);
     if(Number.isFinite(x.value)){
-      expressionParts.push(text,"=");
+      expressionParts.push(text2,"=");
       result=x.value; resultKind=x.kind;
-      lastReplay={op,value:v,kind,text}; completedOperation=true; // V9.23.13 (R1)
+      finalUnit=inh ? accUnit : combinedUnit(op,unit2);
+      lastReplay={op,value:v2,kind:kind2,text:text2}; completedOperation=true; // V9.23.13 (R1)
     }else{
       lastReplay=null;
       showError(x.error||3); // V9.23.11 (R4): Error 1 or Error 3
@@ -730,7 +788,9 @@ function equals(){
     result=v; resultKind=kind;
     lastReplay=null;
   }
-  acc=null;accKind=null;op=null;resetOperand();justEquals=true;convArmed=false;render();
+  acc=null;accKind=null;op=null;resetOperand();
+  resultUnit=completedOperation?finalUnit:null; // V9.23.14 (R2): set before render() so 12 in / 5 m display
+  justEquals=true;convArmed=false;render();
   replayArmed=completedOperation; resultChainable=completedOperation; // V9.23.13 (R1)
 }
 
@@ -1090,7 +1150,7 @@ function clearKey(){
   // that result and its replay recoverable. The next = restores the result
   // WITHOUT replaying; the = after that replays (physical: 5 × 5 = C = = → 25, 125).
   const keepCompleted=(!clearPending && !expMode && justEquals && op===null && replayArmed && lastReplay && !hasOperand() && !recalledValue)
-    ? {value:result, kind:resultKind, parts:[...expressionParts], replay:lastReplay} : null;
+    ? {value:result, kind:resultKind, parts:[...expressionParts], replay:lastReplay, unit:resultUnit} : null;
   lastReplay=null; // V9.23.13 (R1): C clears the active replay (single C keeps a copy in clearedCompleted)
   percentJustApplied=false;
   if(expMode){ expMode=false; expBase=null; expDigits=""; expNegative=false; }

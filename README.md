@@ -426,3 +426,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - The temporary Circle AREA exception from V9.23.10 is unchanged.
 - Regression page: shows READY TO TEST with the loaded Trestle version and test count before running, and a VERSION MISMATCH / FILES OUT OF DATE warning (with Run disabled) when the loaded calculator differs from the server. "Load the latest files" now also refreshes the browser's HTTP cache.
 - Regression suite: CORE-13, TRIG-10 graduated; added TRIG-11, TRIG-12, CORE-19 to CORE-26, DIM-27; CORE-15 and CORE-16 promoted to physical validated.
+
+## V9.23.14
+- Implemented dimensional-first ± plain-number inheritance (audit root cause R2), per physical Trig Plus II tests. For + and − only, when the first number is dimensional and the second is plain, the plain number takes the first number's dimension and unit: 5 ft + 3 = 8 ft 0 in; 5 ft + 2.5 = 7 ft 6 in; 3 ft − 5 = −2 ft 0 in; 5 ft 6 in + 3 = 8 ft 6 in (mixed feet/inches → feet); 10 in + 2 = 12 in; 2 m + 3 = 5 m; 20 sq. ft. ± 5; 20 cu. ft. ± 5.
+- Asymmetric: a plain first number with a dimensional second number is still Error 3 (3 + 5 ft = Error 3). × and ÷ are unchanged.
+- Minimal unit context added for the validated cases only (feet, mixed feet/inches, whole/decimal inches, metres, Sq Feet, Cu Feet). Inch-only and metre +/− results now display in inches (12 in) and metres (5 m). Units not physically tested (mm, yd, fractional inches, other Sq/Cu units, memory values, ×/÷ results) keep their previous behavior.
+- Unit context survives completed-result chaining (10 ft + 2 ft = + 3 = 15 ft 0 in), and repeated equals replays the converted dimensional operand (5 ft + 3 = = 11 ft 0 in).
+- Regression suite: CORE-01, CORE-15, CORE-16, DIM-10, DIM-19, DIM-23 graduated; DIM-14, DIM-16, DIM-17, DIM-18 NOW PASSING; added DIM-28 to DIM-38.
