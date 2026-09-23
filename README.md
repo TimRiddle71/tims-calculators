@@ -331,3 +331,11 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 ## V9.22
 - Matched physical Trig Plus II `Conv → Inch` cycling: decimal inches convert to nearest 1/64-inch display, and the next `Conv → Inch` restores the original decimal-inch value.
 - Preserves the unrounded internal value (for example, 80.333 → 80 21/64 → 80.333).
+
+
+## V9.23
+- Added physically validated `%` key behavior.
+- Standalone percentage: `10 % = 0.1`.
+- Arithmetic percentage: `200 × 10 % = 20`, `200 ÷ 10 % = 2000`, `200 + 10 % = 220`, `200 − 10 % = 180`.
+- Percentage arithmetic preserves dimensional type, e.g. `10 ft × 50 % = 5 ft 0 in`.
+- Repeated standalone `%` enters an invalid/error state rather than inventing another percentage operation.

@@ -49,6 +49,7 @@ let recalledValue=null;
 let jackMode="jk";
 let jackIndex=0;
 let clearPending=false; // First C clears the current entry/result; second consecutive C clears all.
+let percentJustApplied=false; // V9.23: repeated standalone % is an invalid physical-calculator state.
 
 // V9.6 R/Wall memory. Tim uses the Trig Plus II default 16 in rake-wall spacing.
 const rwallOC=16;
@@ -225,6 +226,7 @@ function startFreshIfNeeded(){
   }
 }
 function digit(d){
+  percentJustApplied=false;
   conversionMode=null;
   if(storArmed && (d==="1" || d==="2")){ storeRegister(Number(d)); return; }
   if(recallArmed && (d==="1" || d==="2")){ recallRegister(Number(d)); return; }
@@ -241,6 +243,7 @@ function digit(d){
   render();
 }
 function decimal(){
+  percentJustApplied=false;
   conversionMode=null;
   if(expMode) return;
   startFreshIfNeeded();
@@ -528,6 +531,7 @@ function applyTyped(a,aKind,b,bKind,o){
   return {value:NaN,kind:aKind};
 }
 function setOp(next){
+  percentJustApplied=false;
   if(!hasOperand() && !recalledValue) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
 
@@ -581,6 +585,48 @@ function equals(){
   }
   acc=null;accKind=null;op=null;resetOperand();justEquals=true;convArmed=false;render();
 }
+
+function percentKey(){
+  convArmed=false;
+  if(percentJustApplied && !hasOperand() && op===null){
+    // The physical Trig Plus II enters an all-segments/error-like display on a repeated %.
+    // Represent that invalid state clearly without inventing another calculation.
+    $("#cmHistory").textContent="Percent";
+    $("#cmMain").textContent="Error";
+    $("#cmAlt").textContent="Repeated % is not a valid operation on the physical calculator.";
+    return;
+  }
+  if(fractionNumerator!==null && !fractionDenominatorText) return;
+
+  if(op && acc!==null && hasOperand()){
+    const pct=operandValue()/100;
+    const pctText=finalizedOperandText();
+    let value, kind=accKind;
+    if(op==="add") value=acc + acc*pct;
+    else if(op==="subtract") value=acc - acc*pct;
+    else if(op==="multiply") value=acc*pct;
+    else if(op==="divide"){ if(pct===0) return; value=acc/pct; }
+    else return;
+    const leftText=expressionParts.length?expressionParts[0]:dec(acc,6);
+    const opText=operatorSymbol(op);
+    resetOperand(); acc=null; accKind=null; op=null;
+    result=value; resultKind=kind; justEquals=true; percentJustApplied=true;
+    expressionParts=[leftText,opText,`${pctText} %`];
+    render();
+    return;
+  }
+
+  if(hasOperand()){
+    const v=operandValue()/100;
+    const text=finalizedOperandText();
+    const kind=operandKind();
+    resetOperand(); acc=null; accKind=null; op=null;
+    result=v; resultKind=kind; justEquals=true; percentJustApplied=true;
+    expressionParts=[`${text} %`];
+    render();
+  }
+}
+
 function roofHistory(requested){
   const bits=[];
   if(roofEnteredRun!==null) bits.push(`${feetInches(roofEnteredRun).replace(" 0 in","")} Run`);
@@ -861,6 +907,7 @@ function rwallKey(){
   showRwall(rwallIndex);
 }
 function clearAll(){
+  percentJustApplied=false;
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;cubicArmed=false;squareArmed=false;expressionParts=[];
   roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
   irregularPitchSlope=null; storArmed=false; storedCandidate=null; recallArmed=false; recalledValue=null; jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleDiameter=null; circleAreaUnit="in"; circleStage=0;
@@ -868,6 +915,7 @@ function clearAll(){
   render();
 }
 function clearKey(){
+  percentJustApplied=false;
   if(expMode){ expMode=false; expBase=null; expDigits=""; expNegative=false; }
   if(clearPending){ clearAll(); return; }
   // Match the Trig Plus II: one C clears only the current entry/result state.
@@ -1235,5 +1283,6 @@ export function initConstruction(){
   document.querySelectorAll("[data-cm-primary]").forEach(b=>b.addEventListener("click",()=>{ if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else if(b.dataset.cmPrimary==="circ") circKey(); else if(b.dataset.cmPrimary==="sqrt") sqrtSquareKey(false); else $("#cmAlt").textContent=`${b.textContent.trim()} not yet validated.`; }));
   document.querySelector('[data-cm="jack"]').addEventListener("click",e=>{ const b=e.currentTarget; if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else jackKey(false); });
   document.querySelector('[data-cm="dms"]').addEventListener("click",dmsKey);
+  document.querySelector('[data-cm="percent"]').addEventListener("click",percentKey);
   render();
 }
