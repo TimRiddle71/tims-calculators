@@ -265,12 +265,16 @@ function setCubicUnit(unit){
   return true;
 }
 function showCubicConverted(unit){
-  const factors={ft:1728,yd:46656,m:61023.7440947323,mm:0.0000610237440947323};
-  const labels={ft:"cu. ft.",yd:"cu. yd.",m:"cu. m",mm:"cu. mm"};
+  // V9.20.3: keep the internal result in cubic inches so conversions can be
+  // chained (for example m³ → ft³ → in³). Inch was missing from this map.
+  const factors={in:1,ft:1728,yd:46656,m:61023.7440947323,mm:0.0000610237440947323};
+  const labels={in:"cu. in.",ft:"cu. ft.",yd:"cu. yd.",m:"cu. m",mm:"cu. mm"};
   const v=result/factors[unit];
   convArmed=false; conversionMode=null; justEquals=true;
-  // Physical benchmark: 1 cu. m → Conv → Feet displays 35.31467 cu. ft.
-  const shown = unit==="ft" && Math.abs(v-Math.round(v))>1e-12 ? dec(v,5) : dec(v,6);
+  // Match physically validated Trig Plus II display precision.
+  // 1 m³ → ft³ = 35.31467; then → in³ = 61023.74.
+  const shown = unit==="in" ? dec(v,2)
+    : (unit==="ft" && Math.abs(v-Math.round(v))>1e-12 ? dec(v,5) : dec(v,6));
   $("#cmMain").textContent=`${shown} ${labels[unit]}`;
   $("#cmHistory").textContent=`Converted to ${labels[unit]}`;
   $("#cmExact").previousElementSibling.textContent="CUBIC INCHES";

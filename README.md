@@ -288,3 +288,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 ## V9.20.2
 - Fixed Conv modifier so pressing Conv alone preserves the currently displayed value/unit and waits for the destination/function key.
 - Matched validated cubic-meter to cubic-feet display precision: 1 cu. m → Conv → Feet = 35.31467 cu. ft.
+
+
+## V9.20.3
+- Fixed chained cubic conversions after a prior cubic conversion.
+- Added cubic-inch destination handling to the conversion map.
+- Physically validated chain: 1 cu. m → 35.31467 cu. ft. → 61,023.74 cu. in.
+- Preserved V9.20.2 Conv modifier behavior: Conv alone waits for the destination key.
