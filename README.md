@@ -367,3 +367,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Fixed Sq → unit when used as the second operand of an active calculation.
 - Preserves the pending operator and first dimensional operand through square-unit entry.
 - Physical benchmark target: 120 cu. ft. ÷ 30 sq. ft. = 4 ft 0 in.
+
+## V9.23.6
+- Added physically validated dimensional reduction: volume ÷ length = area.
+- Physical benchmark: 120 cu. ft. ÷ 10 ft = 12 sq. ft.
+- One-line addition to applyTyped(); no other calculator behavior changed.
+- Regression suite (tests.html): DIM-09 and DIM-22 move from KNOWN FAIL to NOW PASSING; 0 unexpected failures.
