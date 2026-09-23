@@ -341,6 +341,11 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Repeated standalone `%` enters an invalid/error state rather than inventing another percentage operation.
 
 
-## V9.23.1
+## V9.23.2
 - Fixed Rcl during an active calculation so the recalled M-1/M-2 value becomes the pending operand without clearing the existing operator/accumulator.
 - Preserves previously validated V9.23 percentage and V9.22 memory behavior.
+
+
+## V9.23.2
+- Fixed Rcl as the second operand so the RCL prompt no longer clears the pending accumulator/operator.
+- Example: 3 ft → Stor → 1; 4 ft × Rcl → 1 → = now produces 12 sq. ft.

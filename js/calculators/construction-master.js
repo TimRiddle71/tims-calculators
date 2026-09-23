@@ -798,12 +798,22 @@ function storeRegister(n){
 }
 function recallKey(){
   storArmed=false; storedCandidate=null; recallArmed=true; recalledValue=null; convArmed=false;
-  // V9.23.1: when Rcl is used after an operator, preserve acc/op/expressionParts.
-  // The recalled register becomes the pending operand for = or another operator.
+  // V9.23.2: Rcl used as the second operand must not call setSpecialDisplay(),
+  // because that helper intentionally clears acc/op. Preserve the active arithmetic
+  // state while prompting for memory register 1 or 2.
   const inActiveCalculation=(op!==null && acc!==null);
   resetOperand(); justEquals=false;
-  if(!inActiveCalculation) expressionParts=[];
-  setSpecialDisplay("Rcl","RCL","Press 1 or 2 to recall memory.");
+  if(inActiveCalculation){
+    $("#cmMain").textContent="RCL";
+    $("#cmAlt").textContent="Press 1 or 2 to recall memory.";
+    $("#cmExact").textContent="—";
+    $("#cmFeet").textContent="—";
+  }else{
+    expressionParts=[];
+    setSpecialDisplay("Rcl","RCL","Press 1 or 2 to recall memory.");
+    // setSpecialDisplay marks the display as a completed result; Rcl is awaiting a register.
+    justEquals=false; recallArmed=true;
+  }
 }
 function recallRegister(n){
   const m=memoryRegisters[n]||{value:0,kind:"scalar"};
