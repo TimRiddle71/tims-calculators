@@ -406,7 +406,7 @@ function showConverted(unit){
   const decimalInchesToFeet = unit==="ft" && live && liveKind==="length" && hasInches && !hasFeet && metricEntryUnit===null && inchEntryWasDecimal;
   // V9.21.6: A directly entered decimal feet value toggles to feet + fractional inches
   // on the first Conv → Feet press, matching the physical Trig Plus II.
-  const directFeetToFraction = unit==="ft" && live && liveKind==="scalar";
+  const directFeetToFraction = unit==="ft" && live && liveKind==="length" && hasFeet && !hasInches && metricEntryUnit===null && Number.isFinite(enteredFeet) && !Number.isInteger(enteredFeet);
 
   result=vInches;
   resetOperand();

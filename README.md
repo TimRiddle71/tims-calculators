@@ -316,7 +316,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Preserves the V9.15 mixed ft/in → decimal-feet behavior and all V9.21.1 conversion-history display behavior.
 
 
-## V9.21.6
+## V9.21.7
+
+- Fixed direct decimal-feet `Conv → Feet` toggle: `2.125 ft → 2 ft 1 1/2 in → 2.125 ft`.
 - Matched the physical calculator's initial Inch → Conv → Feet display rule: whole-inch entries first show feet/inches; decimal-inch entries first show decimal feet.
 - Repeated `Conv → Feet` now toggles between decimal feet and feet/inches.
 - Examples: `25 in → 2 ft 1 in`; `25.5 in → 2.125 ft`; repeat → `2 ft 1-1/2 in`.
