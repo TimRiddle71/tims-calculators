@@ -250,7 +250,7 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Updated in-app/footer version labels and service-worker cache to V9.14.
 
 
-## V9.15 — Fraction entry and conversion chain
+## V9.16 — Fraction entry and conversion chain
 - Fixed live fractional-inch entry so the numerator remains visible after `/` (for example `2-19/`).
 - Matched validated Trig Plus II conversion behavior: dimensional length → decimal feet, decimal feet input via Conv → Feet, decimal inches, then repeated Conv → Inch → fractional inches.
 - Physical benchmark target: 28 ft 2-19/32 in → 28.21615 ft → 338.5938 in → 338 19/32 in.

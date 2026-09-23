@@ -12,7 +12,10 @@ let fractionNumerator=null;
 let fractionDenominatorText="";
 
 let acc=null, accKind=null, op=null, result=0, resultKind="length", justEquals=false, convArmed=false;
-let conversionMode=null; // V9.15: null, ftDecimal, inDecimal, or inFraction.
+let conversionMode=null; // null, ftDecimal, inDecimal, or inFraction.
+
+// V9.16 EXP entry: mantissa × 10^exponent.
+let expMode=false, expBase=null, expDigits="", expNegative=false;
 
 // V9.0 roof-triangle memory. Lengths are stored internally in inches.
 let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null, roofHipV=null;
@@ -200,6 +203,11 @@ function startFreshIfNeeded(){
 }
 function digit(d){
   conversionMode=null;
+  if(expMode){
+    expDigits=(expDigits==="0")?d:expDigits+d;
+    renderExp();
+    return;
+  }
   rwallActive=false;
   startFreshIfNeeded();
   if(fractionNumerator!==null) fractionDenominatorText+=d;
@@ -208,6 +216,7 @@ function digit(d){
 }
 function decimal(){
   conversionMode=null;
+  if(expMode) return;
   startFreshIfNeeded();
   if(fractionNumerator!==null) return;
   if(!entry.includes(".")) entry=entry===""?"0.":entry+".";
@@ -342,6 +351,17 @@ function setOp(next){
   render();
 }
 function equals(){
+  if(expMode){
+    if(expDigits==="") return;
+    const exponent=(expNegative?-1:1)*Number(expDigits);
+    const value=expBase*Math.pow(10,exponent);
+    expressionParts=[`${dec(expBase,6)} EXP ${expNegative?"−":""}${expDigits}`,"="];
+    expMode=false; expBase=null; expDigits=""; expNegative=false;
+    resetOperand(); acc=null; accKind=null; op=null;
+    result=value; resultKind="scalar"; justEquals=true; convArmed=false;
+    render();
+    return;
+  }
   if(!hasOperand() && !(op && acc!==null)) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
 
@@ -591,11 +611,13 @@ function clearAll(){
   render();
 }
 function clearKey(){
+  if(expMode){ expMode=false; expBase=null; expDigits=""; expNegative=false; }
   if(clearPending){ clearAll(); return; }
   // Match the Trig Plus II: one C clears only the current entry/result state.
   // Stored roof geometry, pitches and Jack O.C. remain available.
   resetOperand(); acc=null; accKind=null; op=null; result=0; resultKind="length";
   justEquals=false; convArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null;
+  expMode=false; expBase=null; expDigits=""; expNegative=false;
   jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleStage=0;
   // Physical Trig Plus II: one C preserves the stored circle diameter; double C clears it via clearAll().
   clearPending=true;
@@ -748,6 +770,32 @@ function sqrtSquareKey(square=false){
   $("#cmFeet").textContent="—";
 }
 
+function renderExp(){
+  const exponentText=(expNegative?"−":"")+(expDigits||"");
+  // The Trig Plus II shifts the mantissa and shows a decimal point while the exponent is entered.
+  $("#cmMain").textContent=`${dec(expBase,6)}.  ${exponentText}`;
+  $("#cmHistory").textContent=`${dec(expBase,6)} EXP ${exponentText}`.trim();
+  $("#cmAlt").textContent="EXP";
+  $("#cmExact").previousElementSibling.textContent="VALUE";
+  $("#cmFeet").previousElementSibling.textContent="VALUE";
+  $("#cmExact").textContent="—";
+  $("#cmFeet").textContent="—";
+}
+
+function expKey(){
+  // V9.16 physical benchmarks:
+  // 2 EXP 3 = 2000; 2 EXP -3 = 0.002; 1.5 EXP 4 = 15000.
+  convArmed=false;
+  if(!hasOperand() || hasUnits || fractionNumerator!==null){
+    $("#cmAlt").textContent="Enter a unitless mantissa first.";
+    return;
+  }
+  expBase=operandValue();
+  resetOperand();
+  expMode=true; expDigits=""; expNegative=false; justEquals=false;
+  renderExp();
+}
+
 function reciprocalKey(){
   // V9.11 physical benchmarks: 4 → Conv → ÷ = 0.25;
   // 3 → Conv → ÷ = 0.333333; 0 → Conv → ÷ = Error 1.
@@ -803,6 +851,11 @@ function signToggleKey(){
   // V9.14 physical benchmarks: 25 → Conv → − = -25; repeat = 25;
   // 10 + 3 → Conv → − → = = 7. Treat the toggled value as the current operand.
   convArmed=false;
+  if(expMode){
+    expNegative=!expNegative;
+    renderExp();
+    return;
+  }
   if(!hasOperand()) return;
 
   if(fractionNumerator!==null && !fractionDenominatorText) return;
@@ -836,6 +889,7 @@ function secondaryKey(name){
   if(name==="arc"){ arcKey(); return true; }
   if(name==="square"){ sqrtSquareKey(true); return true; }
   if(name==="reciprocal"){ reciprocalKey(); return true; }
+  if(name==="exp"){ expKey(); return true; }
   if(name==="ac"){
     // V9.12 physical validation: Conv → × (gold AC) immediately clears
     // current input/results and all stored geometry/settings, displaying 0.
