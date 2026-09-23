@@ -757,6 +757,17 @@ function reciprocalKey(){
   $("#cmFeet").textContent="—";
 }
 
+function piKey(){
+  // V9.13 physical benchmarks: Conv → + = PI 3.141593;
+  // 2 → × → Conv → + → = = 6.283185. Keep full Math.PI internally.
+  convArmed=false;
+  resetOperand();
+  entry=String(Math.PI);
+  resultKind="scalar";
+  justEquals=false;
+  setLabeledDisplay("Pi","PI",dec(Math.PI,6),"");
+}
+
 function secondaryNotValidated(name){
   convArmed=false;
   $("#cmAlt").textContent=`${name} recognized — function not yet validated.`;
@@ -776,6 +787,7 @@ function secondaryKey(name){
     clearAll();
     return true;
   }
+  if(name==="pi"){ piKey(); return true; }
   const labels={rwall:"R/Wall",arc:"Arc",square:"x²",ftin:"Ft-In",exp:"EXP",reciprocal:"1/x",ac:"AC",pi:"π",sign:"+/−"};
   secondaryNotValidated(labels[name]||name); return true;
 }

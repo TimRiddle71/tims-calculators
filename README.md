@@ -234,3 +234,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Physical benchmark: after storing 12 ft Run and 5 ft Rise, `Conv → ×` displays `0`; pressing `Diag` afterward displays `DIAG 0`.
 - Updated in-app/footer version labels to V9.12.
 - Service-worker cache bumped to V9.12.
+
+
+## V9.13 — π
+- Added validated gold `Conv → +` π constant.
+- Standalone π displays `PI   3.141593`.
+- π retains full internal precision for arithmetic; physical benchmark `2 × π = 6.283185`.
+- Updated in-app/footer version labels and service-worker cache to V9.13.
