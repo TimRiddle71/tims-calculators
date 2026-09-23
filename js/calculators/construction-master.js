@@ -426,7 +426,10 @@ function showConverted(unit){
     conversionMode="ftDecimal";
     $("#cmMain").textContent=`${dec(vInches/12,6)} ft`;
     $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
-  }else if(repeatInch){
+  }else if(unit==="in"){
+    // V9.21.4: Trig Plus II normalizes linear inch conversions to the
+    // nearest 1/64-inch fraction on the first Conv → Inch press. Repeated
+    // Conv → Inch leaves the fractional representation unchanged.
     conversionMode="inFraction";
     $("#cmMain").textContent=inchesOnly(vInches);
     $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
