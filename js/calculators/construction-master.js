@@ -53,7 +53,7 @@ let committedOperandText="";
 
 const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
 const clean=n=>Math.abs(n)<1e-12?0:n;
-const dec=(n,d=6)=>clean(n).toLocaleString(undefined,{maximumFractionDigits:d,useGrouping:false});
+const dec=(n,d=6)=>clean(n).toLocaleString(undefined,{maximumFractionDigits:d,useGrouping:true});
 
 function roundedFraction(value,den=64){
   const sign=value<0?"−":"", a=Math.abs(value);

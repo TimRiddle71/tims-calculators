@@ -260,3 +260,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Adds validated `Cu` entry with Feet, Inch, Yds, m, and mm.
 - Adds validated cubic conversions including in³→ft³, ft³→yd³, yd³→ft³, m³→ft³, and mm³→m³.
 - Preserves V9.17 d:m:s and all prior validated Trestle behavior.
+
+
+## V9.18.1 — Trestle thousands separators
+- Added comma grouping to ordinary numeric display values (for example, 1,000,000 cu. mm).
+- Specialized feet/inches and DMS formatting remains unchanged.
+- No calculator math or keypad layout changes.
