@@ -17,6 +17,10 @@ let conversionMode=null; // null, ftDecimal, inDecimal, or inFraction.
 // V9.16 EXP entry: mantissa × 10^exponent.
 let expMode=false, expBase=null, expDigits="", expNegative=false;
 
+// V9.17 d:m:s toggle: decimal degrees ↔ degrees/minutes/seconds.
+let dmsValue=null;
+let dmsStage=null; // "deg" or "dms"
+
 // V9.0 roof-triangle memory. Lengths are stored internally in inches.
 let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null, roofHipV=null;
 let roofEnteredRun=null, roofEnteredRise=null, roofEnteredDiag=null;
@@ -876,6 +880,52 @@ function signToggleKey(){
   render();
 }
 
+function dmsKey(){
+  // V9.17 physical benchmarks:
+  // 30.5 → d:m:s = DEG 30.5°; next press = DMS 30.30.00°; next = DEG 30.5°.
+  // 30.5125° = DMS 30.30.45°. Seconds round to nearest whole second:
+  // 30.5126 → 30.30.45° and 30.5127 → 30.30.46°.
+  convArmed=false;
+
+  if(hasOperand()){
+    if(hasUnits || fractionNumerator!==null){
+      $("#cmAlt").textContent="Enter a unitless degree value first.";
+      return;
+    }
+    dmsValue=operandValue();
+    dmsStage="deg";
+    resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
+  }else if(dmsValue===null){
+    // Permit toggling a scalar result if one is already on screen.
+    if(resultKind!=="scalar") { $("#cmAlt").textContent="Enter a degree value first."; return; }
+    dmsValue=result;
+    dmsStage="deg";
+  }else{
+    dmsStage=dmsStage==="deg"?"dms":"deg";
+  }
+
+  resultKind="scalar"; result=dmsValue;
+  $("#cmHistory").textContent="Degrees / DMS";
+  $("#cmAlt").textContent="";
+  $("#cmExact").previousElementSibling.textContent="VALUE";
+  $("#cmFeet").previousElementSibling.textContent="VALUE";
+  $("#cmExact").textContent="—";
+  $("#cmFeet").textContent="—";
+
+  let tag="DEG", value=`${dec(dmsValue,6)}°`;
+  if(dmsStage==="dms"){
+    tag="DMS";
+    const neg=dmsValue<0;
+    let totalSeconds=Math.round(Math.abs(dmsValue)*3600);
+    const deg=Math.floor(totalSeconds/3600);
+    totalSeconds-=deg*3600;
+    const min=Math.floor(totalSeconds/60);
+    const sec=totalSeconds-min*60;
+    value=`${neg?"−":""}${deg}.${String(min).padStart(2,"0")}.${String(sec).padStart(2,"0")}°`;
+  }
+  $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">${tag}</span><span class="cm-jack-value">${value}</span></span>`;
+}
+
 function secondaryNotValidated(name){
   convArmed=false;
   $("#cmAlt").textContent=`${name} recognized — function not yet validated.`;
@@ -926,5 +976,6 @@ export function initConstruction(){
   document.querySelectorAll("[data-cm-trig]").forEach(b=>b.addEventListener("click",()=>trigKey(b.dataset.cmTrig)));
   document.querySelectorAll("[data-cm-primary]").forEach(b=>b.addEventListener("click",()=>{ if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else if(b.dataset.cmPrimary==="circ") circKey(); else if(b.dataset.cmPrimary==="sqrt") sqrtSquareKey(false); else $("#cmAlt").textContent=`${b.textContent.trim()} not yet validated.`; }));
   document.querySelector('[data-cm="jack"]').addEventListener("click",e=>{ const b=e.currentTarget; if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else jackKey(false); });
+  document.querySelector('[data-cm="dms"]').addEventListener("click",dmsKey);
   render();
 }
