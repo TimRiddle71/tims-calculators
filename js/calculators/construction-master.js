@@ -869,6 +869,12 @@ function roofHistory(requested){
   bits.push(requested);
   return bits.join(" → ");
 }
+// V9.23.18: physical Trig Plus II roof identifiers (function label left, value right),
+// using the existing tagged-display markup (same as Jk / RW / DEG).
+const ROOF_TAGS={Pitch:"PTCH",Rise:"RISE",Run:"RUN",Diag:"DIAG","Hip/V":"H/V"};
+function showRoofTag(label,text){
+  $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">${ROOF_TAGS[label]||label}</span><span class="cm-jack-value">${text}</span></span>`;
+}
 function setRoofDisplay(label,value,kind="length"){
   resetOperand();
   acc=null; accKind=null; op=null; convArmed=false; justEquals=true;
@@ -877,15 +883,21 @@ function setRoofDisplay(label,value,kind="length"){
     resultKind="scalar";
     result=value;
     $("#cmHistory").textContent=roofHistory(label);
-    $("#cmMain").textContent=`${dec(value,5)}°`;
+    showRoofTag(label,`${dec(value,5)}°`); // V9.23.18: PTCH 22.61986°
     $("#cmExact").previousElementSibling.textContent="ROOF ANGLE";
     $("#cmFeet").previousElementSibling.textContent="PITCH";
     $("#cmExact").textContent=`${dec(value,5)}°`;
     $("#cmFeet").textContent=`${dec(value,5)}°`;
     $("#cmAlt").textContent="";
+  }else if(kind==="scalar"){
+    // V9.23.18: unitless roof value or no-data Diag (physical: RUN 12, RISE 5, DIAG 0)
+    resultKind="scalar"; result=value;
+    render();
+    showRoofTag(label,dec(value,6));
   }else{
     resultKind="length"; result=value;
     render();
+    showRoofTag(label,feetInches(value)); // V9.23.18: RISE / RUN / DIAG / H/V + feet-inches
   }
 }
 function solveRoof(){
@@ -919,7 +931,14 @@ function roofKey(which){
   }
   // If a dimension is currently entered, store it under the selected roof key.
   if(hasOperand()){
-    if(!hasUnits) return; // roof dimensions must be dimensional entries
+    if(!hasUnits){
+      // V9.23.18: physical 12 Run → RUN 12 and 5 Rise → RISE 5 (unitless stays unitless).
+      // Display only: whether a unitless value is stored in the roof geometry has
+      // not been physically tested, so the stored roof values are left unchanged.
+      if(which==="run"){ setRoofDisplay("Run",operandValue(),"scalar"); return; }
+      if(which==="rise"){ setRoofDisplay("Rise",operandValue(),"scalar"); return; }
+      return; // other roof keys: unchanged (unitless entry ignored)
+    }
     const v=operandValue();
     if(which==="run"){ roofRun=v; roofEnteredRun=v; }
     else if(which==="rise"){ roofRise=v; roofEnteredRise=v; }
@@ -945,6 +964,8 @@ function roofKey(which){
   if(which==="diag" && roofDiag!==null){ setRoofDisplay("Diag",roofDiag); return; }
   if(which==="hipv" && roofHipV!==null){ setRoofDisplay("Hip/V",roofHipV); return; }
   if(which==="pitch" && roofPitch!==null){ setRoofDisplay("Pitch",roofPitch,"angle"); return; }
+  // V9.23.18: physical Diag with no roof geometry shows DIAG 0 (scalar zero).
+  if(which==="diag"){ setRoofDisplay("Diag",0,"scalar"); return; }
 
   $("#cmAlt").textContent="Enter two roof dimensions first.";
 }

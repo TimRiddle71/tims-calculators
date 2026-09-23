@@ -451,3 +451,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Unchanged: single C still keeps the hidden completed result (5 × 5 = C = = → 25, 125); C C keeps M-1/M-2; AC clears memory, EXP, DMS and restores the 16 in Jack O.C.
 - SPEC-02 and SPEC-04 now show 0 instead of 0 ft 0 in but remain known failures (they need a DIAG 0 roof recall with its label — later roof repair).
 - Regression suite: JACK-07, EXP-04, DMS-05, DMS-06, DMS-07 graduated; CORE-25, CORE-26, SPEC-01 NOW PASSING; added SPEC-06 (power-on display, no keys pressed).
+
+## V9.23.18
+- Roof results now show the physical Trig Plus II function identifiers, label left and value right, using the existing tagged display: PTCH 22.61986°, RISE 5 ft 0 in, RUN 12 ft 0 in, DIAG 13 ft 0 in, H/V 17 ft 8 19/64 in.
+- Unitless Run/Rise entries display as unitless labeled values (12 Run → RUN 12; 5 Rise → RISE 5). Whether a unitless value is stored in the roof geometry is not yet physically tested, so the stored roof values are unchanged for unitless entries.
+- Diag with no roof geometry now shows DIAG 0 (scalar zero), fixing the no-data behavior after AC and C C. Power-on, C, C C and AC still show a plain 0.
+- Roof calculations, R/Wall, Jack and pending-arithmetic behavior are unchanged.
+- Regression suite: CORE-25, CORE-26, SPEC-01, SPEC-06 graduated; ROOF-01 to ROOF-05 and SPEC-03 expected values now include the physical identifiers; added ROOF-08 (unitless Rise) and ROOF-09 (no-data Diag).
