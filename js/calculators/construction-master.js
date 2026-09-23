@@ -12,6 +12,7 @@ let fractionNumerator=null;
 let fractionDenominatorText="";
 
 let acc=null, accKind=null, op=null, result=0, resultKind="length", justEquals=false, convArmed=false;
+let conversionMode=null; // V9.15: null, ftDecimal, inDecimal, or inFraction.
 
 // V9.0 roof-triangle memory. Lengths are stored internally in inches.
 let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null, roofHipV=null;
@@ -86,7 +87,7 @@ function liveOperandText(){
 
   if(hasInches){
     let inchText=dec(enteredInches,6);
-    if(fractionNumerator!==null && fractionDenominatorText){
+    if(fractionNumerator!==null){
       inchText += `-${fractionNumerator}/${fractionDenominatorText}`;
       parts.push(`${inchText} in`);
       return parts.join(" ");
@@ -198,6 +199,7 @@ function startFreshIfNeeded(){
   }
 }
 function digit(d){
+  conversionMode=null;
   rwallActive=false;
   startFreshIfNeeded();
   if(fractionNumerator!==null) fractionDenominatorText+=d;
@@ -205,6 +207,7 @@ function digit(d){
   render();
 }
 function decimal(){
+  conversionMode=null;
   startFreshIfNeeded();
   if(fractionNumerator!==null) return;
   if(!entry.includes(".")) entry=entry===""?"0.":entry+".";
@@ -215,28 +218,49 @@ function valueForConversion(){
   return result;
 }
 function showConverted(unit){
-  const v=valueForConversion();
-  result=v;
+  const live=hasOperand();
+  const liveKind=operandKind();
+  const raw=live ? operandValue() : result;
+
+  // Trig Plus II conversion semantics validated in V9.15:
+  // - A unitless number followed by Conv → Feet is interpreted as decimal feet.
+  // - A dimensional length followed by Conv → Feet is shown as decimal feet.
+  // - Conv → Inch shows decimal inches; repeating Conv → Inch toggles to fractional inches.
+  let vInches;
+  if(unit==="ft" && live && liveKind==="scalar") vInches=raw*12;
+  else if(unit==="in" && live && liveKind==="scalar") vInches=raw;
+  else vInches=raw;
+
+  const repeatInch = unit==="in" && conversionMode==="inDecimal" && !live;
+
+  result=vInches;
   resetOperand();
   expressionParts=[];
   acc=null; accKind=null; op=null; resultKind="length"; justEquals=true; convArmed=false;
 
+  const exactLabel=$("#cmExact").previousElementSibling;
+  const feetLabel=$("#cmFeet").previousElementSibling;
+  exactLabel.textContent="EXACT INCHES";
+  feetLabel.textContent="DECIMAL FEET";
+  $("#cmExact").textContent=`${dec(vInches,6)} in`;
+  $("#cmFeet").textContent=`${dec(vInches/12,6)} ft`;
+  $("#cmAlt").textContent="";
+
   if(unit==="ft"){
-    // Construction-style result belongs in the primary display.
-    // Decimal feet is already available in the verification box below.
-    $("#cmMain").textContent=feetInches(v);
-    $("#cmHistory").textContent="Converted to feet / inches";
-    $("#cmExact").textContent=`${dec(v,6)} in`;
-    $("#cmFeet").textContent=`${dec(v/12,6)} ft`;
-    $("#cmAlt").textContent="";
+    conversionMode="ftDecimal";
+    $("#cmMain").textContent=`${dec(vInches/12,6)} ft`;
+    $("#cmHistory").textContent="Converted to decimal feet";
+  }else if(repeatInch){
+    conversionMode="inFraction";
+    $("#cmMain").textContent=inchesOnly(vInches);
+    $("#cmHistory").textContent="Converted to fractional inches";
   }else{
-    $("#cmMain").textContent=inchesOnly(v);
-    $("#cmHistory").textContent="Converted to inches";
-    $("#cmExact").textContent=`${dec(v,6)} in`;
-    $("#cmFeet").textContent=`${dec(v/12,6)} ft`;
-    $("#cmAlt").textContent="";
+    conversionMode="inDecimal";
+    $("#cmMain").textContent=`${dec(vInches,6)} in`;
+    $("#cmHistory").textContent="Converted to decimal inches";
   }
 }
+
 function feet(){
   if(convArmed){ showConverted("ft"); return; }
   startFreshIfNeeded();
