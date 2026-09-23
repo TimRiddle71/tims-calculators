@@ -27,6 +27,10 @@ let cubicArmed=false;
 // V9.19 square-unit entry. Internal area unit is square inches.
 let squareArmed=false;
 
+// V9.20 linear metric entry/conversion. Internal length unit remains inches.
+let metricEntryUnit=null;
+let metricEntryValue=null;
+
 // V9.0 roof-triangle memory. Lengths are stored internally in inches.
 let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null, roofHipV=null;
 let roofEnteredRun=null, roofEnteredRise=null, roofEnteredDiag=null;
@@ -95,6 +99,7 @@ function hasOperand(){ return hasUnits || entry!=="" || fractionNumerator!==null
 function operandKind(){ return hasUnits ? "length" : "scalar"; }
 
 function liveOperandText(){
+  if(metricEntryUnit && metricEntryValue!==null) return `${dec(metricEntryValue,6)} ${metricEntryUnit}`;
   const parts=[];
   if(hasFeet) parts.push(`${dec(enteredFeet,6)} ft`);
 
@@ -118,6 +123,7 @@ function liveOperandText(){
 }
 
 function finalizedOperandText(){
+  if(metricEntryUnit && metricEntryValue!==null) return `${dec(metricEntryValue,6)} ${metricEntryUnit}`;
   // Preserve entered units and decimal style, but normalize inch + fraction visually.
   const parts=[];
   if(hasFeet) parts.push(`${dec(enteredFeet,6)} ft`);
@@ -205,6 +211,7 @@ function resetOperand(){
   entry=""; wholeInches=0; enteredFeet=0; enteredInches=0;
   hasFeet=false; hasInches=false; hasUnits=false;
   fractionNumerator=null; fractionDenominatorText="";
+  metricEntryUnit=null; metricEntryValue=null;
 }
 function startFreshIfNeeded(){
   if(justEquals && op===null){
@@ -316,11 +323,40 @@ function showSquareConverted(unit){
   $("#cmFeet").textContent=`${dec(result/144,6)} sq ft`;
   $("#cmAlt").textContent="";
 }
+function setLinearMetricUnit(unit){
+  if((unit!=="m" && unit!=="mm") || entry==="" || hasUnits || fractionNumerator!==null) return false;
+  const n=Number(entry)||0;
+  const inches = unit==="m" ? n*39.37007874015748 : n/25.4;
+  entry=""; wholeInches=inches; hasUnits=true;
+  metricEntryUnit=unit; metricEntryValue=n;
+  convArmed=false; conversionMode=null; justEquals=false;
+  render();
+  return true;
+}
+function showLinearMetricConverted(unit){
+  const raw=valueForConversion();
+  const inches=(hasOperand() && operandKind()==="scalar") ? raw : raw;
+  const v=unit==="m" ? inches*0.0254 : inches*25.4;
+  result=inches; resultKind="length"; justEquals=true; convArmed=false; conversionMode=null;
+  resetOperand(); expressionParts=[]; acc=null; accKind=null; op=null;
+  $("#cmMain").textContent=`${dec(v,6)} ${unit}`;
+  $("#cmHistory").textContent=`Converted to ${unit}`;
+  $("#cmExact").previousElementSibling.textContent="EXACT INCHES";
+  $("#cmFeet").previousElementSibling.textContent="DECIMAL FEET";
+  $("#cmExact").textContent=`${dec(inches,6)} in`;
+  $("#cmFeet").textContent=`${dec(inches/12,6)} ft`;
+  $("#cmAlt").textContent="";
+}
 function dimensionalUnitKey(unit){
   if(convArmed && resultKind==="area" && !hasOperand()){ showSquareConverted(unit); return; }
   if(convArmed && resultKind==="volume" && !hasOperand()){ showCubicConverted(unit); return; }
   if(setSquareUnit(unit)) return;
   if(setCubicUnit(unit)) return;
+  if((unit==="m" || unit==="mm") && convArmed){ showLinearMetricConverted(unit); return; }
+  if(unit==="m" || unit==="mm"){
+    startFreshIfNeeded();
+    if(setLinearMetricUnit(unit)) return;
+  }
   convArmed=false;
   $("#cmAlt").textContent=`${unit} requires Sq or Cu first.`;
 }

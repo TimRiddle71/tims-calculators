@@ -271,3 +271,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 ## V9.19
 - Added physically validated Sq square-unit entry and area conversions for in, ft, yd, m, and mm.
 - Preserved V9.18.1 thousands-separator display behavior.
+
+
+## V9.20
+- Added validated linear meter (`m`) and millimeter (`mm`) entry.
+- Added validated linear conversions between metric lengths and the existing feet/inches engine.
+- Preserved V9.19 square/cubic metric behavior and V9.18.1 thousands separators.
