@@ -301,3 +301,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Added validated linear yard entry with `Yds`.
 - Added linear yard conversions through `Conv`, including yards to feet/inches and feet/inches to yards.
 - Preserved existing square/cubic yard behavior and V9.20.3 chained conversion fixes.
+
+
+## V9.21.1
+- Conversion history now shows the value immediately before the conversion and the resulting value using an arrow (for example, `1 cu. yd. → 27 cu. ft.`).
+- Applies to linear, square, cubic, metric, yard, feet, and inch conversions.
+- Chained conversions use the immediately preceding displayed value as the source.
+- Calculation behavior is unchanged from V9.21.

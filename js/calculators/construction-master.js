@@ -270,13 +270,15 @@ function showCubicConverted(unit){
   const factors={in:1,ft:1728,yd:46656,m:61023.7440947323,mm:0.0000610237440947323};
   const labels={in:"cu. in.",ft:"cu. ft.",yd:"cu. yd.",m:"cu. m",mm:"cu. mm"};
   const v=result/factors[unit];
+  const sourceDisplay=$("#cmMain").textContent;
   convArmed=false; conversionMode=null; justEquals=true;
   // Match physically validated Trig Plus II display precision.
   // 1 m³ → ft³ = 35.31467; then → in³ = 61023.74.
   const shown = unit==="in" ? dec(v,2)
     : (unit==="ft" && Math.abs(v-Math.round(v))>1e-12 ? dec(v,5) : dec(v,6));
-  $("#cmMain").textContent=`${shown} ${labels[unit]}`;
-  $("#cmHistory").textContent=`Converted to ${labels[unit]}`;
+  const convertedDisplay=`${shown} ${labels[unit]}`;
+  $("#cmMain").textContent=convertedDisplay;
+  $("#cmHistory").textContent=`${sourceDisplay} → ${convertedDisplay}`;
   $("#cmExact").previousElementSibling.textContent="CUBIC INCHES";
   $("#cmFeet").previousElementSibling.textContent="CUBIC FEET";
   $("#cmExact").textContent=`${dec(result,6)} cu in`;
@@ -320,9 +322,11 @@ function showSquareConverted(unit){
   const factors={in:1,ft:144,yd:1296,m:1550.0031000062,mm:0.0015500031000062};
   const labels={in:"sq. in.",ft:"sq. ft.",yd:"sq. yd.",m:"sq. m",mm:"sq. mm"};
   const v=result/factors[unit];
+  const sourceDisplay=$("#cmMain").textContent;
   convArmed=false; conversionMode=null; justEquals=true;
-  $("#cmMain").textContent=`${dec(v,6)} ${labels[unit]}`;
-  $("#cmHistory").textContent=`Converted to ${labels[unit]}`;
+  const convertedDisplay=`${dec(v,6)} ${labels[unit]}`;
+  $("#cmMain").textContent=convertedDisplay;
+  $("#cmHistory").textContent=`${sourceDisplay} → ${convertedDisplay}`;
   $("#cmExact").previousElementSibling.textContent="SQUARE INCHES";
   $("#cmFeet").previousElementSibling.textContent="SQUARE FEET";
   $("#cmExact").textContent=`${dec(result,6)} sq in`;
@@ -340,13 +344,15 @@ function setLinearMetricUnit(unit){
   return true;
 }
 function showLinearMetricConverted(unit){
+  const sourceDisplay=$("#cmMain").textContent;
   const raw=valueForConversion();
   const inches=(hasOperand() && operandKind()==="scalar") ? raw : raw;
   const v=unit==="m" ? inches*0.0254 : unit==="mm" ? inches*25.4 : inches/36;
   result=inches; resultKind="length"; justEquals=true; convArmed=false; conversionMode=null;
   resetOperand(); expressionParts=[]; acc=null; accKind=null; op=null;
-  $("#cmMain").textContent=`${dec(v,6)} ${unit}`;
-  $("#cmHistory").textContent=`Converted to ${unit}`;
+  const convertedDisplay=`${dec(v,6)} ${unit}`;
+  $("#cmMain").textContent=convertedDisplay;
+  $("#cmHistory").textContent=`${sourceDisplay} → ${convertedDisplay}`;
   $("#cmExact").previousElementSibling.textContent="EXACT INCHES";
   $("#cmFeet").previousElementSibling.textContent="DECIMAL FEET";
   $("#cmExact").textContent=`${dec(inches,6)} in`;
@@ -371,6 +377,7 @@ function valueForConversion(){
   return result;
 }
 function showConverted(unit){
+  const sourceDisplay=$("#cmMain").textContent;
   const live=hasOperand();
   const liveKind=operandKind();
   const raw=live ? operandValue() : result;
@@ -405,19 +412,19 @@ function showConverted(unit){
   if(metricToFeet){
     conversionMode="ftInFraction";
     $("#cmMain").textContent=feetInches(vInches);
-    $("#cmHistory").textContent="Converted to ft / in";
+    $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
   }else if(unit==="ft"){
     conversionMode="ftDecimal";
     $("#cmMain").textContent=`${dec(vInches/12,6)} ft`;
-    $("#cmHistory").textContent="Converted to decimal feet";
+    $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
   }else if(repeatInch){
     conversionMode="inFraction";
     $("#cmMain").textContent=inchesOnly(vInches);
-    $("#cmHistory").textContent="Converted to fractional inches";
+    $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
   }else{
     conversionMode="inDecimal";
     $("#cmMain").textContent=`${dec(vInches,6)} in`;
-    $("#cmHistory").textContent="Converted to decimal inches";
+    $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
   }
 }
 
