@@ -349,3 +349,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 ## V9.23.2
 - Fixed Rcl as the second operand so the RCL prompt no longer clears the pending accumulator/operator.
 - Example: 3 ft → Stor → 1; 4 ft × Rcl → 1 → = now produces 12 sq. ft.
+
+
+## V9.23.3
+- Fixed validated area ÷ length dimensional arithmetic.
+- 24 sq. ft. ÷ 6 ft = 4 ft 0 in.
+- 100 sq. ft. ÷ 20 ft = 5 ft 0 in.
+- Preserves prior V9.23.2 behavior.

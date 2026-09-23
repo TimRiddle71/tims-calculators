@@ -532,12 +532,17 @@ function applyTyped(a,aKind,b,bKind,o){
 }
 function setOp(next){
   percentJustApplied=false;
-  if(!hasOperand() && !recalledValue) return;
+  // V9.23.3: Sq-unit entry stores the completed area in result/resultKind
+  // rather than the live operand fields. Allow that completed area to become
+  // the dividend when ÷ is pressed (e.g. 24 sq ft ÷ 6 ft = 4 ft).
+  const fromAreaResult=!hasOperand() && !recalledValue && justEquals && resultKind==="area" && next==="divide";
+  if(!hasOperand() && !recalledValue && !fromAreaResult) return;
   if(fractionNumerator!==null && !fractionDenominatorText) return;
 
   const fromMemory=!hasOperand() && recalledValue;
-  const v=fromMemory?recalledValue.value:operandValue(), kind=fromMemory?recalledValue.kind:operandKind();
-  const text=fromMemory?memoryValueText(recalledValue):finalizedOperandText();
+  const v=fromMemory?recalledValue.value:(fromAreaResult?result:operandValue());
+  const kind=fromMemory?recalledValue.kind:(fromAreaResult?resultKind:operandKind());
+  const text=fromMemory?memoryValueText(recalledValue):(fromAreaResult?$("#cmMain").textContent:finalizedOperandText());
   recalledValue=null;
 
   if(acc===null){ acc=v; accKind=kind; }
