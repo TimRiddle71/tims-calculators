@@ -95,6 +95,9 @@ const KF = {
   acExp: "AC does not leave EXP entry mode.",
   staleDms: "DMS state is never cleared, so an old angle resurfaces on the next d:m:s.",
   roofNoData: "After clearing, Diag with no roof data shows a message instead of a zero recall, the roof label is missing, and the cleared zero shows as 0 ft 0 in (R10).",
+  roofUnitless: "V9.23.18 displays unitless Run/Rise but does not store them in the roof geometry.",
+  roofOperand2: "Roof recall clears the pending calculation instead of supplying operand #2.",
+  memLabel: "R6: Stor copies the whole display text, so a labeled roof result is stored as 'DIAG13 ft 0 in'.",
   missingOperand: "V9.23.12: an operator with no second number treats the missing operand as 0 (5 × = shows 0). Physical shows 5.",
   repeatEquals: "V9.23.12: pressing = again after a completed calculation does nothing. Physical replays the last operator and operand #2.",
   sqrtOperand2: "V9.23.5: √ clears the pending operator (sqrtSquareKey line 1115) instead of supplying operand #2.",
@@ -347,24 +350,31 @@ T({ id:"FRAC-04", category:"Fractions", name:"Fraction finished with Inch: 3 / 3
 
 /* ================================== ROOF ================================= */
 T({ id:"ROOF-01", category:"Roof", name:"12 ft Run, 5 ft Rise → Diag",
-    keys:"12 Feet Run 5 Feet Rise Diag", expect:"DIAG 13 ft 0 in", status:VALIDATED, knownFail:KF.roofLabel, notes:"Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers). Previously recorded without the DIAG identifier." });
+    keys:"12 Feet Run 5 Feet Rise Diag", expect:"DIAG 13 ft 0 in", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers). Previously recorded without the DIAG identifier." });
 T({ id:"ROOF-02", category:"Roof", name:"12 ft Run, 5 ft Rise → Pitch",
-    keys:"12 Feet Run 5 Feet Rise Pitch", expect:"PTCH 22.61986°", status:VALIDATED, knownFail:KF.roofLabel, notes:"Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers). Identifier is PTCH." });
+    keys:"12 Feet Run 5 Feet Rise Pitch", expect:"PTCH 22.61986°", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers). Identifier is PTCH." });
 T({ id:"ROOF-03", category:"Roof", name:"12 ft Run, 5 ft Rise → Hip/V",
-    keys:"12 Feet Run 5 Feet Rise Hip/V", expect:"H/V 17 ft 8-19/64 in", status:VALIDATED, knownFail:KF.roofLabel, notes:"Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers). Identifier is H/V." });
+    keys:"12 Feet Run 5 Feet Rise Hip/V", expect:"H/V 17 ft 8-19/64 in", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers). Identifier is H/V." });
 T({ id:"ROOF-04", category:"Roof", name:"Recall Rise and Run",
     steps:[ {keys:"12 Feet Run 5 Feet Rise Rise", expect:"RISE 5 ft 0 in"}, {keys:"Run", expect:"RUN 12 ft 0 in"} ],
-    status:VALIDATED, knownFail:KF.roofLabel, notes:"V9.0 expected recalls. Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers)." });
+    status:VALIDATED, notes:"V9.0 expected recalls. Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers)." });
 T({ id:"ROOF-05", category:"Roof", name:"14 ft 7 in Run, 6 ft 3 in Rise → Hip/V",
-    keys:"14 Feet 7 Inch Run 6 Feet 3 Inch Rise Hip/V", expect:"H/V 21 ft 6-39/64 in", status:VALIDATED, knownFail:KF.roofLabel, notes:"V9.3 physical target; H/V identifier per Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers)." });
+    keys:"14 Feet 7 Inch Run 6 Feet 3 Inch Rise Hip/V", expect:"H/V 21 ft 6-39/64 in", status:VALIDATED, notes:"V9.3 physical target; H/V identifier per Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers)." });
 T({ id:"ROOF-06", category:"Roof", name:"Unitless value then Run: 12 Run",
-    keys:"12 Run", expect:"RUN 12", status:VALIDATED, knownFail:KF.roofLabel, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    keys:"12 Run", expect:"RUN 12", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 T({ id:"ROOF-08", category:"Roof", name:"Unitless value then Rise: 5 Rise",
-    keys:"5 Rise", expect:"RISE 5", status:VALIDATED, knownFail:KF.roofLabel, notes:"Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers). Unitless stays unitless." });
+    keys:"5 Rise", expect:"RISE 5", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers). Unitless stays unitless." });
 T({ id:"ROOF-09", category:"Roof", name:"Diag with no roof data",
-    keys:"Diag", expect:"DIAG 0", status:VALIDATED, knownFail:KF.roofNoData, notes:"Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers)." });
+    keys:"Diag", expect:"DIAG 0", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers)." });
+T({ id:"ROOF-10", category:"Roof", name:"Unitless Run and Rise are stored: 12 Run 5 Rise Diag",
+    steps:[ {keys:"12 Run", expect:"RUN 12"}, {keys:"5 Rise", expect:"RISE 5"}, {keys:"Diag", expect:"DIAG 13"} ],
+    status:VALIDATED, knownFail:KF.roofUnitless, notes:"Physically confirmed Sept. 23, 2026 (V9.23.19). Unitless roof geometry stays unitless." });
+T({ id:"ROOF-11", category:"Roof", name:"Diag as operand #2: 5 ft × Diag =",
+    steps:[ {keys:"12 Feet Run 5 Feet Rise 5 Feet × Diag", expect:"DIAG 13 ft 0 in"}, {keys:"=", expect:"65 sq. ft."} ],
+    match:"units-loose", status:VALIDATED, knownFail:KF.roofOperand2,
+    notes:"Physically confirmed Sept. 23, 2026 (V9.23.19). Unit punctuation (sq. ft. vs sq ft) is checked separately by FMT-01." });
 T({ id:"ROOF-07", category:"Roof", name:"Roof recall during arithmetic: 5 ft × Diag",
-    keys:"12 Feet Run 5 Feet Rise 5 Feet × Diag", expect:"DIAG 13 ft 0 in", status:VALIDATED, knownFail:KF.roofLabel,
+    keys:"12 Feet Run 5 Feet Rise 5 Feet × Diag", expect:"DIAG 13 ft 0 in", status:VALIDATED,
     notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification). Display immediately after Diag." });
 
 /* ========================== JACK / IRREGULAR JACK ======================== */
@@ -448,6 +458,9 @@ T({ id:"MEM-06", category:"Memory", name:"Circle AREA stored to M-1",
     keys:"10 Inch Circ Circ Stor 1", expect:"M-1 78.53982 sq. in.", status:VALIDATED, knownFail:KF.circleAreaMemory + " Display also: " + KF.precision7 + " Also, the stored display text runs the tag into the value ('M-1 AREA78.539816 sq. in.') because snapshotCurrentValue() copies #cmMain text without a space." });
 T({ id:"MEM-07", category:"Memory", name:"2 × stored circle area",
     keys:"10 Inch Circ Circ Stor 1 C C 2 × Rcl 1 =", expect:"157.0796 sq. in.", status:VALIDATED, knownFail:KF.circleAreaMemory });
+T({ id:"MEM-09", category:"Memory", name:"Stored roof result keeps its value, not its label",
+    keys:"12 Feet Run 5 Feet Rise Diag Stor 1 Rcl 1", expect:"M-1 13 ft 0 in", status:VALIDATED, knownFail:KF.memLabel,
+    notes:"Physically confirmed Sept. 23, 2026 (V9.23.19). The DIAG identifier is display only; the memory display should not include it." });
 T({ id:"MEM-08", category:"Memory", name:"Stor completes pending arithmetic: 10 × 5 Stor 1",
     keys:"10 × 5 Stor 1", expect:"M-1 50", status:VALIDATED, knownFail:KF.storPending, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
@@ -512,9 +525,9 @@ T({ id:"DMS-05", category:"DMS", name:"AC clears DMS state",
 T({ id:"SPEC-01", category:"Special / Clear Behavior", name:"AC display", keys:"12 Feet Run 5 Feet Rise Conv ×", expect:"0",
     status:VALIDATED, notes:"V9.12 physical benchmark." });
 T({ id:"SPEC-02", category:"Special / Clear Behavior", name:"AC clears roof: Diag afterwards", keys:"12 Feet Run 5 Feet Rise Conv × Diag", expect:"DIAG 0",
-    status:VALIDATED, knownFail:KF.acDiag, notes:"V9.12 physical benchmark." });
+    status:VALIDATED, notes:"V9.12 physical benchmark." });
 T({ id:"SPEC-03", category:"Special / Clear Behavior", name:"One C keeps roof geometry",
-    keys:"12 Feet Run 5 Feet Rise C Diag", expect:"DIAG 13 ft 0 in", status:BASELINE, knownFail:KF.roofLabel,
+    keys:"12 Feet Run 5 Feet Rise C Diag", expect:"DIAG 13 ft 0 in", status:BASELINE,
     notes:"V9.x: one C keeps stored roof geometry (code comment in clearKey). DIAG identifier added per Physically confirmed Sept. 23, 2026 (V9.23.18 roof identifiers)." });
 T({ id:"SPEC-05", category:"Special / Clear Behavior", name:"Error 3 is not latched: new entry starts fresh without C",
     steps:[ {keys:"3 + 5 Feet +", expect:"Error 3"}, {keys:"2 + 2 =", expect:"4"} ], status:VALIDATED,
@@ -523,4 +536,4 @@ T({ id:"SPEC-06", category:"Special / Clear Behavior", name:"Power-on display (n
     keys:"", expect:"0", status:VALIDATED,
     notes:"Physically confirmed: turning the calculator on shows a plain 0." });
 T({ id:"SPEC-04", category:"Special / Clear Behavior", name:"C C then Diag (roof cleared)",
-    keys:"12 Feet Run 5 Feet Rise C C Diag", expect:"DIAG 0", status:VALIDATED, knownFail:KF.roofNoData, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    keys:"12 Feet Run 5 Feet Rise C C Diag", expect:"DIAG 0", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });

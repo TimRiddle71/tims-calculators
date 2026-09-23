@@ -458,3 +458,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Diag with no roof geometry now shows DIAG 0 (scalar zero), fixing the no-data behavior after AC and C C. Power-on, C, C C and AC still show a plain 0.
 - Roof calculations, R/Wall, Jack and pending-arithmetic behavior are unchanged.
 - Regression suite: CORE-25, CORE-26, SPEC-01, SPEC-06 graduated; ROOF-01 to ROOF-05 and SPEC-03 expected values now include the physical identifiers; added ROOF-08 (unitless Rise) and ROOF-09 (no-data Diag).
+
+## V9.23.19
+- Unitless Run and Rise are now stored as roof geometry and stay unitless (physical: 12 Run → RUN 12; 5 Rise → RISE 5; Diag → DIAG 13). Dimensional roof behavior is unchanged. Unitless Diag/Pitch/Hip/V entries are still ignored (not physically tested).
+- A recalled Diag now supplies the second number of a pending calculation instead of clearing it (physical: 12 ft Run 5 ft Rise 5 ft × Diag → DIAG 13 ft 0 in, then = → 65 sq. ft.). The DIAG label is display only; the final result is an ordinary area. Other roof keys during arithmetic are unchanged (not physically tested).
+- Added MEM-09 (stored roof result should recall as M-1 13 ft 0 in); it remains a known failure for the later memory-label repair.
+- Regression suite: 12 V9.23.18 tests graduated; added ROOF-10, ROOF-11 (NOW PASSING) and MEM-09 (known fail).

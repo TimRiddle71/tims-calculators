@@ -37,6 +37,10 @@ let inchEntryWasDecimal=false;
 // V9.0 roof-triangle memory. Lengths are stored internally in inches.
 let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null, roofHipV=null;
 let roofEnteredRun=null, roofEnteredRise=null, roofEnteredDiag=null;
+// V9.23.19: kind of each ENTERED roof value (true = unitless). Physical: 12 Run 5 Rise
+// Diag → DIAG 13 (unitless values are stored and stay unitless). Derived values
+// are unitless only when every entered value is unitless.
+let roofRunScalar=false, roofRiseScalar=false, roofDiagScalar=false;
 
 // V9.4.1 Jack memory. O.C. defaults to the physical calculator's 16 in setting.
 const JACK_OC_DEFAULT=16; // V9.23.16: physical Trig Plus II default; AC restores it
@@ -861,11 +865,23 @@ function percentKey(){
   }
 }
 
+// V9.23.19: kind of a roof value for display (unitless → "scalar", otherwise "length").
+function roofAllScalar(){
+  const entered=[[roofEnteredRun,roofRunScalar],[roofEnteredRise,roofRiseScalar],[roofEnteredDiag,roofDiagScalar]].filter(e=>e[0]!==null);
+  return entered.length>0 && entered.every(e=>e[1]);
+}
+function roofKindOf(which){
+  if(which==="run" && roofEnteredRun!==null) return roofRunScalar?"scalar":"length";
+  if(which==="rise" && roofEnteredRise!==null) return roofRiseScalar?"scalar":"length";
+  if(which==="diag" && roofEnteredDiag!==null) return roofDiagScalar?"scalar":"length";
+  return roofAllScalar()?"scalar":"length";
+}
+function roofEnteredText(v,scalar){ return scalar ? dec(v,6) : feetInches(v).replace(" 0 in",""); }
 function roofHistory(requested){
   const bits=[];
-  if(roofEnteredRun!==null) bits.push(`${feetInches(roofEnteredRun).replace(" 0 in","")} Run`);
-  if(roofEnteredRise!==null) bits.push(`${feetInches(roofEnteredRise).replace(" 0 in","")} Rise`);
-  if(roofEnteredDiag!==null) bits.push(`${feetInches(roofEnteredDiag).replace(" 0 in","")} Diag`);
+  if(roofEnteredRun!==null) bits.push(`${roofEnteredText(roofEnteredRun,roofRunScalar)} Run`);
+  if(roofEnteredRise!==null) bits.push(`${roofEnteredText(roofEnteredRise,roofRiseScalar)} Rise`);
+  if(roofEnteredDiag!==null) bits.push(`${roofEnteredText(roofEnteredDiag,roofDiagScalar)} Diag`);
   bits.push(requested);
   return bits.join(" → ");
 }
@@ -874,6 +890,19 @@ function roofHistory(requested){
 const ROOF_TAGS={Pitch:"PTCH",Rise:"RISE",Run:"RUN",Diag:"DIAG","Hip/V":"H/V"};
 function showRoofTag(label,text){
   $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">${ROOF_TAGS[label]||label}</span><span class="cm-jack-value">${text}</span></span>`;
+}
+// V9.23.19: roof recall as operand #2 (same state model as the R3
+// supplyFunctionOperand()/Sq/Cu operand #2 path): acc and the pending operator are
+// kept; the value and its kind go into recalledValue; the label is display only.
+function supplyRoofOperand(label,value,kind){
+  const text=kind==="scalar" ? dec(value,6) : feetInches(value);
+  resetOperand();
+  result=value; resultKind=kind; justEquals=false; convArmed=false;
+  recalledValue={value,kind,display:text};
+  render();
+  showRoofTag(label,text);
+  $("#cmHistory").textContent=`${expressionParts.join(" ")} ${text}`;
+  $("#cmAlt").textContent="";
 }
 function setRoofDisplay(label,value,kind="length"){
   resetOperand();
@@ -931,18 +960,15 @@ function roofKey(which){
   }
   // If a dimension is currently entered, store it under the selected roof key.
   if(hasOperand()){
-    if(!hasUnits){
-      // V9.23.18: physical 12 Run → RUN 12 and 5 Rise → RISE 5 (unitless stays unitless).
-      // Display only: whether a unitless value is stored in the roof geometry has
-      // not been physically tested, so the stored roof values are left unchanged.
-      if(which==="run"){ setRoofDisplay("Run",operandValue(),"scalar"); return; }
-      if(which==="rise"){ setRoofDisplay("Rise",operandValue(),"scalar"); return; }
-      return; // other roof keys: unchanged (unitless entry ignored)
-    }
+    // V9.23.19: unitless Run / Rise are stored as unitless roof geometry
+    // (physical: 12 Run → RUN 12; 5 Rise → RISE 5; Diag → DIAG 13).
+    // Unitless Diag / Pitch / Hip/V entries remain ignored (not physically tested).
+    const unitless=!hasUnits;
+    if(unitless && which!=="run" && which!=="rise") return;
     const v=operandValue();
-    if(which==="run"){ roofRun=v; roofEnteredRun=v; }
-    else if(which==="rise"){ roofRise=v; roofEnteredRise=v; }
-    else if(which==="diag"){ roofDiag=v; roofEnteredDiag=v; }
+    if(which==="run"){ roofRun=v; roofEnteredRun=v; roofRunScalar=unitless; }
+    else if(which==="rise"){ roofRise=v; roofEnteredRise=v; roofRiseScalar=unitless; }
+    else if(which==="diag"){ roofDiag=v; roofEnteredDiag=v; roofDiagScalar=false; }
     else if(which==="pitch"){
       // Trig Plus II dimensional pitch entry: 5 in Pitch means a 5-in-12 roof.
       roofPitch=Math.atan(v/12)*180/Math.PI;
@@ -959,10 +985,15 @@ function roofKey(which){
 
   // Recall / calculate the requested roof value from stored triangle data.
   solveRoof();
-  if(which==="run" && roofRun!==null){ setRoofDisplay("Run",roofRun); return; }
-  if(which==="rise" && roofRise!==null){ setRoofDisplay("Rise",roofRise); return; }
-  if(which==="diag" && roofDiag!==null){ setRoofDisplay("Diag",roofDiag); return; }
-  if(which==="hipv" && roofHipV!==null){ setRoofDisplay("Hip/V",roofHipV); return; }
+  // V9.23.19: a recalled Diag supplies operand #2 of a pending calculation
+  // (physical: 12 ft Run 5 ft Rise 5 ft × Diag = → DIAG 13 ft 0 in, then 65 sq. ft.).
+  if(which==="diag" && roofDiag!==null && !hasOperand() && op!==null && acc!==null){
+    supplyRoofOperand("Diag",roofDiag,roofKindOf("diag")); return;
+  }
+  if(which==="run" && roofRun!==null){ setRoofDisplay("Run",roofRun,roofKindOf("run")); return; }
+  if(which==="rise" && roofRise!==null){ setRoofDisplay("Rise",roofRise,roofKindOf("rise")); return; }
+  if(which==="diag" && roofDiag!==null){ setRoofDisplay("Diag",roofDiag,roofKindOf("diag")); return; }
+  if(which==="hipv" && roofHipV!==null){ setRoofDisplay("Hip/V",roofHipV,roofKindOf("hipv")); return; }
   if(which==="pitch" && roofPitch!==null){ setRoofDisplay("Pitch",roofPitch,"angle"); return; }
   // V9.23.18: physical Diag with no roof geometry shows DIAG 0 (scalar zero).
   if(which==="diag"){ setRoofDisplay("Diag",0,"scalar"); return; }
@@ -1188,7 +1219,7 @@ function clearAll(){
   percentJustApplied=false;
   // V9.23.17 (R10): C C / AC leave a plain scalar zero (physical display: 0).
   resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="scalar";justEquals=false;convArmed=false;cubicArmed=false;squareArmed=false;expressionParts=[];
-  roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
+  roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null; roofRunScalar=false;roofRiseScalar=false;roofDiagScalar=false;
   irregularPitchSlope=null; storArmed=false; storedCandidate=null; recallArmed=false; recalledValue=null; jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleDiameter=null; circleAreaUnit="in"; circleStage=0;
   clearPending=false;
   render();
