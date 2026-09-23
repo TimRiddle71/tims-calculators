@@ -241,3 +241,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Standalone π displays `PI   3.141593`.
 - π retains full internal precision for arithmetic; physical benchmark `2 × π = 6.283185`.
 - Updated in-app/footer version labels and service-worker cache to V9.13.1.
+
+
+## V9.14 — +/− sign toggle
+- Added validated gold `Conv → −` sign-toggle behavior.
+- `25 → Conv → −` returns `-25`; repeating `Conv → −` returns `25`.
+- Negative values remain valid arithmetic operands (`10 + 3 → Conv → − → =` returns `7`).
+- Updated in-app/footer version labels and service-worker cache to V9.14.

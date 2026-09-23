@@ -775,6 +775,30 @@ function piKey(){
   $("#cmFeet").textContent="—";
 }
 
+function signToggleKey(){
+  // V9.14 physical benchmarks: 25 → Conv → − = -25; repeat = 25;
+  // 10 + 3 → Conv → − → = = 7. Treat the toggled value as the current operand.
+  convArmed=false;
+  if(!hasOperand()) return;
+
+  if(fractionNumerator!==null && !fractionDenominatorText) return;
+
+  if(hasUnits){
+    // Keep dimensional entry structure intact while toggling its total sign.
+    // Sign-toggle validation so far is for unitless arithmetic only; do not guess
+    // at mixed-unit entry editing behavior.
+    $("#cmAlt").textContent="+/− for dimensional entries not yet validated.";
+    return;
+  }
+
+  const input=operandValue();
+  resetOperand();
+  entry=String(-input);
+  resultKind="scalar";
+  justEquals=false;
+  render();
+}
+
 function secondaryNotValidated(name){
   convArmed=false;
   $("#cmAlt").textContent=`${name} recognized — function not yet validated.`;
@@ -795,6 +819,7 @@ function secondaryKey(name){
     return true;
   }
   if(name==="pi"){ piKey(); return true; }
+  if(name==="sign"){ signToggleKey(); return true; }
   const labels={rwall:"R/Wall",arc:"Arc",square:"x²",ftin:"Ft-In",exp:"EXP",reciprocal:"1/x",ac:"AC",pi:"π",sign:"+/−"};
   secondaryNotValidated(labels[name]||name); return true;
 }
