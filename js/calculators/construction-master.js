@@ -21,6 +21,9 @@ let expMode=false, expBase=null, expDigits="", expNegative=false;
 let dmsValue=null;
 let dmsStage=null; // "deg" or "dms"
 
+// V9.18 cubic-unit entry. Internal volume unit is cubic inches.
+let cubicArmed=false;
+
 // V9.0 roof-triangle memory. Lengths are stored internally in inches.
 let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null, roofHipV=null;
 let roofEnteredRun=null, roofEnteredRise=null, roofEnteredDiag=null;
@@ -202,7 +205,7 @@ function resetOperand(){
 }
 function startFreshIfNeeded(){
   if(justEquals && op===null){
-    result=0;resultKind="length";acc=null;accKind=null;expressionParts=[];justEquals=false;resetOperand();
+    result=0;resultKind="length";acc=null;accKind=null;expressionParts=[];justEquals=false;cubicArmed=false;resetOperand();
   }
 }
 function digit(d){
@@ -225,6 +228,50 @@ function decimal(){
   if(fractionNumerator!==null) return;
   if(!entry.includes(".")) entry=entry===""?"0.":entry+".";
   render();
+}
+function cubicKey(){
+  startFreshIfNeeded();
+  if(entry==="" || hasUnits || fractionNumerator!==null){ return; }
+  cubicArmed=true;
+  convArmed=false;
+  $("#cmMain").textContent=`${entry} CU`;
+  $("#cmHistory").textContent="Cubic unit entry";
+  $("#cmAlt").textContent="Choose ft, in, yd, m, or mm";
+}
+function setCubicUnit(unit){
+  if(!cubicArmed || entry==="") return false;
+  const n=Number(entry)||0;
+  const factors={in:1,ft:1728,yd:46656,m:61023.7440947323,mm:0.0000610237440947323};
+  const labels={in:"cu. in.",ft:"cu. ft.",yd:"cu. yd.",m:"cu. m",mm:"cu. mm"};
+  result=n*factors[unit]; resultKind="volume"; justEquals=true; convArmed=false; cubicArmed=false;
+  resetOperand(); acc=null;accKind=null;op=null;expressionParts=[];
+  $("#cmMain").textContent=`${dec(n,6)} ${labels[unit]}`;
+  $("#cmHistory").textContent="Cubic unit entry";
+  $("#cmExact").previousElementSibling.textContent="CUBIC INCHES";
+  $("#cmFeet").previousElementSibling.textContent="CUBIC FEET";
+  $("#cmExact").textContent=`${dec(result,6)} cu in`;
+  $("#cmFeet").textContent=`${dec(result/1728,6)} cu ft`;
+  $("#cmAlt").textContent="";
+  return true;
+}
+function showCubicConverted(unit){
+  const factors={ft:1728,yd:46656,m:61023.7440947323,mm:0.0000610237440947323};
+  const labels={ft:"cu. ft.",yd:"cu. yd.",m:"cu. m",mm:"cu. mm"};
+  const v=result/factors[unit];
+  convArmed=false; conversionMode=null; justEquals=true;
+  $("#cmMain").textContent=`${dec(v,6)} ${labels[unit]}`;
+  $("#cmHistory").textContent=`Converted to ${labels[unit]}`;
+  $("#cmExact").previousElementSibling.textContent="CUBIC INCHES";
+  $("#cmFeet").previousElementSibling.textContent="CUBIC FEET";
+  $("#cmExact").textContent=`${dec(result,6)} cu in`;
+  $("#cmFeet").textContent=`${dec(result/1728,6)} cu ft`;
+  $("#cmAlt").textContent="";
+}
+function cubicUnitKey(unit){
+  if(convArmed && resultKind==="volume" && !hasOperand()){ showCubicConverted(unit); return; }
+  if(setCubicUnit(unit)) return;
+  convArmed=false;
+  $("#cmAlt").textContent=`${unit} cubic behavior requires Cu first.`;
 }
 function valueForConversion(){
   if(hasOperand()) return operandValue();
@@ -275,6 +322,8 @@ function showConverted(unit){
 }
 
 function feet(){
+  if(cubicArmed){ setCubicUnit("ft"); return; }
+  if(convArmed && resultKind==="volume" && !hasOperand()){ showCubicConverted("ft"); return; }
   if(convArmed){ showConverted("ft"); return; }
   startFreshIfNeeded();
   if(fractionNumerator!==null || entry==="") return;
@@ -283,6 +332,7 @@ function feet(){
   render();
 }
 function inches(){
+  if(cubicArmed){ setCubicUnit("in"); return; }
   if(convArmed){ showConverted("in"); return; }
   startFreshIfNeeded();
 
@@ -608,7 +658,7 @@ function rwallKey(){
   showRwall(rwallIndex);
 }
 function clearAll(){
-  resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;expressionParts=[];
+  resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;cubicArmed=false;expressionParts=[];
   roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
   irregularPitchSlope=null; storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleDiameter=null; circleAreaUnit="in"; circleStage=0;
   clearPending=false;
@@ -620,7 +670,7 @@ function clearKey(){
   // Match the Trig Plus II: one C clears only the current entry/result state.
   // Stored roof geometry, pitches and Jack O.C. remain available.
   resetOperand(); acc=null; accKind=null; op=null; result=0; resultKind="length";
-  justEquals=false; convArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null;
+  justEquals=false; convArmed=false; cubicArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null;
   expMode=false; expBase=null; expDigits=""; expNegative=false;
   jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleStage=0;
   // Physical Trig Plus II: one C preserves the stored circle diameter; double C clears it via clearAll().
@@ -974,6 +1024,8 @@ export function initConstruction(){
   document.querySelectorAll("[data-cm-roof]").forEach(b=>b.addEventListener("click",()=>roofKey(b.dataset.cmRoof)));
   document.querySelector('[data-cm="stor"]').addEventListener("click",storeKey);
   document.querySelectorAll("[data-cm-trig]").forEach(b=>b.addEventListener("click",()=>trigKey(b.dataset.cmTrig)));
+  document.querySelector('[data-cm="cu"]').addEventListener("click",cubicKey);
+  document.querySelectorAll("[data-cm-cubic-unit]").forEach(b=>b.addEventListener("click",()=>cubicUnitKey(b.dataset.cmCubicUnit)));
   document.querySelectorAll("[data-cm-primary]").forEach(b=>b.addEventListener("click",()=>{ if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else if(b.dataset.cmPrimary==="circ") circKey(); else if(b.dataset.cmPrimary==="sqrt") sqrtSquareKey(false); else $("#cmAlt").textContent=`${b.textContent.trim()} not yet validated.`; }));
   document.querySelector('[data-cm="jack"]').addEventListener("click",e=>{ const b=e.currentTarget; if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else jackKey(false); });
   document.querySelector('[data-cm="dms"]').addEventListener("click",dmsKey);

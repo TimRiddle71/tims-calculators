@@ -254,3 +254,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Fixed live fractional-inch entry so the numerator remains visible after `/` (for example `2-19/`).
 - Matched validated Trig Plus II conversion behavior: dimensional length → decimal feet, decimal feet input via Conv → Feet, decimal inches, then repeated Conv → Inch → fractional inches.
 - Physical benchmark target: 28 ft 2-19/32 in → 28.21615 ft → 338.5938 in → 338 19/32 in.
+
+
+## V9.18 — Cu cubic units
+- Adds validated `Cu` entry with Feet, Inch, Yds, m, and mm.
+- Adds validated cubic conversions including in³→ft³, ft³→yd³, yd³→ft³, m³→ft³, and mm³→m³.
+- Preserves V9.17 d:m:s and all prior validated Trestle behavior.
