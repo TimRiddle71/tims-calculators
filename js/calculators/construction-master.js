@@ -27,7 +27,7 @@ let cubicArmed=false;
 // V9.19 square-unit entry. Internal area unit is square inches.
 let squareArmed=false;
 
-// V9.20 linear metric entry/conversion. Internal length unit remains inches.
+// V9.21 linear metric/yard entry and conversion. Internal length unit remains inches.
 let metricEntryUnit=null;
 let metricEntryValue=null;
 
@@ -330,9 +330,9 @@ function showSquareConverted(unit){
   $("#cmAlt").textContent="";
 }
 function setLinearMetricUnit(unit){
-  if((unit!=="m" && unit!=="mm") || entry==="" || hasUnits || fractionNumerator!==null) return false;
+  if(!["m","mm","yd"].includes(unit) || entry==="" || hasUnits || fractionNumerator!==null) return false;
   const n=Number(entry)||0;
-  const inches = unit==="m" ? n*39.37007874015748 : n/25.4;
+  const inches = unit==="m" ? n*39.37007874015748 : unit==="mm" ? n/25.4 : n*36;
   entry=""; wholeInches=inches; hasUnits=true;
   metricEntryUnit=unit; metricEntryValue=n;
   convArmed=false; conversionMode=null; justEquals=false;
@@ -342,7 +342,7 @@ function setLinearMetricUnit(unit){
 function showLinearMetricConverted(unit){
   const raw=valueForConversion();
   const inches=(hasOperand() && operandKind()==="scalar") ? raw : raw;
-  const v=unit==="m" ? inches*0.0254 : inches*25.4;
+  const v=unit==="m" ? inches*0.0254 : unit==="mm" ? inches*25.4 : inches/36;
   result=inches; resultKind="length"; justEquals=true; convArmed=false; conversionMode=null;
   resetOperand(); expressionParts=[]; acc=null; accKind=null; op=null;
   $("#cmMain").textContent=`${dec(v,6)} ${unit}`;
@@ -358,8 +358,8 @@ function dimensionalUnitKey(unit){
   if(convArmed && resultKind==="volume" && !hasOperand()){ showCubicConverted(unit); return; }
   if(setSquareUnit(unit)) return;
   if(setCubicUnit(unit)) return;
-  if((unit==="m" || unit==="mm") && convArmed){ showLinearMetricConverted(unit); return; }
-  if(unit==="m" || unit==="mm"){
+  if(["m","mm","yd"].includes(unit) && convArmed){ showLinearMetricConverted(unit); return; }
+  if(["m","mm","yd"].includes(unit)){
     startFreshIfNeeded();
     if(setLinearMetricUnit(unit)) return;
   }

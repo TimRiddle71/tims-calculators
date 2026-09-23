@@ -295,3 +295,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Added cubic-inch destination handling to the conversion map.
 - Physically validated chain: 1 cu. m → 35.31467 cu. ft. → 61,023.74 cu. in.
 - Preserved V9.20.2 Conv modifier behavior: Conv alone waits for the destination key.
+
+
+## V9.21
+- Added validated linear yard entry with `Yds`.
+- Added linear yard conversions through `Conv`, including yards to feet/inches and feet/inches to yards.
+- Preserved existing square/cubic yard behavior and V9.20.3 chained conversion fixes.
