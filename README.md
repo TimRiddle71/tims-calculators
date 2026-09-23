@@ -308,3 +308,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Applies to linear, square, cubic, metric, yard, feet, and inch conversions.
 - Chained conversions use the immediately preceding displayed value as the source.
 - Calculation behavior is unchanged from V9.21.
+
+
+## V9.21.2
+- Fixed validated inch-only linear conversion to Feet: `50 in → Conv → Feet` now displays `4 ft 2 in` instead of decimal feet.
+- Preserves validated `3.5 ft → Conv → Inch = 42 in` behavior.
+- Preserves the V9.15 mixed ft/in → decimal-feet behavior and all V9.21.1 conversion-history display behavior.
