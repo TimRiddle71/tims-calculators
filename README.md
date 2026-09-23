@@ -266,3 +266,8 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Added comma grouping to ordinary numeric display values (for example, 1,000,000 cu. mm).
 - Specialized feet/inches and DMS formatting remains unchanged.
 - No calculator math or keypad layout changes.
+
+
+## V9.19
+- Added physically validated Sq square-unit entry and area conversions for in, ft, yd, m, and mm.
+- Preserved V9.18.1 thousands-separator display behavior.

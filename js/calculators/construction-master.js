@@ -24,6 +24,9 @@ let dmsStage=null; // "deg" or "dms"
 // V9.18 cubic-unit entry. Internal volume unit is cubic inches.
 let cubicArmed=false;
 
+// V9.19 square-unit entry. Internal area unit is square inches.
+let squareArmed=false;
+
 // V9.0 roof-triangle memory. Lengths are stored internally in inches.
 let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null, roofHipV=null;
 let roofEnteredRun=null, roofEnteredRise=null, roofEnteredDiag=null;
@@ -273,6 +276,54 @@ function cubicUnitKey(unit){
   convArmed=false;
   $("#cmAlt").textContent=`${unit} cubic behavior requires Cu first.`;
 }
+
+function squareKey(){
+  startFreshIfNeeded();
+  if(entry==="" || hasUnits || fractionNumerator!==null){ return; }
+  squareArmed=true;
+  cubicArmed=false;
+  convArmed=false;
+  $("#cmMain").textContent=`${entry} SQ`;
+  $("#cmHistory").textContent="Square unit entry";
+  $("#cmAlt").textContent="Choose ft, in, yd, m, or mm";
+}
+function setSquareUnit(unit){
+  if(!squareArmed || entry==="") return false;
+  const n=Number(entry)||0;
+  const factors={in:1,ft:144,yd:1296,m:1550.0031000062,mm:0.0015500031000062};
+  const labels={in:"sq. in.",ft:"sq. ft.",yd:"sq. yd.",m:"sq. m",mm:"sq. mm"};
+  result=n*factors[unit]; resultKind="area"; justEquals=true; convArmed=false; squareArmed=false; cubicArmed=false;
+  resetOperand(); acc=null;accKind=null;op=null;expressionParts=[];
+  $("#cmMain").textContent=`${dec(n,6)} ${labels[unit]}`;
+  $("#cmHistory").textContent="Square unit entry";
+  $("#cmExact").previousElementSibling.textContent="SQUARE INCHES";
+  $("#cmFeet").previousElementSibling.textContent="SQUARE FEET";
+  $("#cmExact").textContent=`${dec(result,6)} sq in`;
+  $("#cmFeet").textContent=`${dec(result/144,6)} sq ft`;
+  $("#cmAlt").textContent="";
+  return true;
+}
+function showSquareConverted(unit){
+  const factors={in:1,ft:144,yd:1296,m:1550.0031000062,mm:0.0015500031000062};
+  const labels={in:"sq. in.",ft:"sq. ft.",yd:"sq. yd.",m:"sq. m",mm:"sq. mm"};
+  const v=result/factors[unit];
+  convArmed=false; conversionMode=null; justEquals=true;
+  $("#cmMain").textContent=`${dec(v,6)} ${labels[unit]}`;
+  $("#cmHistory").textContent=`Converted to ${labels[unit]}`;
+  $("#cmExact").previousElementSibling.textContent="SQUARE INCHES";
+  $("#cmFeet").previousElementSibling.textContent="SQUARE FEET";
+  $("#cmExact").textContent=`${dec(result,6)} sq in`;
+  $("#cmFeet").textContent=`${dec(result/144,6)} sq ft`;
+  $("#cmAlt").textContent="";
+}
+function dimensionalUnitKey(unit){
+  if(convArmed && resultKind==="area" && !hasOperand()){ showSquareConverted(unit); return; }
+  if(convArmed && resultKind==="volume" && !hasOperand()){ showCubicConverted(unit); return; }
+  if(setSquareUnit(unit)) return;
+  if(setCubicUnit(unit)) return;
+  convArmed=false;
+  $("#cmAlt").textContent=`${unit} requires Sq or Cu first.`;
+}
 function valueForConversion(){
   if(hasOperand()) return operandValue();
   return result;
@@ -322,7 +373,9 @@ function showConverted(unit){
 }
 
 function feet(){
+  if(squareArmed){ setSquareUnit("ft"); return; }
   if(cubicArmed){ setCubicUnit("ft"); return; }
+  if(convArmed && resultKind==="area" && !hasOperand()){ showSquareConverted("ft"); return; }
   if(convArmed && resultKind==="volume" && !hasOperand()){ showCubicConverted("ft"); return; }
   if(convArmed){ showConverted("ft"); return; }
   startFreshIfNeeded();
@@ -332,7 +385,10 @@ function feet(){
   render();
 }
 function inches(){
+  if(squareArmed){ setSquareUnit("in"); return; }
   if(cubicArmed){ setCubicUnit("in"); return; }
+  if(convArmed && resultKind==="area" && !hasOperand()){ showSquareConverted("in"); return; }
+  if(convArmed && resultKind==="volume" && !hasOperand()){ showCubicConverted("in"); return; }
   if(convArmed){ showConverted("in"); return; }
   startFreshIfNeeded();
 
@@ -658,7 +714,7 @@ function rwallKey(){
   showRwall(rwallIndex);
 }
 function clearAll(){
-  resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;cubicArmed=false;expressionParts=[];
+  resetOperand();acc=null;accKind=null;op=null;result=0;resultKind="length";justEquals=false;convArmed=false;cubicArmed=false;squareArmed=false;expressionParts=[];
   roofRun=null;roofRise=null;roofDiag=null;roofPitch=null;roofHipV=null; roofEnteredRun=null;roofEnteredRise=null;roofEnteredDiag=null;
   irregularPitchSlope=null; storArmed=false; storedCandidate=null; jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleDiameter=null; circleAreaUnit="in"; circleStage=0;
   clearPending=false;
@@ -670,7 +726,7 @@ function clearKey(){
   // Match the Trig Plus II: one C clears only the current entry/result state.
   // Stored roof geometry, pitches and Jack O.C. remain available.
   resetOperand(); acc=null; accKind=null; op=null; result=0; resultKind="length";
-  justEquals=false; convArmed=false; cubicArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null;
+  justEquals=false; convArmed=false; cubicArmed=false; squareArmed=false; expressionParts=[]; storArmed=false; storedCandidate=null;
   expMode=false; expBase=null; expDigits=""; expNegative=false;
   jackMode="jk"; jackIndex=0; rwallIndex=0; rwallActive=false; circleStage=0;
   // Physical Trig Plus II: one C preserves the stored circle diameter; double C clears it via clearAll().
@@ -1025,7 +1081,8 @@ export function initConstruction(){
   document.querySelector('[data-cm="stor"]').addEventListener("click",storeKey);
   document.querySelectorAll("[data-cm-trig]").forEach(b=>b.addEventListener("click",()=>trigKey(b.dataset.cmTrig)));
   document.querySelector('[data-cm="cu"]').addEventListener("click",cubicKey);
-  document.querySelectorAll("[data-cm-cubic-unit]").forEach(b=>b.addEventListener("click",()=>cubicUnitKey(b.dataset.cmCubicUnit)));
+  document.querySelector('[data-cm="sq"]').addEventListener("click",squareKey);
+  document.querySelectorAll("[data-cm-dimensional-unit]").forEach(b=>b.addEventListener("click",()=>dimensionalUnitKey(b.dataset.cmDimensionalUnit)));
   document.querySelectorAll("[data-cm-primary]").forEach(b=>b.addEventListener("click",()=>{ if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else if(b.dataset.cmPrimary==="circ") circKey(); else if(b.dataset.cmPrimary==="sqrt") sqrtSquareKey(false); else $("#cmAlt").textContent=`${b.textContent.trim()} not yet validated.`; }));
   document.querySelector('[data-cm="jack"]').addEventListener("click",e=>{ const b=e.currentTarget; if(convArmed && b.dataset.cmSecondary) secondaryKey(b.dataset.cmSecondary); else jackKey(false); });
   document.querySelector('[data-cm="dms"]').addEventListener("click",dmsKey);
