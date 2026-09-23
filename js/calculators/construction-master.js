@@ -74,7 +74,7 @@ function roundedFraction(value,den=64){
 function inchesOnly(value){
   const f=roundedFraction(value,64);
   let body=String(f.whole);
-  if(f.n) body+=`${f.whole?"-":""}${f.n}/${f.d}`;
+  if(f.n) body+=`${f.whole?" ":""}${f.n}/${f.d}`;
   return `${f.sign}${body} in`;
 }
 function feetInches(value){
@@ -84,7 +84,7 @@ function feetInches(value){
   let iw=f.whole;
   if(iw>=12){ft++;iw-=12}
   let ins=String(iw);
-  if(f.n) ins+=`-${f.n}/${f.d}`;
+  if(f.n) ins+=` ${f.n}/${f.d}`;
   return `${neg?"−":""}${ft} ft ${ins} in`;
 }
 
@@ -136,7 +136,7 @@ function finalizedOperandText(){
   if(hasInches || (fractionNumerator!==null && Number(fractionDenominatorText)>0)){
     const f=roundedFraction(inchVal,64);
     let body=String(f.whole);
-    if(f.n) body+=`${f.whole?"-":""}${f.n}/${f.d}`;
+    if(f.n) body+=`${f.whole?" ":""}${f.n}/${f.d}`;
     parts.push(`${body} in`);
   } else if(entry!==""){
     parts.push(entry);
