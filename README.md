@@ -277,3 +277,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Added validated linear meter (`m`) and millimeter (`mm`) entry.
 - Added validated linear conversions between metric lengths and the existing feet/inches engine.
 - Preserved V9.19 square/cubic metric behavior and V9.18.1 thousands separators.
+
+
+## V9.20.1
+- Corrected linear metric `Conv → Feet` to match the physical Trig Plus II: display feet + fractional inches instead of decimal feet.
+- Example: `1 m → Conv → Feet` displays `3 ft 3-3/8 in`.
+- Preserves validated decimal-feet conversion behavior for non-metric workflows.

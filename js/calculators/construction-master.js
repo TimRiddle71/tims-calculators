@@ -379,6 +379,9 @@ function showConverted(unit){
   else vInches=raw;
 
   const repeatInch = unit==="in" && conversionMode==="inDecimal" && !live;
+  // V9.20.1: the physical Trig Plus II displays linear metric -> Feet
+  // as feet + fractional inches (e.g. 1 m -> 3 ft 3-3/8 in), not decimal feet.
+  const metricToFeet = unit==="ft" && live && liveKind==="length" && metricEntryUnit!==null;
 
   result=vInches;
   resetOperand();
@@ -393,7 +396,11 @@ function showConverted(unit){
   $("#cmFeet").textContent=`${dec(vInches/12,6)} ft`;
   $("#cmAlt").textContent="";
 
-  if(unit==="ft"){
+  if(metricToFeet){
+    conversionMode="ftInFraction";
+    $("#cmMain").textContent=feetInches(vInches);
+    $("#cmHistory").textContent="Converted to ft / in";
+  }else if(unit==="ft"){
     conversionMode="ftDecimal";
     $("#cmMain").textContent=`${dec(vInches/12,6)} ft`;
     $("#cmHistory").textContent="Converted to decimal feet";
