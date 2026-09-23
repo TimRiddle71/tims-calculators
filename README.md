@@ -438,3 +438,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Fractional-inch entries (for example 8 Inch 3/32) now carry inch unit context, so a plain second number inherits inches: 8 3/32 in + 2 = 10 3/32 in. Unitless fractions (no Inch key) remain unitless.
 - Inch +/− results keep the presentation of the first number: fractional/whole-inch first number → fractional inches (8 3/32 in + 2.5 = 10 19/32 in; 8 3/32 in + 27.5 in = 35 19/32 in); decimal-inch first number → decimal inches (8.5 in + 2 = 10.5 in; 8.5 in + 2 in = 10.5 in). The second number never changes the presentation.
 - Regression suite: DIM-14, DIM-16, DIM-17, DIM-18 graduated; FRAC-02 promoted from TRESTLE BASELINE to PHYSICAL VALIDATED with the physical result 35 19/32 in (was 2 ft 11 19/32 in); added DIM-39 to DIM-44.
+
+## V9.23.16
+- DMS lifecycle: d:m:s state now belongs only to the DEG/DMS display it produced. Any new entry, result or clear supersedes it, so an old angle no longer resurfaces (physical: 30.5 d:m:s 45 Sine d:m:s → DEG 0.707107°, also after C C and after AC). Repeated d:m:s cycling is unchanged; single C keeps its previous DMS behavior (not physically tested).
+- AC (Conv ×) now also aborts EXP entry (2 EXP 3, AC, 5 = → 5) and restores the 16 in default Jack O.C. Double C keeps a custom Jack O.C. (physically validated).
+- Regression suite: all 13 former PENDING tests reclassified with physical results (PCT-07 PASS; the rest PHYSICAL VALIDATED known failures until their repair versions); added DMS-06 and DMS-07. JACK-07, EXP-04, DMS-05, DMS-06, DMS-07 NOW PASSING. 0 pending.
+- Recorded for future releases: power-on display is physically plain 0 (R10); a normal Diag physically displays DIAG 13 ft 0 in (roof labels).

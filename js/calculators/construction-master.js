@@ -38,7 +38,8 @@ let roofRun=null, roofRise=null, roofDiag=null, roofPitch=null, roofHipV=null;
 let roofEnteredRun=null, roofEnteredRise=null, roofEnteredDiag=null;
 
 // V9.4.1 Jack memory. O.C. defaults to the physical calculator's 16 in setting.
-let jackOC=16;
+const JACK_OC_DEFAULT=16; // V9.23.16: physical Trig Plus II default; AC restores it
+let jackOC=JACK_OC_DEFAULT;
 let irregularPitchSlope=null; // rise/run, e.g. 8/12
 let storArmed=false;
 let storedCandidate=null;
@@ -302,6 +303,11 @@ function resetOperand(){
   clearedCompleted=null; // V9.23.13 (R1): only the key right after a single C can restore it
   resultUnit=null; // V9.23.14 (R2): set again only where a validated result is produced
   resultInchDecimal=false; // V9.23.15
+  // V9.23.16: DMS state belongs only to the DMS/DEG display dmsKey() produced.
+  // Any new entry, result or clear supersedes it (physical: 30.5 d:m:s 45 Sine
+  // d:m:s → DEG 0.707107°, also after C C and AC). Repeated d:m:s presses do not
+  // call resetOperand(), so validated DEG ↔ DMS cycling is unaffected.
+  dmsValue=null; dmsStage=null;
 }
 function startFreshIfNeeded(){
   if(justEquals && op===null){
@@ -1170,6 +1176,9 @@ function clearKey(){
   // WITHOUT replaying; the = after that replays (physical: 5 × 5 = C = = → 25, 125).
   const keepCompleted=(!clearPending && !expMode && justEquals && op===null && replayArmed && lastReplay && !hasOperand() && !recalledValue)
     ? {value:result, kind:resultKind, parts:[...expressionParts], replay:lastReplay, unit:resultUnit, inchDecimal:resultInchDecimal} : null;
+  // V9.23.16: single C keeps DMS state exactly as before (not physically tested);
+  // double C / AC clear it through clearAll() → resetOperand().
+  const keepDmsValue=dmsValue, keepDmsStage=dmsStage;
   lastReplay=null; // V9.23.13 (R1): C clears the active replay (single C keeps a copy in clearedCompleted)
   percentJustApplied=false;
   if(expMode){ expMode=false; expBase=null; expDigits=""; expNegative=false; }
@@ -1183,6 +1192,7 @@ function clearKey(){
   // Physical Trig Plus II: one C preserves the stored circle diameter; double C clears it via clearAll().
   clearPending=true;
   clearedCompleted=keepCompleted; // V9.23.13 (R1): set after resetOperand() above
+  dmsValue=keepDmsValue; dmsStage=keepDmsStage; // V9.23.16: single-C DMS behavior unchanged
   render();
 }
 function back(){
@@ -1480,9 +1490,9 @@ function dmsKey(){
       $("#cmAlt").textContent="Enter a unitless degree value first.";
       return;
     }
-    dmsValue=operandValue();
-    dmsStage="deg";
+    const degValue=operandValue();
     resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
+    dmsValue=degValue; dmsStage="deg"; // V9.23.16: set after resetOperand(), which now clears DMS
   }else if(dmsValue===null){
     // Permit toggling a scalar result if one is already on screen.
     if(resultKind!=="scalar") { $("#cmAlt").textContent="Enter a degree value first."; return; }
@@ -1531,6 +1541,10 @@ function secondaryKey(name){
   if(name==="ac"){
     // V9.22 physical validation: AC also zeros M-1 and M-2; double-C does not.
     memoryRegisters={1:{value:0,kind:"scalar"},2:{value:0,kind:"scalar"}};
+    // V9.23.16 AC-only resets (physical EXP-04 and JACK-07). Double C does not
+    // reach this branch: it preserves a custom Jack O.C. (physically validated).
+    expMode=false; expBase=null; expDigits=""; expNegative=false;
+    jackOC=JACK_OC_DEFAULT;
     clearAll();
     return true;
   }

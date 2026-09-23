@@ -83,6 +83,18 @@ const KF = {
   error3: "V9.23.5: invalid dimensional operations show '0 ft 0 in' (history 'Invalid dimensional operation') instead of the physical 'Error 3'.",
   divZero: "V9.23.5: division by zero goes through the same invalid path and shows '0 ft 0 in' instead of 'Error 1'.",
   clearDisplay: "R10: a cleared calculator displays '0 ft 0 in'; the physical calculator shows '0' (same cause as SPEC-01).",
+  // V9.23.16 physical results for the former PENDING tests:
+  convChain: "R7 precision (physical shows 7 digits: 28.21615 ft, 338.5938 in) AND Conv → Inch order after Conv → Feet (physical: decimal inches first, then fractional; Trestle shows fractional first).",
+  convOperand2: "Conv → Feet on operand #2 wipes the pending calculation (showConverted() clears acc/op). Physical keeps the pending ×.",
+  fracOnlyInch: "A fraction finished with Inch (no whole inches) shows '0 in' in the live display. Physical shows 0 3/32 in.",
+  roofLabel: "Roof results do not show their function label (physical: RUN 12, DIAG 13 ft 0 in). Unitless Run is also ignored.",
+  acJackOC: "AC does not restore the 16 in default Jack O.C.",
+  circMetric: "Circle area from a metre diameter is shown in sq. in. Physical shows sq. m.",
+  storPending: "Stor during arithmetic wipes the pending calculation (setSpecialDisplay()). Physical completes 10 × 5 before storing.",
+  pctDim: "Percent with a dimensional operand is not rejected. Physical shows Error 5.",
+  acExp: "AC does not leave EXP entry mode.",
+  staleDms: "DMS state is never cleared, so an old angle resurfaces on the next d:m:s.",
+  roofNoData: "After clearing, Diag with no roof data shows a message instead of a zero recall, the roof label is missing, and the cleared zero shows as 0 ft 0 in (R10).",
   missingOperand: "V9.23.12: an operator with no second number treats the missing operand as 0 (5 × = shows 0). Physical shows 5.",
   repeatEquals: "V9.23.12: pressing = again after a completed calculation does nothing. Physical replays the last operator and operand #2.",
   sqrtOperand2: "V9.23.5: √ clears the pending operator (sqrtSquareKey line 1115) instead of supplying operand #2.",
@@ -315,11 +327,11 @@ T({ id:"CONV-18", category:"Unit Conversions", name:"1 sq. yd. → Conv Feet",
     keys:"1 Sq Yds Conv Feet", expect:"9 sq. ft.", status:BASELINE });
 T({ id:"CONV-19", category:"Unit Conversions", name:"1 sq. m → Conv Feet",
     keys:"1 Sq m Conv Feet", expect:"10.76391 sq. ft.", status:BASELINE });
-T({ id:"CONV-20", category:"Unit Conversions", name:"V9.17 chain 28 ft 2-19/32 in → 28.21615 ft → 338.5938 in → 338 19/32 in",
-    keys:"28 Feet 2 Inch 19 / 32 Conv Feet", expect:"", status:PENDING,
-    notes:"Physical values recorded (28.21615 ft, 338.5938 in, 338 19/32 in) but not the exact key sequence. V9.23.5 shows 6 decimals (28.216146), which may differ from the physical 7-digit display." });
-T({ id:"CONV-21", category:"Unit Conversions", name:"Conv during an active calculation: 10 ft × 2 Conv Feet =",
-    keys:"10 Feet × 2 Conv Feet =", expect:"", status:PENDING, notes:"V9.23.5 drops the pending × here." });
+T({ id:"CONV-20", category:"Unit Conversions", name:"Conversion chain 28 ft 2-19/32 in → ft → in → fractional in",
+    steps:[ {keys:"28 Feet 2 Inch 19 / 32 Conv Feet", expect:"28.21615 ft"}, {keys:"Conv Inch", expect:"338.5938 in"}, {keys:"Conv Inch", expect:"338 19/32 in"} ],
+    status:VALIDATED, knownFail:KF.convChain, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+T({ id:"CONV-21", category:"Unit Conversions", name:"Conv Feet on operand #2 keeps the pending ×: 10 ft × 2 Conv Feet =",
+    keys:"10 Feet × 2 Conv Feet =", expect:"20 ft", status:VALIDATED, knownFail:KF.convOperand2, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ================================ FRACTIONS ============================== */
 T({ id:"FRAC-01", category:"Fractions", name:"Numerator stays visible after /",
@@ -330,9 +342,8 @@ T({ id:"FRAC-02", category:"Fractions", name:"8 in 3/32 + 27.5 in = (inch-only s
 T({ id:"FRAC-03", category:"Fractions", name:"25 ft 3 in + 8-3/32 in + 27.5 in = (V8.3 history example)",
     keys:"25 Feet 3 Inch + 8 Inch 3 / 32 + 27.5 Inch =", expect:"28 ft 2 19/32 in", status:BASELINE,
     notes:"Same value as the V9.17 physical benchmark 28 ft 2-19/32 in." });
-T({ id:"FRAC-04", category:"Fractions", name:"Fraction finished with Inch: 3 / 32 Inch display",
-    keys:"3 / 32 Inch", expect:"", status:PENDING,
-    notes:"V9.23.5 shows '0 in' (audit bug #8: display only, math is correct). What does the physical show?" });
+T({ id:"FRAC-04", category:"Fractions", name:"Fraction finished with Inch: 3 / 32 Inch",
+    keys:"3 / 32 Inch", expect:"0 3/32 in", status:VALIDATED, knownFail:KF.fracOnlyInch, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ================================== ROOF ================================= */
 T({ id:"ROOF-01", category:"Roof", name:"12 ft Run, 5 ft Rise → Diag",
@@ -347,9 +358,10 @@ T({ id:"ROOF-04", category:"Roof", name:"Recall Rise and Run",
 T({ id:"ROOF-05", category:"Roof", name:"14 ft 7 in Run, 6 ft 3 in Rise → Hip/V",
     keys:"14 Feet 7 Inch Run 6 Feet 3 Inch Rise Hip/V", expect:"21 ft 6-39/64 in", status:VALIDATED, notes:"V9.3 physical target." });
 T({ id:"ROOF-06", category:"Roof", name:"Unitless value then Run: 12 Run",
-    keys:"12 Run", expect:"", status:PENDING, notes:"V9.23.5 ignores unitless roof entries and keeps the digits." });
+    keys:"12 Run", expect:"RUN 12", status:VALIDATED, knownFail:KF.roofLabel, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 T({ id:"ROOF-07", category:"Roof", name:"Roof recall during arithmetic: 5 ft × Diag",
-    keys:"12 Feet Run 5 Feet Rise 5 Feet × Diag", expect:"", status:PENDING });
+    keys:"12 Feet Run 5 Feet Rise 5 Feet × Diag", expect:"DIAG 13 ft 0 in", status:VALIDATED, knownFail:KF.roofLabel,
+    notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification). Display immediately after Diag." });
 
 /* ========================== JACK / IRREGULAR JACK ======================== */
 T({ id:"JACK-01", category:"Jack / Irregular Jack", name:"Stor → Jack shows O.C. spacing",
@@ -368,9 +380,9 @@ T({ id:"JACK-05", category:"Jack / Irregular Jack", name:"Ir/Pitch stores irregu
     keys:"12 Feet Run 5 Feet Rise 8 Inch Conv Hip/V", expect:"IPCH 8 in", status:BASELINE });
 T({ id:"JACK-06", category:"Jack / Irregular Jack", name:"Irregular Jack with 8/12 adjoining pitch",
     keys:"12 Feet Run 5 Feet Rise 8 Inch Conv Hip/V Conv Jack", expect:"IJ 1 8 ft 0 9/64 in", status:BASELINE });
-T({ id:"JACK-07", category:"Jack / Irregular Jack", name:"Does AC restore the 16 in Jack O.C.?",
-    keys:"24 Inch Stor Jack Conv × 12 Feet Run 5 Feet Rise Jack", expect:"", status:PENDING,
-    notes:"V9.23.5 keeps the last stored O.C. (24 in) after AC." });
+T({ id:"JACK-07", category:"Jack / Irregular Jack", name:"AC restores the 16 in Jack O.C.",
+    keys:"24 Inch Stor Jack Conv × 12 Feet Run 5 Feet Rise Jack", expect:"Jk 1 11 ft 6 43/64 in", status:VALIDATED, knownFail:KF.acJackOC,
+    notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification). Double C, by contrast, keeps a custom O.C. (physical: Jk 1 10 ft 10 in)." });
 
 /* ================================= R/WALL ================================ */
 T({ id:"RW-01", category:"R/Wall", name:"R/Wall first step (12/5 roof)",
@@ -412,8 +424,8 @@ T({ id:"CIRC-06", category:"Circle / Arc", name:"Arc 180°", keys:"10 Inch Circ 
 T({ id:"CIRC-07", category:"Circle / Arc", name:"Arc 360°", keys:"10 Inch Circ 360 Conv Circ", expect:"ARC 31 27/64 in", status:VALIDATED });
 T({ id:"CIRC-08", category:"Circle / Arc", name:"One C keeps the circle diameter for Arc",
     keys:"10 Inch Circ C 90 Conv Circ", expect:"ARC 7 55/64 in", status:VALIDATED, notes:"V9.9: one C preserves the stored diameter." });
-T({ id:"CIRC-09", category:"Circle / Arc", name:"Metric diameter area units: 1 m Circ Circ",
-    keys:"1 m Circ Circ", expect:"", status:PENDING, notes:"V9.23.5 reports sq. in. because there is no feet entry." });
+T({ id:"CIRC-09", category:"Circle / Arc", name:"Metric diameter area: 1 m Circ Circ",
+    keys:"1 m Circ Circ", expect:"AREA 0.785398 sq. m", status:VALIDATED, knownFail:KF.circMetric, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ================================= MEMORY ================================ */
 T({ id:"MEM-01", category:"Memory", name:"M1 = 3 ft; 4 ft × Rcl 1 =",
@@ -432,8 +444,8 @@ T({ id:"MEM-06", category:"Memory", name:"Circle AREA stored to M-1",
     keys:"10 Inch Circ Circ Stor 1", expect:"M-1 78.53982 sq. in.", status:VALIDATED, knownFail:KF.circleAreaMemory + " Display also: " + KF.precision7 + " Also, the stored display text runs the tag into the value ('M-1 AREA78.539816 sq. in.') because snapshotCurrentValue() copies #cmMain text without a space." });
 T({ id:"MEM-07", category:"Memory", name:"2 × stored circle area",
     keys:"10 Inch Circ Circ Stor 1 C C 2 × Rcl 1 =", expect:"157.0796 sq. in.", status:VALIDATED, knownFail:KF.circleAreaMemory });
-T({ id:"MEM-08", category:"Memory", name:"Stor during an active calculation: 10 × 5 Stor 1",
-    keys:"10 × 5 Stor 1", expect:"", status:PENDING });
+T({ id:"MEM-08", category:"Memory", name:"Stor completes pending arithmetic: 10 × 5 Stor 1",
+    keys:"10 × 5 Stor 1", expect:"M-1 50", status:VALIDATED, knownFail:KF.storPending, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ============================ DISPLAY FORMAT ============================= */
 T({ id:"FMT-01", category:"Display Format", name:"Computed area label: 3 ft (M-1) × 4 ft = shows 'sq. ft.'",
@@ -464,9 +476,10 @@ T({ id:"PCT-04", category:"Percent", name:"200 − 10 %", keys:"200 − 10 %", e
 T({ id:"PCT-05", category:"Percent", name:"200 ÷ 10 %", keys:"200 ÷ 10 %", expect:"2000", status:VALIDATED,
     notes:"Physically confirmed display: 2000 (no comma). Trestle shows 2,000 by design — see UI-01." });
 T({ id:"PCT-06", category:"Percent", name:"10 ft × 50 %", keys:"10 Feet × 50 %", expect:"5 ft 0 in", status:VALIDATED });
-T({ id:"PCT-07", category:"Percent", name:"Repeated standalone %", keys:"10 % %", expect:"", status:PENDING,
-    notes:"Physical shows an all-segments/error-like display; exact text not recorded. V9.23.5 shows 'Error'." });
-T({ id:"PCT-08", category:"Percent", name:"Dimensional percent operand: 10 ft + 5 ft %", keys:"10 Feet + 5 Feet %", expect:"", status:PENDING });
+T({ id:"PCT-07", category:"Percent", name:"Repeated standalone %",
+    keys:"10 % %", expect:"Error", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+T({ id:"PCT-08", category:"Percent", name:"Dimensional percent operand: 10 ft + 5 ft %",
+    keys:"10 Feet + 5 Feet %", expect:"Error 5", status:VALIDATED, knownFail:KF.pctDim, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ================================== EXP ================================== */
 T({ id:"EXP-01", category:"EXP", name:"2 EXP 3 =", keys:"2 Conv / 3 =", expect:"2000", status:VALIDATED,
@@ -474,8 +487,8 @@ T({ id:"EXP-01", category:"EXP", name:"2 EXP 3 =", keys:"2 Conv / 3 =", expect:"
 T({ id:"EXP-02", category:"EXP", name:"2 EXP −3 =", keys:"2 Conv / 3 Conv − =", expect:"0.002", status:VALIDATED,
     notes:"Physically confirmed: 2 → Conv → / → 3 → Conv → − → = displays 0.002." });
 T({ id:"EXP-03", category:"EXP", name:"1.5 EXP 4 =", keys:"1.5 Conv / 4 =", expect:"15000", status:VALIDATED, notes:"Physical display has no comma (permanent rule)." });
-T({ id:"EXP-04", category:"EXP", name:"AC during EXP entry", keys:"2 Conv / 3 Conv × 5 =", expect:"", status:PENDING,
-    notes:"Audit bug #7: V9.23.5 stays in EXP mode after AC." });
+T({ id:"EXP-04", category:"EXP", name:"AC during EXP entry",
+    keys:"2 Conv / 3 Conv × 5 =", expect:"5", status:VALIDATED, knownFail:KF.acExp, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ================================== DMS ================================== */
 T({ id:"DMS-01", category:"DMS", name:"30.5 d:m:s cycles DEG → DMS → DEG",
@@ -484,8 +497,12 @@ T({ id:"DMS-01", category:"DMS", name:"30.5 d:m:s cycles DEG → DMS → DEG",
 T({ id:"DMS-02", category:"DMS", name:"30.5125° → DMS", keys:"30.5125 d:m:s d:m:s", expect:"DMS 30.30.45°", status:VALIDATED });
 T({ id:"DMS-03", category:"DMS", name:"Seconds round: 30.5126°", keys:"30.5126 d:m:s d:m:s", expect:"DMS 30.30.45°", status:VALIDATED });
 T({ id:"DMS-04", category:"DMS", name:"Seconds round: 30.5127°", keys:"30.5127 d:m:s d:m:s", expect:"DMS 30.30.46°", status:VALIDATED });
-T({ id:"DMS-05", category:"DMS", name:"d:m:s on a new result after AC", keys:"30.5 d:m:s Conv × 45 Sine d:m:s", expect:"", status:PENDING,
-    notes:"Audit bug #6: V9.23.5 shows the old 30.5° angle." });
+T({ id:"DMS-06", category:"DMS", name:"A new function result supersedes old DMS state (no clear)",
+    keys:"30.5 d:m:s 45 Sine d:m:s", expect:"DEG 0.707107°", status:VALIDATED, knownFail:KF.staleDms, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+T({ id:"DMS-07", category:"DMS", name:"Double C clears DMS state",
+    keys:"30.5 d:m:s C C 45 Sine d:m:s", expect:"DEG 0.707107°", status:VALIDATED, knownFail:KF.staleDms, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+T({ id:"DMS-05", category:"DMS", name:"AC clears DMS state",
+    keys:"30.5 d:m:s Conv × 45 Sine d:m:s", expect:"DEG 0.707107°", status:VALIDATED, knownFail:KF.staleDms, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ========================= SPECIAL / CLEAR BEHAVIOR ====================== */
 T({ id:"SPEC-01", category:"Special / Clear Behavior", name:"AC display", keys:"12 Feet Run 5 Feet Rise Conv ×", expect:"0",
@@ -499,4 +516,4 @@ T({ id:"SPEC-05", category:"Special / Clear Behavior", name:"Error 3 is not latc
     steps:[ {keys:"3 + 5 Feet +", expect:"Error 3"}, {keys:"2 + 2 =", expect:"4"} ], status:VALIDATED,
     notes:"Physically confirmed: while Error 3 is displayed, 2 + 2 = gives 4 without pressing C." });
 T({ id:"SPEC-04", category:"Special / Clear Behavior", name:"C C then Diag (roof cleared)",
-    keys:"12 Feet Run 5 Feet Rise C C Diag", expect:"", status:PENDING });
+    keys:"12 Feet Run 5 Feet Rise C C Diag", expect:"DIAG 0", status:VALIDATED, knownFail:KF.roofNoData, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
