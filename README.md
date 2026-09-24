@@ -500,3 +500,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - lcdDec() is used for the main display, history text built from displayed results, and memory display text. The verification (exact) boxes and typed-entry echoes keep the existing dec() precision. The hand-coded 5- and 2-decimal cases (cu. ft., cu. in., pitch) now use the general rule. Values with more than seven whole-number digits fall back to the previous formatter unchanged.
 - Recorded for later (no functional change): the physical calculator only accepts entry up to 1,000,000.
 - Regression suite: DIM-08, PCT-08 to PCT-11, PCT-13 graduated; CONV-20, CIRC-02, MEM-06, MEM-07 NOW PASSING; added PREC-01 to PREC-05. No known failures remain.
+
+## V9.23.25
+- Display polish (presentation only): feet/inch measurements on the main display now show large feet and inch numbers with small gold FEET / INCH labels underneath, a thin vertical divider, a real stacked fraction, and one sign for the whole measurement (− 2 FEET │ 0 INCH). The feet value shows a thousands separator (1,000 FEET).
+- Applies to typed and arithmetic feet/inch results (including decimal inches such as 10.5 in), fractional Conv results, roof results (DIAG, RISE, RUN, H/V), Jack, R/Wall, Jack O.C. / Ir/Pitch prompts, Circle DIA / CIRC / ARC, and M-1 / M-2 recalls. Decimal conversion results, history, verification boxes and all other result types are unchanged.
+- Implemented as an explicit display helper (measurementHTML / structureMainMeasurement) called by the display writers; no DOM watcher. The element text stays the calculator's canonical text (e.g. "8 ft 9 15/64 in"), so history, memory and the regression suite are unchanged. Screen readers hear e.g. "8 feet 9 and 15/64 inches".
+- A long measurement shrinks to fit one line when needed (never below 60%); it never wraps.
+- No calculation changes.

@@ -283,6 +283,58 @@ function areaUnitAfter(o,aKind,aUnit,bKind,bUnit,rKind){
   if(aKind==="scalar" && bKind==="area" && o==="multiply") return bUnit||null;
   return null;
 }
+// ===== V9.23.25 FEET / INCH MAIN-DISPLAY RENDERER (presentation only) =====
+// Rebuilds a finished feet/inch text that the calculator already produced
+// ("8 ft 9 15/64 in", "−2 ft 0 in", "10 3/32 in", "10.5 in") as structured HTML:
+// large feet + small FEET label, thin divider, large inches + small INCH label,
+// a real stacked fraction, one sign for the whole measurement. Nothing is
+// calculated here: the pieces are taken verbatim from the calculator's own text.
+// The element's textContent stays EXACTLY the original text (labels are CSS,
+// the feet comma is shown through a data attribute), so history, memory
+// snapshots and the regression runner read the same canonical text as before.
+const MEASURE_RX=/^([-−])?(?:([\d,]+) ft )?(\d+(?:\.\d+)?)(?: (\d+)\/(\d+))? in$/;
+const measureEsc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function measurementHTML(text,allowDecimal){
+  const m=MEASURE_RX.exec(String(text).trim());
+  if(!m) return null;
+  const [,sign,ft,inch,n,d]=m;
+  if(inch.includes(".") && !allowDecimal) return null; // decimal inches only where the render path allows it
+  const spokenInch=n ? `${inch} and ${n}/${d} inches` : `${inch} inches`;
+  const spoken=(sign?"minus ":"")+(ft!==undefined?`${ft.replace(/,/g,"")} feet `:"")+spokenInch;
+  let h=`<span class="ms" role="img" aria-label="${measureEsc(spoken)}">`;
+  if(sign) h+=`<span class="ms-sign">${sign}</span>`;
+  if(ft!==undefined){
+    const ftVisual=ft.replace(/,/g,"").replace(/\B(?=(\d{3})+(?!\d))/g,","); // visual thousands separator only
+    h+=`<span class="ms-part" data-label="FEET"><span class="ms-n" data-v="${ftVisual}"><span class="ms-sr">${ft}</span></span></span><span class="ms-sr"> ft </span>`;
+    h+=`<span class="ms-rule" aria-hidden="true"></span>`;
+  }
+  h+=`<span class="ms-part" data-label="INCH"><span class="ms-n">${inch}</span></span>`;
+  if(n) h+=`<span class="ms-sr"> </span><span class="ms-frac"><span class="ms-fn">${n}</span><span class="ms-sr">/</span><span class="ms-fd">${d}</span></span>`;
+  h+=`<span class="ms-sr"> in</span></span>`;
+  return h;
+}
+// Shrink a structured measurement only when it would not fit on one line (never below 60%).
+function fitMeasurement(){
+  const main=$("#cmMain"); const ms=main?main.querySelector(".ms"):null;
+  if(!ms) return;
+  ms.style.setProperty("--ms-size","1em");
+  const tag=main.querySelector(".cm-jack-tag");
+  const avail=tag ? main.clientWidth-tag.offsetWidth-14 : main.clientWidth;
+  const need=ms.scrollWidth;
+  if(avail>0 && need>avail) ms.style.setProperty("--ms-size",`${Math.max(.6,avail/need).toFixed(3)}em`);
+}
+// Called explicitly by each main-display writer that can show a feet/inch value.
+function structureMainMeasurement(allowDecimal=false){
+  const main=$("#cmMain"); if(!main) return;
+  const val=main.querySelector(".cm-jack-value");
+  const target=val || (main.children.length ? null : main);
+  if(!target) return;
+  const html=measurementHTML(target.textContent,allowDecimal);
+  if(html===null) return;
+  target.innerHTML=html;
+  if(val) val.parentElement.classList.add("cm-has-ms");
+  fitMeasurement();
+}
 function render(){
   const live=hasOperand();
   if(live){
@@ -302,6 +354,7 @@ function render(){
   }else{
     $("#cmMain").textContent=feetInches(result);
   }
+  structureMainMeasurement(true); // V9.23.25: feet/inch presentation (typed and arithmetic results)
 
   const expr=liveExpression();
   $("#cmHistory").textContent=expr || (justEquals ? expressionParts.join(" ") : "Ready");
@@ -611,6 +664,7 @@ function showConverted(unit){
     conversionMode="ftInFraction";
     $("#cmMain").textContent=feetInches(vInches);
     $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
+    structureMainMeasurement(); // V9.23.25
   }else if(unit==="ft" || decimalInchesToFeet){
     conversionMode="ftDecimal";
     $("#cmMain").textContent=`${lcdDec(vInches/12)} ft`;
@@ -630,6 +684,7 @@ function showConverted(unit){
       $("#cmMain").textContent=inchesOnly(vInches);
     }
     $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
+    if(conversionMode==="inFraction") structureMainMeasurement(); // V9.23.25: fractional inches only
   }else{
     conversionMode="inDecimal";
     $("#cmMain").textContent=`${lcdDec(vInches)} in`;
@@ -974,6 +1029,7 @@ function roofHistory(requested){
 const ROOF_TAGS={Pitch:"PTCH",Rise:"RISE",Run:"RUN",Diag:"DIAG","Hip/V":"H/V"};
 function showRoofTag(label,text){
   $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">${ROOF_TAGS[label]||label}</span><span class="cm-jack-value">${text}</span></span>`;
+  structureMainMeasurement(); // V9.23.25
 }
 // V9.23.19: roof recall as operand #2 (same state model as the R3
 // supplyFunctionOperand()/Sq/Cu operand #2 path): acc and the pending operator are
@@ -1099,6 +1155,7 @@ function setSpecialDisplay(history,main,alt=""){
 function setLabeledDisplay(history,label,value,alt="") {
   setSpecialDisplay(history,"",alt);
   $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">${label}</span><span class="cm-jack-value">${value}</span></span>`;
+  structureMainMeasurement(); // V9.23.25
 }
 function regularPitchSlope(){
   if(roofRun!==null && roofRise!==null && roofRun>0) return roofRise/roofRun;
@@ -1129,6 +1186,7 @@ function showMemory(label,m){
   result=m.value; resultKind=m.kind; expressionParts=[];
   $("#cmHistory").textContent=label;
   $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">${label}</span><span class="cm-jack-value">${memoryValueText(m)}</span></span>`;
+  structureMainMeasurement(); // V9.23.25
   $("#cmAlt").textContent="";
   if(m.kind==="length"){
     $("#cmExact").previousElementSibling.textContent="EXACT INCHES";
@@ -1207,6 +1265,7 @@ function recallRegister(n){
     result=m.value; resultKind=m.kind;
     $("#cmHistory").textContent=`M-${n}`;
     $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">M-${n}</span><span class="cm-jack-value">${memoryValueText(m)}</span></span>`;
+    structureMainMeasurement(); // V9.23.25
     $("#cmAlt").textContent="";
   }else{
     showMemory(`M-${n}`,m);
@@ -1261,6 +1320,7 @@ function showJack(kind,index){
   render();
   $("#cmHistory").textContent=hist;
   $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">${tag} ${index}</span><span class="cm-jack-value">${feetInches(value)}</span></span>`;
+  structureMainMeasurement(); // V9.23.25
   return true;
 }
 function jackKey(forceIrregular=false){
@@ -1306,6 +1366,7 @@ function showRwall(index){
   render();
   $("#cmHistory").textContent=hist;
   $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">RW ${index}</span><span class="cm-jack-value">${feetInches(value)}</span></span>`;
+  structureMainMeasurement(); // V9.23.25
   return true;
 }
 function rwallKey(){
@@ -1436,6 +1497,7 @@ function circleDisplay(stage){
   if(stage===1){
     $("#cmHistory").textContent="Circle diameter";
     $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">DIA</span><span class="cm-jack-value">${circleAreaUnit==="in"?inchesOnly(d):feetInches(d)}</span></span>`;
+    structureMainMeasurement(); // V9.23.25
     $("#cmExact").previousElementSibling.textContent="DIAMETER";
     $("#cmFeet").previousElementSibling.textContent="DECIMAL FEET";
     $("#cmExact").textContent=`${dec(d,6)} in`;
@@ -1459,6 +1521,7 @@ function circleDisplay(stage){
     result=circumference;
     $("#cmHistory").textContent="Circle circumference";
     $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">CIRC</span><span class="cm-jack-value">${circleAreaUnit==="in"?inchesOnly(circumference):feetInches(circumference)}</span></span>`;
+    structureMainMeasurement(); // V9.23.25
     $("#cmExact").previousElementSibling.textContent="EXACT INCHES";
     $("#cmFeet").previousElementSibling.textContent="DECIMAL FEET";
     $("#cmExact").textContent=`${dec(circumference,6)} in`;
@@ -1479,6 +1542,7 @@ function arcKey(){
   resultKind="length"; result=arcLength; circleStage=0;
   $("#cmHistory").textContent=`Circle arc • ${dec(angle,6)}°`;
   $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">ARC</span><span class="cm-jack-value">${circleAreaUnit==="in"?inchesOnly(arcLength):feetInches(arcLength)}</span></span>`;
+  structureMainMeasurement(); // V9.23.25
   $("#cmExact").previousElementSibling.textContent="EXACT INCHES";
   $("#cmFeet").previousElementSibling.textContent="DECIMAL FEET";
   $("#cmExact").textContent=`${dec(arcLength,6)} in`;
@@ -1724,6 +1788,7 @@ function conv(){
 }
 
 export function initConstruction(){
+  window.addEventListener("resize",fitMeasurement); // V9.23.25: re-fit a structured measurement when the window size changes
   // Any key other than C breaks the consecutive-C sequence.
   document.querySelectorAll('#constructionView button:not([data-cm="clear"])').forEach(b=>b.addEventListener("click",()=>{ clearPending=false; },{capture:true}));
   document.querySelectorAll("[data-cm-digit]").forEach(b=>b.addEventListener("click",()=>digit(b.dataset.cmDigit)));
