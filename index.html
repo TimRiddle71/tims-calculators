@@ -17,7 +17,7 @@
 <header class="hero"><p class="eyebrow">TIM'S TOOLBOX</p><h1>Calculators</h1><p>Fast answers without the clutter.</p></header>
 <section id="homeView">
 <h2>Favorites</h2><div class="grid">
-<button class="tile" data-open="construction"><span>🏗️</span><b>Construction Master</b><small>Core engine</small></button>
+<button class="tile tile-trestle" data-open="construction" aria-label="Trestle — Field Trig Calculator"><span class="tile-brand trestle-word" aria-hidden="true"><span class="cm-trestle-mark"><span></span></span>TRESTLE</span><b>Field Trig Calculator</b><small>Dimensions, roof geometry &amp; trig</small></button>
 <button class="tile" data-open="percentages"><span>%</span><b>Percentages</b><small>Ready</small></button>
 <button class="tile" data-open="days"><span>🏖️</span><b>Days Until</b><small>Ready</small></button>
 <button class="tile" data-open="mortgage"><span>🏠</span><b>Mortgage</b><small>Ready</small></button>
@@ -34,8 +34,7 @@
 <div class="cm-topbar-left">
 <button class="back" data-construction-home>← All Calculators</button>
 <div class="cm-brand">
-  <div class="cm-trestle-mark" aria-hidden="true"><span></span></div>
-  <div class="cm-brand-name">TRESTLE</div>
+  <div class="cm-brand-name trestle-word"><span class="cm-trestle-mark" aria-hidden="true"><span></span></span>TRESTLE</div>
   <div class="cm-brand-sub">FIELD TRIG CALCULATOR</div>
 </div>
 </div>
@@ -96,13 +95,13 @@
 
 <div id="shopPanel" class="calc-card">
 <div class="fields">
-<label>Original Price<div class="input-affix"><span>$</span><input id="price" inputmode="decimal" type="number" min="0" step=".01" placeholder="79.99"></div></label>
-<label>Discount<div class="input-affix suffix"><input id="discount" inputmode="decimal" type="number" min="0" step="any" placeholder="20"><span>%</span></div></label>
+<label>Original Price<div class="input-affix"><span>$</span><input id="price" inputmode="decimal" type="number" min="0" step=".01" ></div></label>
+<label>Discount<div class="input-affix suffix"><input id="discount" inputmode="decimal" type="number" min="0" step="any"><span>%</span></div></label>
 </div>
 <div class="answer"><small>SALE PRICE</small><strong id="salePrice">—</strong><small>YOU SAVE</small><h3 id="savings">—</h3></div>
 <label class="check"><input id="taxToggle" type="checkbox"> Add sales tax</label>
 <div id="taxArea" class="fields hidden">
-<label>Sales Tax<div class="input-affix suffix"><input id="tax" inputmode="decimal" type="number" min="0" step="any" placeholder="8.25"><span>%</span></div></label>
+<label>Sales Tax<div class="input-affix suffix"><input id="tax" inputmode="decimal" type="number" min="0" step="any" value="8.25"><span>%</span></div></label>
 <div class="mini-answer"><small>WITH TAX</small><b id="withTax">—</b></div>
 </div>
 </div>
@@ -318,7 +317,7 @@
 </div>
 </section>
 
-<footer>V9.23.27</footer>
+<footer>V9.23.28</footer>
 </main>
 <script type="module" src="js/app.js"></script>
 </body></html>

@@ -146,3 +146,18 @@ input::-webkit-date-and-time-value{text-align:left}
   #constructionView .cm-display{min-height:104px;padding:10px 14px}
   .cm-physical-grid{margin-top:8px}
 }
+
+/* ===== V9.23.28 Trestle wordmark sizing + home tile (presentation only) ===== */
+/* Roof mark now sized from the TRESTLE word itself: width = 113% of the word (the approved desktop
+   proportion, 195 px over a 173 px word), heights in em of the word's font. Reserved space above the
+   word stays 15 px, so the header height is unchanged. */
+.trestle-word{position:relative;display:inline-block;vertical-align:top;padding-top:15px}
+.trestle-word>.cm-trestle-mark{position:absolute;left:0;top:0;width:113%;height:.39em;margin:0;font-size:inherit}
+.trestle-word>.cm-trestle-mark:before,.trestle-word>.cm-trestle-mark:after{top:.22em;height:.083em}
+.trestle-word>.cm-trestle-mark:before{left:0;width:52.3%}
+.trestle-word>.cm-trestle-mark:after{left:51.8%;width:47.2%}
+.trestle-word>.cm-trestle-mark span{left:51.8%;top:.19em;width:.083em;height:.33em;font-size:inherit}
+/* Home tile: compact Trestle wordmark */
+.tile .tile-brand{font-size:1.45rem;font-weight:650;font-style:italic;letter-spacing:.035em;line-height:.9;color:#e7bd55;padding-top:.5em;align-self:flex-start}
+.tile .tile-brand .cm-trestle-mark,.tile .tile-brand .cm-trestle-mark span{font-size:inherit}
+.tile-trestle{border-color:#4a3f22}

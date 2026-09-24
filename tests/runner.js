@@ -120,7 +120,9 @@
 
   // ---- Fresh calculator for each test ----
   let frame = null;
-  function freshFrame(host) {
+  // view: which calculator to open. Trestle ("construction") is the default;
+  // V9.23.28 adds other calculators for the UI baseline tests (e.g. "percentages").
+  function freshFrame(host, view) {
     return new Promise((resolve, reject) => {
       if (frame) frame.remove();
       frame = document.createElement("iframe");
@@ -135,10 +137,12 @@
           const errors = [];
           frame.contentWindow.addEventListener("error", e => errors.push(e.message || String(e)));
           frame.contentWindow.addEventListener("unhandledrejection", e => errors.push(String(e.reason)));
-          // Show Trestle, exactly as tapping its tile on the home screen would.
-          const tile = doc.querySelector('[data-open="construction"]');
+          // Open the calculator exactly as tapping its tile on the home screen would.
+          const v = view || "construction";
+          const tile = doc.querySelector(`[data-open="${v}"]`);
           if (tile) tile.click();
-          if (!doc.querySelector("#cmMain")) throw new Error("Trestle display (#cmMain) not found in index.html.");
+          if (v === "construction" && !doc.querySelector("#cmMain")) throw new Error("Trestle display (#cmMain) not found in index.html.");
+          if (v !== "construction" && (!tile || !doc.querySelector(`#${v}View`))) throw new Error(`Calculator "${v}" not found in index.html.`);
           resolve({ doc, win: frame.contentWindow, errors });
         } catch (err) { reject(err); }
       }, { once: true });
@@ -152,6 +156,35 @@
     return { ...t, steps, match: t.match || "exact" };
   }
 
+  // ---- V9.23.28: tests for calculators other than Trestle ----
+  // These use the calculator's own form controls. The runner only types into
+  // fields, clicks controls and READS what the page shows; it contains no
+  // calculator formulas. Actions:
+  //   ["fill", "#id", "text"]  → type a value (fires the field's input event)
+  //   ["click", "#id"]         → click a button or checkbox
+  // Reads:
+  //   "#id"         → the element's visible text
+  //   "field:#id"   → a field's state as "value=[…] placeholder=[…]"
+  function uiAction(doc, win, a) {
+    const el = doc.querySelector(a[1]);
+    if (!el) throw new Error(`Control ${a[1]} not found.`);
+    if (a[0] === "fill") {
+      el.focus(); el.value = a[2];
+      el.dispatchEvent(new win.Event("input", { bubbles: true }));
+      el.dispatchEvent(new win.Event("change", { bubbles: true }));
+    } else if (a[0] === "click") el.click();
+    else throw new Error(`Unknown UI action "${a[0]}".`);
+  }
+  function uiRead(doc, what) {
+    if (what.startsWith("field:")) {
+      const el = doc.querySelector(what.slice(6));
+      if (!el) return "(field not found)";
+      return `value=[${el.value}] placeholder=[${el.getAttribute("placeholder") || ""}]`;
+    }
+    const el = doc.querySelector(what);
+    return el ? el.textContent.replace(/\s+/g, " ").trim() : "(element not found)";
+  }
+
   async function runOne(t, host) {
     const test = normaliseTest(t);
     const result = {
@@ -160,9 +193,17 @@
       steps: [], outcome: "", error: null, history: ""
     };
     try {
-      const { doc, errors } = await freshFrame(host);
+      const { doc, win, errors } = await freshFrame(host, test.view);
       let allPass = true;
       for (const step of test.steps) {
+        if (test.view && test.view !== "construction") {
+          for (const a of (step.actions || [])) uiAction(doc, win, a);
+          const actual = uiRead(doc, step.read);
+          const pass = matches(actual, step.expect, "trestle-exact");
+          if (!pass) allPass = false;
+          result.steps.push({ keys: step.keys, expect: step.expect, actual, pass });
+          continue;
+        }
         const tokens = tokenize(step.keys);
         for (const k of tokens) {
           const sel = KEY_SELECTORS[k];
@@ -177,7 +218,7 @@
         if (hasExpect && !pass) allPass = false;
         result.steps.push({ keys: step.keys, expect: hasExpect ? step.expect : "", actual, pass });
       }
-      const hist = doc.querySelector("#cmHistory");
+      const hist = (!test.view || test.view === "construction") ? doc.querySelector("#cmHistory") : null;
       result.history = hist ? hist.textContent.trim() : "";
       if (errors.length) { result.error = "JavaScript error in calculator: " + errors.join(" | "); allPass = false; }
 

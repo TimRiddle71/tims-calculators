@@ -522,3 +522,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
   - Touch: double-tap zoom is disabled on buttons and form controls (touch-action: manipulation); pinch zoom is unchanged. Trestle keys suppress text selection and the long-press callout. Back links are 44 px tall.
   - Home Screen icon: apple-touch-icon.png (180) plus manifest icons (192, 512, maskable 512) from the approved T/roof artwork. After deploying, remove the old Home Screen app, open the site in Safari and Add to Home Screen again (iOS caches icons).
 - Regression suite: added SPEC-07 (Backspace lifecycle, TRESTLE BASELINE).
+
+## V9.23.28
+- Trestle wordmark: the roof mark is now sized from the TRESTLE word itself (113% of the word width, the approved desktop proportion), so it no longer overhangs toward the C button on phones. Trestle screen geometry is unchanged.
+- All Calculators: the Trestle tile uses the compact TRESTLE wordmark with "Field Trig Calculator" and "Dimensions, roof geometry & trig" (replaces the old Construction Master tile).
+- Percentages (Shopping): Original Price and Discount start empty with no example numbers; Sales Tax starts at a real 8.25% that the calculator uses when tax is enabled. Other calculators' defaults are unchanged.
+- Regression suite: the runner can now open other calculators for UI baseline tests (form actions + reading results; no formulas in the runner). Added PCTUI-01 and PCTUI-02.

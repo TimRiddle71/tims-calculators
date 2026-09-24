@@ -591,3 +591,20 @@ T({ id:"SPEC-07", category:"Special / Clear Behavior", name:"Backspace lifecycle
     status:BASELINE, notes:"V9.23.27: protects ⌫ behavior after the button moved above the display. Values are the V9.23.26 behavior (unchanged)." });
 T({ id:"SPEC-04", category:"Special / Clear Behavior", name:"C C then Diag (roof cleared)",
     keys:"12 Feet Run 5 Feet Rise C C Diag", expect:"DIAG 0", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+
+/* ======================= OTHER CALCULATORS — UI BASELINE ==================== */
+/* V9.23.28: these open a non-Trestle calculator (view:) and use its real form
+   controls. Each step: actions to perform, then the element to read and the
+   text expected. The runner contains no calculator formulas. */
+T({ id:"PCTUI-01", category:"Percentages (UI)", view:"percentages", name:"Shopping fields start honest: price and discount empty, tax a real 8.25",
+    steps:[
+      { keys:"Original Price field", read:"field:#price", expect:"value=[] placeholder=[]" },
+      { keys:"Discount field", read:"field:#discount", expect:"value=[] placeholder=[]" },
+      { keys:"Sales Tax field", read:"field:#tax", expect:"value=[8.25] placeholder=[]" },
+      { keys:"Sale Price before entry", read:"#salePrice", expect:"—" } ],
+    status:BASELINE, notes:"V9.23.28: no numeric placeholders; 8.25 is a real value the calculator uses." });
+T({ id:"PCTUI-02", category:"Percentages (UI)", view:"percentages", name:"79.99 with 20% off, then add 8.25% sales tax",
+    steps:[
+      { keys:"Price 79.99 · Discount 20", actions:[["fill","#price","79.99"],["fill","#discount","20"]], read:"#salePrice", expect:"$63.99" },
+      { keys:"Add sales tax (8.25 default)", actions:[["click","#taxToggle"]], read:"#withTax", expect:"$69.27" } ],
+    status:BASELINE, notes:"V9.23.28: the default 8.25% tax is used as soon as tax is enabled." });
