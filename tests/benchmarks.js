@@ -102,6 +102,7 @@ const KF = {
   areaDisplayUnit: "R8: computed areas always display in square feet (1.090831 sq ft) instead of the operand's square inches; also R7 precision.",
   memAreaPrecision2: "R7 precision only: Trestle shows 157.079633 sq. in.; the physical shows 157.0796 sq. in.",
   convPrecision: "R7 precision only: Trestle shows 28.216146 ft and 338.59375 in; the physical shows 28.21615 ft and 338.5938 in. (The Conv → Inch order was fixed in V9.23.22.)",
+  lcdPrecision: "R7: Trestle showed up to 6 decimals regardless of size; the physical LCD has 7 digit positions.",
   missingOperand: "V9.23.12: an operator with no second number treats the missing operand as 0 (5 × = shows 0). Physical shows 5.",
   repeatEquals: "V9.23.12: pressing = again after a completed calculation does nothing. Physical replays the last operator and operand #2.",
   sqrtOperand2: "V9.23.5: √ clears the pending operator (sqrtSquareKey line 1115) instead of supplying operand #2.",
@@ -184,6 +185,20 @@ T({ id:"CORE-22", category:"Core Arithmetic", name:"Replay state updates to the 
     steps:[ {keys:"5 × 5 =", expect:"25"}, {keys:"+ 2 =", expect:"27"}, {keys:"=", expect:"29"} ], status:VALIDATED,
     notes:"Physically confirmed before V9.23.13: the replay becomes + 2, replacing × 5." });
 
+/* ========================== DISPLAY PRECISION (R7) ======================== */
+/* Physical LCD: seven digit positions; a displayed leading 0 counts; the minus sign
+   does not; trailing zeros dropped; half rounds up. Internal precision is kept. */
+T({ id:"PREC-01", category:"Display Precision", name:"Halfway rounding: 777 ÷ 64 = (exact 12.140625)",
+    keys:"777 ÷ 64 =", expect:"12.14063", status:VALIDATED, knownFail:KF.lcdPrecision, notes:"Physically confirmed before V9.23.24 (7-position LCD rule)." });
+T({ id:"PREC-02", category:"Display Precision", name:"Leading zeros use positions: 1 ÷ 3000 =",
+    keys:"1 ÷ 3000 =", expect:"0.000333", status:VALIDATED, notes:"Physically confirmed before V9.23.24 (7-position LCD rule)." });
+T({ id:"PREC-03", category:"Display Precision", name:"Minus sign does not use a position: 2 − 7 = ÷ 3 =",
+    keys:"2 − 7 = ÷ 3 =", expect:"-1.666667", status:VALIDATED, notes:"Physically confirmed before V9.23.24 (7-position LCD rule)." });
+T({ id:"PREC-04", category:"Display Precision", name:"Full internal precision kept: 100 ÷ 3 = − 33 =",
+    keys:"100 ÷ 3 = − 33 =", expect:"0.333333", status:VALIDATED, notes:"Physically confirmed before V9.23.24 (7-position LCD rule). The rounded display (33.33333) is not reused (that would give 0.33333)." });
+T({ id:"PREC-05", category:"Display Precision", name:"Leading 0 uses a position: 1 ÷ 3 =",
+    keys:"1 ÷ 3 =", expect:"0.333333", status:VALIDATED, notes:"Physically confirmed before V9.23.24 (7-position LCD rule)." });
+
 /* ========================= DIMENSIONAL ARITHMETIC ======================== */
 T({ id:"DIM-01", category:"Dimensional Arithmetic", name:"Length × Length → Area",
     keys:"10 Feet × 8 Feet =", expect:"80 sq ft", match:"units-loose", status:VALIDATED,
@@ -204,7 +219,7 @@ T({ id:"DIM-07", category:"Dimensional Arithmetic", name:"Volume ÷ Area → Len
     steps:[ {keys:"120 Cu Feet ÷ 30 Sq Feet", expect:"30 sq. ft."}, {keys:"=", expect:"4 ft 0 in"} ],
     status:VALIDATED });
 T({ id:"DIM-08", category:"Dimensional Arithmetic", name:"Sq prompt as operand #2 shows '30 sq.'",
-    keys:"120 Cu Feet ÷ 30 Sq", expect:"30 sq.", status:VALIDATED, knownFail:KF.sqPrompt,
+    keys:"120 Cu Feet ÷ 30 Sq", expect:"30 sq.", status:VALIDATED,
     notes:"Physical display observed during the V9.23.5 investigation." });
 T({ id:"DIM-09", category:"Dimensional Arithmetic", name:"Volume ÷ Length → Area (120 cu. ft. ÷ 10 ft)",
     keys:"120 Cu Feet ÷ 10 Feet =", expect:"12 sq. ft.", match:"units-loose", status:VALIDATED,
@@ -514,17 +529,17 @@ T({ id:"PCT-06", category:"Percent", name:"10 ft × 50 %", keys:"10 Feet × 50 %
 T({ id:"PCT-07", category:"Percent", name:"Repeated standalone %",
     keys:"10 % %", expect:"Error", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 T({ id:"PCT-08", category:"Percent", name:"Dimensional percent operand: 10 ft + 5 ft %",
-    keys:"10 Feet + 5 Feet %", expect:"Error 5", status:VALIDATED, knownFail:KF.pctDim, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    keys:"10 Feet + 5 Feet %", expect:"Error 5", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 T({ id:"PCT-09", category:"Percent", name:"Standalone dimensional value as a percentage: 5 ft %",
-    keys:"5 Feet %", expect:"Error 5", status:VALIDATED, knownFail:KF.pctDim, notes:"Physically confirmed before V9.23.23. Error 5 appears immediately on %." });
+    keys:"5 Feet %", expect:"Error 5", status:VALIDATED, notes:"Physically confirmed before V9.23.23. Error 5 appears immediately on %." });
 T({ id:"PCT-10", category:"Percent", name:"Dimensional percentage with ×: 10 ft × 5 ft %",
-    keys:"10 Feet × 5 Feet %", expect:"Error 5", status:VALIDATED, knownFail:KF.pctDim, notes:"Physically confirmed before V9.23.23. Error 5 appears immediately on %." });
+    keys:"10 Feet × 5 Feet %", expect:"Error 5", status:VALIDATED, notes:"Physically confirmed before V9.23.23. Error 5 appears immediately on %." });
 T({ id:"PCT-11", category:"Percent", name:"Dimensional percentage after a plain number: 10 + 5 ft %",
-    keys:"10 + 5 Feet %", expect:"Error 5", status:VALIDATED, knownFail:KF.pctDim, notes:"Physically confirmed before V9.23.23. Error 5 appears immediately on %." });
+    keys:"10 + 5 Feet %", expect:"Error 5", status:VALIDATED, notes:"Physically confirmed before V9.23.23. Error 5 appears immediately on %." });
 T({ id:"PCT-12", category:"Percent", name:"Plain percentage after a length stays valid: 10 ft + 5 %",
     keys:"10 Feet + 5 %", expect:"10 ft 6 in", status:VALIDATED, notes:"Physically confirmed before V9.23.23." });
 T({ id:"PCT-13", category:"Percent", name:"Error 5 is not latched: 5 ft %, then 2 + 2 =",
-    steps:[ {keys:"5 Feet %", expect:"Error 5"}, {keys:"2 + 2 =", expect:"4"} ], status:VALIDATED, knownFail:KF.pctDim,
+    steps:[ {keys:"5 Feet %", expect:"Error 5"}, {keys:"2 + 2 =", expect:"4"} ], status:VALIDATED,
     notes:"Physically confirmed before V9.23.23: no C needed after Error 5." });
 
 /* ================================== EXP ================================== */

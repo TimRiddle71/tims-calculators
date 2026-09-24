@@ -493,3 +493,10 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - A value with dimensional units cannot be a percentage: pressing % on it shows Error 5 immediately (physical: 5 ft %; 10 ft × 5 ft %; 10 + 5 ft %; 10 ft + 5 ft %). Error 5 is not latched (then 2 + 2 = → 4). A plain percentage after a dimensional first number stays valid (10 ft + 5 % → 10 ft 6 in; 10 ft × 50 % → 5 ft 0 in).
 - Only typed values reach %, and a typed value is either plain or a length, so length is the dimensional kind rejected. % after Sq/Cu entries, memory recall or function results is unchanged (it does nothing, as before).
 - Regression suite: CONV-21, CONV-22, CONV-23, FRAC-04 graduated; DIM-08, PCT-08 NOW PASSING; added PCT-09 to PCT-13. The only remaining known failures are the four R7 precision cases.
+
+## V9.23.24
+- R7 physical LCD precision: a new display formatter, lcdDec(), reproduces the Trig Plus II decimal display. The number field has seven digit positions; whole-number digits use positions first (a displayed leading 0 counts as one) and the rest are decimals. The minus sign does not use a position. Halfway values round up (777 ÷ 64 → 12.14063), trailing zeros are dropped, Trestle's thousands separators are kept. Physical: 1 ÷ 3 → 0.333333; 1 ÷ 3000 → 0.000333; −5 ÷ 3 → -1.666667; 28.21615 ft; 338.5938 in; 78.53982 sq. in.; 157.0796 sq. in.
+- Presentation only: internal values keep full precision (100 ÷ 3 = − 33 = → 0.333333).
+- lcdDec() is used for the main display, history text built from displayed results, and memory display text. The verification (exact) boxes and typed-entry echoes keep the existing dec() precision. The hand-coded 5- and 2-decimal cases (cu. ft., cu. in., pitch) now use the general rule. Values with more than seven whole-number digits fall back to the previous formatter unchanged.
+- Recorded for later (no functional change): the physical calculator only accepts entry up to 1,000,000.
+- Regression suite: DIM-08, PCT-08 to PCT-11, PCT-13 graduated; CONV-20, CIRC-02, MEM-06, MEM-07 NOW PASSING; added PREC-01 to PREC-05. No known failures remain.

@@ -151,6 +151,32 @@ let committedOperandText="";
 const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
 const clean=n=>Math.abs(n)<1e-12?0:n;
 const dec=(n,d=6)=>clean(n).toLocaleString(undefined,{maximumFractionDigits:d,useGrouping:true});
+// V9.23.24 (R7): physical Trig Plus II LCD decimal display. The number field holds
+// seven digit positions; the whole-number digits (a displayed leading 0 counts as one)
+// use positions first and the rest are decimals. The minus sign does not use a position.
+// Rounds half away from zero on the decimal digits (physical: 12.140625 → 12.14063),
+// trailing zeros are dropped, Trestle's thousands separators are kept. Presentation
+// only — internal values are never rounded. Values with more than seven whole-number
+// digits (beyond the physical entry range) fall back to dec() unchanged.
+// Physical: 1 ÷ 3 → 0.333333; 1 ÷ 3000 → 0.000333; −5 ÷ 3 → -1.666667;
+// 28.216145… → 28.21615; 338.59375 → 338.5938; 78.539816… → 78.53982.
+const LCD_POSITIONS=7;
+const lcdDec=(n,maxDecimals=6)=>{
+  const v=clean(n), a=Math.abs(v);
+  const wholeDigits=a<1 ? 1 : String(Math.floor(a)).length;
+  if(wholeDigits>LCD_POSITIONS) return dec(n,6); // fallback: outside the physical range
+  const fd=Math.min(maxDecimals,LCD_POSITIONS-wholeDigits);
+  // Decimal-string rounding (avoids binary artifacts): normalize to 15 significant
+  // digits, then shift the decimal exponent in string form before Math.round.
+  let r;
+  if(a<5*Math.pow(10,-(fd+1))) r=0;
+  else{
+    const [mant,exp]=Number(a.toPrecision(15)).toExponential().split("e");
+    r=Number(Math.round(Number(`${mant}e${Number(exp)+fd}`))+"e-"+fd);
+  }
+  const out=r.toLocaleString(undefined,{maximumFractionDigits:fd,useGrouping:true});
+  return (v<0 && r!==0) ? `-${out}` : out;
+};
 
 function roundedFraction(value,den=64){
   const sign=value<0?"−":"", a=Math.abs(value);
@@ -245,9 +271,9 @@ function liveExpression(){
 // V9.23.21 (R8): computed-area display text (physical punctuation sq. ft.; unit context in/m if known).
 let resultAreaUnit=null, accAreaUnit=null;
 function areaText(v){
-  if(resultAreaUnit==="in") return `${dec(v,6)} sq. in.`;
-  if(resultAreaUnit==="m") return `${dec(v/1550.0031000062,6)} sq. m`;
-  return `${dec(v/144,6)} sq. ft.`;
+  if(resultAreaUnit==="in") return `${lcdDec(v)} sq. in.`;
+  if(resultAreaUnit==="m") return `${lcdDec(v/1550.0031000062)} sq. m`;
+  return `${lcdDec(v/144)} sq. ft.`;
 }
 // V9.23.21 (R8): an area × or ÷ a plain number keeps the area's display unit (physical:
 // 10 in Circ Circ × 2 = 157.0796 sq. in.). Any other combination → default sq. ft.
@@ -264,15 +290,15 @@ function render(){
   }else if(resultKind==="area"){
     $("#cmMain").textContent=areaText(result);
   }else if(resultKind==="volume"){
-    $("#cmMain").textContent=`${dec(result/1728,6)} cu. ft.`;
+    $("#cmMain").textContent=`${lcdDec(result/1728)} cu. ft.`;
   }else if(resultKind==="scalar"){
-    $("#cmMain").textContent=dec(result,6);
+    $("#cmMain").textContent=lcdDec(result);
   }else if(resultUnit==="in"){
     // V9.23.14 (R2): 10 in + 2 in = 12 in. V9.23.15: decimal-inch operand #1 keeps
     // decimal presentation (same format as Conv → Inch decimal), otherwise fractional.
-    $("#cmMain").textContent=resultInchDecimal ? `${dec(result,6)} in` : inchesOnly(result);
+    $("#cmMain").textContent=resultInchDecimal ? `${lcdDec(result)} in` : inchesOnly(result);
   }else if(resultUnit==="m"){
-    $("#cmMain").textContent=`${dec(result*0.0254,6)} m`;   // V9.23.14 (R2): 2 m + 3 m = 5 m
+    $("#cmMain").textContent=`${lcdDec(result*0.0254)} m`;   // V9.23.14 (R2): 2 m + 3 m = 5 m
   }else{
     $("#cmMain").textContent=feetInches(result);
   }
@@ -421,8 +447,7 @@ function showCubicConverted(unit){
   convArmed=false; conversionMode=null; justEquals=true;
   // Match physically validated Trig Plus II display precision.
   // 1 m³ → ft³ = 35.31467; then → in³ = 61023.74.
-  const shown = unit==="in" ? dec(v,2)
-    : (unit==="ft" && Math.abs(v-Math.round(v))>1e-12 ? dec(v,5) : dec(v,6));
+  const shown = lcdDec(v); // V9.23.24: replaces hand-coded 2/5/6 decimals (61023.74, 35.31467)
   const convertedDisplay=`${shown} ${labels[unit]}`;
   $("#cmMain").textContent=convertedDisplay;
   $("#cmHistory").textContent=`${sourceDisplay} → ${convertedDisplay}`;
@@ -487,7 +512,7 @@ function showSquareConverted(unit){
   const v=result/factors[unit];
   const sourceDisplay=$("#cmMain").textContent;
   convArmed=false; conversionMode=null; justEquals=true;
-  const convertedDisplay=`${dec(v,6)} ${labels[unit]}`;
+  const convertedDisplay=`${lcdDec(v)} ${labels[unit]}`;
   $("#cmMain").textContent=convertedDisplay;
   $("#cmHistory").textContent=`${sourceDisplay} → ${convertedDisplay}`;
   $("#cmExact").previousElementSibling.textContent="SQUARE INCHES";
@@ -513,7 +538,7 @@ function showLinearMetricConverted(unit){
   const v=unit==="m" ? inches*0.0254 : unit==="mm" ? inches*25.4 : inches/36;
   result=inches; resultKind="length"; justEquals=true; convArmed=false; conversionMode=null;
   resetOperand(); expressionParts=[]; acc=null; accKind=null; op=null;
-  const convertedDisplay=`${dec(v,6)} ${unit}`;
+  const convertedDisplay=`${lcdDec(v)} ${unit}`;
   $("#cmMain").textContent=convertedDisplay;
   $("#cmHistory").textContent=`${sourceDisplay} → ${convertedDisplay}`;
   $("#cmExact").previousElementSibling.textContent="EXACT INCHES";
@@ -588,7 +613,7 @@ function showConverted(unit){
     $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
   }else if(unit==="ft" || decimalInchesToFeet){
     conversionMode="ftDecimal";
-    $("#cmMain").textContent=`${dec(vInches/12,6)} ft`;
+    $("#cmMain").textContent=`${lcdDec(vInches/12)} ft`;
     $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
   }else if(unit==="in"){
     // V9.21.8: Conv → Inch toggles between fractional inches and decimal
@@ -599,7 +624,7 @@ function showConverted(unit){
     // (physical 28.21615 ft → 338.5938 in → 338 19/32 in).
     if((conversionMode==="inFraction" || conversionMode==="ftDecimal") && !live){
       conversionMode="inDecimal";
-      $("#cmMain").textContent=`${dec(vInches,6)} in`;
+      $("#cmMain").textContent=`${lcdDec(vInches)} in`;
     }else{
       conversionMode="inFraction";
       $("#cmMain").textContent=inchesOnly(vInches);
@@ -607,7 +632,7 @@ function showConverted(unit){
     $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
   }else{
     conversionMode="inDecimal";
-    $("#cmMain").textContent=`${dec(vInches,6)} in`;
+    $("#cmMain").textContent=`${lcdDec(vInches)} in`;
     $("#cmHistory").textContent=`${sourceDisplay} → ${$("#cmMain").textContent}`;
   }
 }
@@ -904,7 +929,7 @@ function percentKey(){
     else if(op==="multiply") value=acc*pct;
     else if(op==="divide"){ if(pct===0) return; value=acc/pct; }
     else return;
-    const leftText=expressionParts.length?expressionParts[0]:dec(acc,6);
+    const leftText=expressionParts.length?expressionParts[0]:lcdDec(acc);
     const opText=operatorSymbol(op);
     resetOperand(); acc=null; accKind=null; op=null;
     result=value; resultKind=kind; justEquals=true; percentJustApplied=true;
@@ -954,7 +979,7 @@ function showRoofTag(label,text){
 // supplyFunctionOperand()/Sq/Cu operand #2 path): acc and the pending operator are
 // kept; the value and its kind go into recalledValue; the label is display only.
 function supplyRoofOperand(label,value,kind){
-  const text=kind==="scalar" ? dec(value,6) : feetInches(value);
+  const text=kind==="scalar" ? lcdDec(value) : feetInches(value);
   resetOperand();
   result=value; resultKind=kind; justEquals=false; convArmed=false;
   recalledValue={value,kind,display:text};
@@ -971,7 +996,7 @@ function setRoofDisplay(label,value,kind="length"){
     resultKind="scalar";
     result=value;
     $("#cmHistory").textContent=roofHistory(label);
-    showRoofTag(label,`${dec(value,5)}°`); // V9.23.18: PTCH 22.61986°
+    showRoofTag(label,`${lcdDec(value)}°`); // V9.23.18: PTCH 22.61986° (V9.23.24: LCD rule replaces 5 decimals)
     $("#cmExact").previousElementSibling.textContent="ROOF ANGLE";
     $("#cmFeet").previousElementSibling.textContent="PITCH";
     $("#cmExact").textContent=`${dec(value,5)}°`;
@@ -981,7 +1006,7 @@ function setRoofDisplay(label,value,kind="length"){
     // V9.23.18: unitless roof value or no-data Diag (physical: RUN 12, RISE 5, DIAG 0)
     resultKind="scalar"; result=value;
     render();
-    showRoofTag(label,dec(value,6));
+    showRoofTag(label,lcdDec(value));
   }else{
     resultKind="length"; result=value;
     render();
@@ -1095,9 +1120,9 @@ function memoryValueText(m){
   if(!m) return "0";
   if(m.display) return m.display;
   if(m.kind==="length") return feetInches(m.value);
-  if(m.kind==="area") return `${dec(m.value/144,6)} sq. ft.`;
-  if(m.kind==="volume") return `${dec(m.value/46656,6)} cu. yd.`;
-  return dec(m.value,6);
+  if(m.kind==="area") return `${lcdDec(m.value/144)} sq. ft.`;
+  if(m.kind==="volume") return `${lcdDec(m.value/46656)} cu. yd.`;
+  return lcdDec(m.value);
 }
 function showMemory(label,m){
   resetOperand(); acc=null; accKind=null; op=null; convArmed=false; justEquals=false;
@@ -1345,7 +1370,7 @@ function back(){
 // precision is kept for the arithmetic while history shows the displayed value.
 function functionPendingCalculation(){ return op!==null && acc!==null; }
 function supplyFunctionOperand(value){
-  const shown=dec(value,6);
+  const shown=lcdDec(value); // V9.23.24: LCD display/history; the exact box keeps dec()
   resetOperand();
   result=value; resultKind="scalar"; justEquals=false; convArmed=false;
   recalledValue={value,kind:"scalar",display:shown};
@@ -1354,7 +1379,7 @@ function supplyFunctionOperand(value){
   $("#cmAlt").textContent="";
   $("#cmExact").previousElementSibling.textContent="VALUE";
   $("#cmFeet").previousElementSibling.textContent="VALUE";
-  $("#cmExact").textContent=shown;
+  $("#cmExact").textContent=dec(value,6);
   $("#cmFeet").textContent="—";
 }
 function trigKey(which){
@@ -1392,9 +1417,9 @@ function trigKey(which){
   const name={sin:"Sine",cos:"Cos",tan:"Tan"}[which];
   $("#cmHistory").textContent=inverse?`Inverse ${name}`:`${name} ${dec(input,6)}°`;
   if(inverse){
-    $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">DEG</span><span class="cm-jack-value">${dec(value,6)}°</span></span>`;
+    $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">DEG</span><span class="cm-jack-value">${lcdDec(value)}°</span></span>`;
   }else{
-    $("#cmMain").textContent=dec(value,6);
+    $("#cmMain").textContent=lcdDec(value);
   }
   $("#cmAlt").textContent="";
   $("#cmExact").previousElementSibling.textContent=inverse?"DEGREES":"VALUE";
@@ -1424,7 +1449,7 @@ function circleDisplay(stage){
     result=areaIn2; resultKind="area"; circleAreaResult=true;
     resultAreaUnit=circleMetric?"m":(circleAreaUnit==="in"?"in":null); // V9.23.21 (R8)
     $("#cmHistory").textContent="Circle area";
-    $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">AREA</span><span class="cm-jack-value">${dec(area,6)} ${unit}</span></span>`;
+    $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">AREA</span><span class="cm-jack-value">${lcdDec(area)} ${unit}</span></span>`;
     $("#cmExact").previousElementSibling.textContent="SQUARE INCHES";
     $("#cmFeet").previousElementSibling.textContent="SQUARE FEET";
     $("#cmExact").textContent=`${dec(areaIn2,6)} sq in`;
@@ -1498,7 +1523,7 @@ function sqrtSquareKey(square=false){
   resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
   resultKind="scalar"; result=value;
   $("#cmHistory").textContent=square?`Square ${dec(input,6)}`:`Square root ${dec(input,6)}`;
-  $("#cmMain").textContent=dec(value,6);
+  $("#cmMain").textContent=lcdDec(value);
   $("#cmAlt").textContent="";
   $("#cmExact").previousElementSibling.textContent="VALUE";
   $("#cmFeet").previousElementSibling.textContent="VALUE";
@@ -1558,7 +1583,7 @@ function reciprocalKey(){
   resetOperand(); acc=null; accKind=null; op=null; justEquals=true; expressionParts=[];
   resultKind="scalar"; result=value;
   $("#cmHistory").textContent=`Reciprocal ${dec(input,6)}`;
-  $("#cmMain").textContent=dec(value,6);
+  $("#cmMain").textContent=lcdDec(value);
   $("#cmAlt").textContent="";
   $("#cmExact").previousElementSibling.textContent="VALUE";
   $("#cmFeet").previousElementSibling.textContent="VALUE";
@@ -1576,7 +1601,7 @@ function piKey(){
   resultKind="scalar";
   justEquals=false;
   $("#cmHistory").textContent="Pi";
-  $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">PI</span><span class="cm-jack-value">${dec(Math.PI,6)}</span></span>`;
+  $("#cmMain").innerHTML=`<span class="cm-jack-result"><span class="cm-jack-tag">PI</span><span class="cm-jack-value">${lcdDec(Math.PI)}</span></span>`;
   $("#cmAlt").textContent="";
   $("#cmExact").previousElementSibling.textContent="EXACT INCHES";
   $("#cmFeet").previousElementSibling.textContent="DECIMAL FEET";
@@ -1646,7 +1671,7 @@ function dmsKey(){
   $("#cmExact").textContent="—";
   $("#cmFeet").textContent="—";
 
-  let tag="DEG", value=`${dec(dmsValue,6)}°`;
+  let tag="DEG", value=`${lcdDec(dmsValue)}°`;
   if(dmsStage==="dms"){
     tag="DMS";
     const neg=dmsValue<0;
