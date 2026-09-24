@@ -487,3 +487,9 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - A fraction finished with the Inch key keeps its fraction in the display and history (physical: 3 / 32 Inch → 0 3/32 in; 8 Inch 3 / 32 Inch → 8 3/32 in). The zero-whole history format is fixed (0 3/32 in, not 03/32 in). Numeric values were already correct.
 - Recorded for later: inchesOnly() can still show 03/32 in for tiny inch-only calculated results (not physically tested).
 - Regression suite: FMT-01, CIRC-09 graduated; CONV-21, FRAC-04 NOW PASSING; added CONV-22, CONV-23 (Conv Feet timing and = behavior).
+
+## V9.23.23
+- Sq prompt now reads "sq." (physical: 120 cu. ft. ÷ 30 Sq → 30 sq.). Display only; the Sq state itself is unchanged. The Cu prompt is unchanged (not physically established).
+- A value with dimensional units cannot be a percentage: pressing % on it shows Error 5 immediately (physical: 5 ft %; 10 ft × 5 ft %; 10 + 5 ft %; 10 ft + 5 ft %). Error 5 is not latched (then 2 + 2 = → 4). A plain percentage after a dimensional first number stays valid (10 ft + 5 % → 10 ft 6 in; 10 ft × 50 % → 5 ft 0 in).
+- Only typed values reach %, and a typed value is either plain or a length, so length is the dimensional kind rejected. % after Sq/Cu entries, memory recall or function results is unchanged (it does nothing, as before).
+- Regression suite: CONV-21, CONV-22, CONV-23, FRAC-04 graduated; DIM-08, PCT-08 NOW PASSING; added PCT-09 to PCT-13. The only remaining known failures are the four R7 precision cases.

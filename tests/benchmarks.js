@@ -338,7 +338,7 @@ T({ id:"CONV-20", category:"Unit Conversions", name:"Conversion chain 28 ft 2-19
     steps:[ {keys:"28 Feet 2 Inch 19 / 32 Conv Feet", expect:"28.21615 ft"}, {keys:"Conv Inch", expect:"338.5938 in"}, {keys:"Conv Inch", expect:"338 19/32 in"} ],
     status:VALIDATED, knownFail:KF.convPrecision, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 T({ id:"CONV-21", category:"Unit Conversions", name:"Conv Feet on operand #2 keeps the pending ×: 10 ft × 2 Conv Feet =",
-    keys:"10 Feet × 2 Conv Feet =", expect:"20 ft", status:VALIDATED, knownFail:KF.convOperand2, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    keys:"10 Feet × 2 Conv Feet =", expect:"20 ft", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ================================ FRACTIONS ============================== */
 T({ id:"FRAC-01", category:"Fractions", name:"Numerator stays visible after /",
@@ -350,13 +350,13 @@ T({ id:"FRAC-03", category:"Fractions", name:"25 ft 3 in + 8-3/32 in + 27.5 in =
     keys:"25 Feet 3 Inch + 8 Inch 3 / 32 + 27.5 Inch =", expect:"28 ft 2 19/32 in", status:BASELINE,
     notes:"Same value as the V9.17 physical benchmark 28 ft 2-19/32 in." });
 T({ id:"CONV-22", category:"Unit Conversions", name:"Conv Feet completes the pending calculation immediately: 10 ft × 2 Conv Feet",
-    steps:[ {keys:"10 Feet × 2 Conv Feet", expect:"20 ft"}, {keys:"=", expect:"20 ft"} ], status:VALIDATED, knownFail:KF.convOperand2,
+    steps:[ {keys:"10 Feet × 2 Conv Feet", expect:"20 ft"}, {keys:"=", expect:"20 ft"} ], status:VALIDATED,
     notes:"Physically confirmed before V9.23.22. 20 ft appears BEFORE =, and = does not repeat the ×2. The 2 stays a plain number (not 2 ft)." });
 T({ id:"CONV-23", category:"Unit Conversions", name:"Conv Feet completes a plain-number calculation: 5 × 2 Conv Feet",
-    steps:[ {keys:"5 × 2 Conv Feet", expect:"10 ft"}, {keys:"=", expect:"10 ft"} ], status:VALIDATED, knownFail:KF.convOperand2,
+    steps:[ {keys:"5 × 2 Conv Feet", expect:"10 ft"}, {keys:"=", expect:"10 ft"} ], status:VALIDATED,
     notes:"Physically confirmed before V9.23.22." });
 T({ id:"FRAC-04", category:"Fractions", name:"Fraction finished with Inch: 3 / 32 Inch",
-    keys:"3 / 32 Inch", expect:"0 3/32 in", status:VALIDATED, knownFail:KF.fracOnlyInch, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    keys:"3 / 32 Inch", expect:"0 3/32 in", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
 /* ================================== ROOF ================================= */
 T({ id:"ROOF-01", category:"Roof", name:"12 ft Run, 5 ft Rise → Diag",
@@ -515,6 +515,17 @@ T({ id:"PCT-07", category:"Percent", name:"Repeated standalone %",
     keys:"10 % %", expect:"Error", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 T({ id:"PCT-08", category:"Percent", name:"Dimensional percent operand: 10 ft + 5 ft %",
     keys:"10 Feet + 5 Feet %", expect:"Error 5", status:VALIDATED, knownFail:KF.pctDim, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+T({ id:"PCT-09", category:"Percent", name:"Standalone dimensional value as a percentage: 5 ft %",
+    keys:"5 Feet %", expect:"Error 5", status:VALIDATED, knownFail:KF.pctDim, notes:"Physically confirmed before V9.23.23. Error 5 appears immediately on %." });
+T({ id:"PCT-10", category:"Percent", name:"Dimensional percentage with ×: 10 ft × 5 ft %",
+    keys:"10 Feet × 5 Feet %", expect:"Error 5", status:VALIDATED, knownFail:KF.pctDim, notes:"Physically confirmed before V9.23.23. Error 5 appears immediately on %." });
+T({ id:"PCT-11", category:"Percent", name:"Dimensional percentage after a plain number: 10 + 5 ft %",
+    keys:"10 + 5 Feet %", expect:"Error 5", status:VALIDATED, knownFail:KF.pctDim, notes:"Physically confirmed before V9.23.23. Error 5 appears immediately on %." });
+T({ id:"PCT-12", category:"Percent", name:"Plain percentage after a length stays valid: 10 ft + 5 %",
+    keys:"10 Feet + 5 %", expect:"10 ft 6 in", status:VALIDATED, notes:"Physically confirmed before V9.23.23." });
+T({ id:"PCT-13", category:"Percent", name:"Error 5 is not latched: 5 ft %, then 2 + 2 =",
+    steps:[ {keys:"5 Feet %", expect:"Error 5"}, {keys:"2 + 2 =", expect:"4"} ], status:VALIDATED, knownFail:KF.pctDim,
+    notes:"Physically confirmed before V9.23.23: no C needed after Error 5." });
 
 /* ================================== EXP ================================== */
 T({ id:"EXP-01", category:"EXP", name:"2 EXP 3 =", keys:"2 Conv / 3 =", expect:"2000", status:VALIDATED,

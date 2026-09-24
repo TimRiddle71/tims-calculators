@@ -445,7 +445,7 @@ function squareKey(){
   squareArmed=true;
   cubicArmed=false;
   convArmed=false;
-  $("#cmMain").textContent=`${entry} SQ`;
+  $("#cmMain").textContent=`${entry} sq.`; // V9.23.23: physical Sq prompt "30 sq." (display only; squareArmed carries the meaning)
   $("#cmHistory").textContent="Square unit entry";
   $("#cmAlt").textContent="Choose ft, in, yd, m, or mm";
 }
@@ -718,7 +718,7 @@ function showError(code){
   resetOperand(); acc=null; accKind=null; op=null; convArmed=false; justEquals=true;
   errorShown=true; // V9.23.20
   result=0; resultKind="length";
-  expressionParts=[code===1?"Division by zero":"Invalid dimensional operation"];
+  expressionParts=[code===1?"Division by zero":(code===5?"Invalid percent value":"Invalid dimensional operation")]; // V9.23.23: Error 5
   $("#cmHistory").textContent=expressionParts[0];
   $("#cmMain").textContent=`Error ${code}`;
   $("#cmAlt").textContent="";
@@ -888,6 +888,12 @@ function percentKey(){
     return;
   }
   if(fractionNumerator!==null && !fractionDenominatorText) return;
+
+  // V9.23.23: a value that has dimensional units cannot itself be a percentage.
+  // Physical: 5 ft % → Error 5; 10 ft × 5 ft % → Error 5; 10 + 5 ft % → Error 5;
+  // 10 ft + 5 ft % → Error 5 — immediately on %, not latched (then 2 + 2 = → 4).
+  // A plain percentage after a dimensional first number stays valid (10 ft + 5 % → 10 ft 6 in).
+  if(hasOperand() && operandKind()!=="scalar"){ showError(5); return; }
 
   if(op && acc!==null && hasOperand()){
     const pct=operandValue()/100;
