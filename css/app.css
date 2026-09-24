@@ -95,3 +95,54 @@
 #constructionView .cm-jack-result.cm-has-ms{align-items:flex-start}
 #constructionView .cm-jack-result.cm-has-ms .cm-jack-tag{padding-top:.28em}
 #constructionView .cm-jack-result.cm-has-ms .cm-jack-value{min-width:0}
+
+/* ===== V9.23.27 mobile-first UI / PWA polish (presentation only) ===== */
+/* iPhone PWA safe areas (black-translucent status bar + viewport-fit=cover) */
+.app{padding-top:max(24px,env(safe-area-inset-top));padding-bottom:max(40px,calc(env(safe-area-inset-bottom) + 16px));padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right))}
+/* suite header only on the home screen; each calculator has its own title and back link */
+.app:has(#homeView.hidden) .hero{display:none}
+/* touch: no double-tap zoom on controls (pinch zoom untouched), no grey tap flash */
+button,select,input,label,.tile{touch-action:manipulation}
+button,.tile{-webkit-tap-highlight-color:transparent}
+#constructionView button{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.back{min-height:44px}
+/* forms: equal columns that can shrink, controls bottom-aligned across a row */
+.fields{grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}
+.fields>label{min-width:0}
+select{-webkit-appearance:none;appearance:none;min-height:50px;padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23aeb8ca' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;text-align:left}
+input::-webkit-date-and-time-value{text-align:left}
+@media(max-width:480px){.fields{grid-template-columns:minmax(0,1fr)}}
+/* results never break inside a word; money result scales to fit */
+.answer strong{overflow-wrap:normal}
+.mortgage-answer strong{font-size:clamp(1.55rem,8.4vw,2.6rem);white-space:nowrap}
+/* Trestle: C / backspace move above the display, right side; brand left */
+.cm-topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:2px 0 10px}
+.cm-topbar .cm-brand{margin:0;flex:0 1 auto;min-width:0}
+.cm-entry-tools{display:flex;gap:8px;flex:0 0 auto}
+.cm-tool{min-width:68px;height:46px;padding:0 12px;border:1px solid var(--border);border-radius:12px;background:#243049;color:var(--text);font:inherit;font-size:1.2rem;font-weight:600;cursor:pointer}
+.cm-tool-clear{color:#e7bd55;border-color:#5a4a22}
+.cm-tool:active{transform:translateY(1px)}
+.cm-tool:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#constructionView .cm-display{min-height:108px}
+@media(max-width:620px){
+  .cm-tool{min-width:58px;height:44px}
+  #constructionView .cm-shell{padding:10px}
+  .cm-physical-grid{gap:5px;margin-top:10px}
+  .cm-physical-grid .cm-key{min-height:48px}
+  .cm-brand-name{font-size:1.7rem}
+}
+@media(max-width:360px){
+  .cm-tool{min-width:50px}
+  .cm-brand{zoom:.82}
+}
+/* v2: back link joins the top bar (left column above the brand); tools bottom-right, directly above the display */
+.cm-topbar-left{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.cm-topbar .back{padding:4px 0;min-height:40px}
+.cm-topbar .cm-brand{margin-top:2px}
+@media(max-width:620px){
+  .cm-brand-name{font-size:1.6rem}
+  .cm-brand-sub{margin-top:5px}
+  #constructionView .cm-display{min-height:104px;padding:10px 14px}
+  .cm-physical-grid{margin-top:8px}
+}

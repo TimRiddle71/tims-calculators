@@ -512,3 +512,13 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Display polish (presentation only): a fraction being entered now uses the structured feet/inch display as soon as it has a numerator and at least one denominator digit (6 Feet 8 Inch 9 / 16 → 6 FEET │ 8 INCH 9/16), so pressing + − × ÷ = no longer changes the look. An incomplete fraction (9 /) stays ordinary text.
 - Only the renderer's pattern changed: it now also accepts the live "8-9/16" form and keeps that hyphen in the underlying text. liveOperandText(), finalizedOperandText(), the fraction parser, history and all calculator state are unchanged. No CSS change.
 - Regression suite: PREC-01, CONV-20, CIRC-02, MEM-06, MEM-07 graduated; added FRAC-05 and FRAC-06 (canonical live-fraction text).
+
+## V9.23.27
+- Mobile-first UI / PWA polish (presentation only; no calculator changes):
+  - Suite header (TIM'S TOOLBOX / Calculators) shows only on the All Calculators home screen.
+  - iPhone safe areas respected (status bar and home indicator).
+  - Trestle: new top bar with the All Calculators link and TRESTLE brand on the left and larger Backspace and C buttons (C in gold) on the right, directly above the display. The display, keypad and verification boxes are unchanged in behavior; phone spacing slightly tightened so the full keypad fits on a 390 × 844 iPhone without scrolling. The release-note paragraph was removed; the footer shows only the version number.
+  - Forms: one column at 480 px and narrower; on wider screens paired inputs align along the bottom of each row; iOS date, month and select fields fill their cells at full height; the monthly payment no longer breaks inside a word.
+  - Touch: double-tap zoom is disabled on buttons and form controls (touch-action: manipulation); pinch zoom is unchanged. Trestle keys suppress text selection and the long-press callout. Back links are 44 px tall.
+  - Home Screen icon: apple-touch-icon.png (180) plus manifest icons (192, 512, maskable 512) from the approved T/roof artwork. After deploying, remove the old Home Screen app, open the site in Safari and Add to Home Screen again (iOS caches icons).
+- Regression suite: added SPEC-07 (Backspace lifecycle, TRESTLE BASELINE).

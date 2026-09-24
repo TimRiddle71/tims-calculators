@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Calculators">
   <title>Tim's Calculators</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -29,18 +30,22 @@
 
 
 <section id="constructionView" class="view hidden">
+<div class="cm-topbar">
+<div class="cm-topbar-left">
 <button class="back" data-construction-home>← All Calculators</button>
 <div class="cm-brand">
   <div class="cm-trestle-mark" aria-hidden="true"><span></span></div>
   <div class="cm-brand-name">TRESTLE</div>
   <div class="cm-brand-sub">FIELD TRIG CALCULATOR</div>
 </div>
+</div>
+<div class="cm-entry-tools" aria-label="Entry controls">
+  <button class="cm-tool" data-cm="back" aria-label="Backspace">⌫</button>
+  <button class="cm-tool cm-tool-clear" data-cm="clear" aria-label="Clear">C</button>
+</div>
+</div>
 <div class="cm-shell">
   <div class="cm-display" aria-live="polite">
-    <div class="cm-display-tools" aria-label="Entry controls">
-      <button class="cm-mini-tool" data-cm="clear" aria-label="Clear">C</button>
-      <button class="cm-mini-tool" data-cm="back" aria-label="Backspace">⌫</button>
-    </div>
     <div id="cmHistory" class="cm-history">Ready</div>
     <div id="cmMain" class="cm-main">0</div>
     <div id="cmAlt" class="cm-alt">Enter dimensions with ft / in keys.</div>
@@ -82,7 +87,6 @@
     <div><small>EXACT INCHES</small><b id="cmExact">0 in</b></div>
     <div><small>DECIMAL FEET</small><b id="cmFeet">0 ft</b></div>
   </div>
-  <p class="calc-note">V9.23.26 • A completed fraction shows as a stacked fraction while you are still entering it; calculator behavior unchanged; all prior validated Trestle behavior retained. Dimmed keys are reserved for functions not yet validated.</p>
 </div>
 </section>
 
@@ -314,7 +318,7 @@
 </div>
 </section>
 
-<footer>V9.23.26 • Built for quick everyday use</footer>
+<footer>V9.23.27</footer>
 </main>
 <script type="module" src="js/app.js"></script>
 </body></html>

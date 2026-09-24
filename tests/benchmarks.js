@@ -585,5 +585,9 @@ T({ id:"SPEC-05", category:"Special / Clear Behavior", name:"Error 3 is not latc
 T({ id:"SPEC-06", category:"Special / Clear Behavior", name:"Power-on display (no keys pressed)",
     keys:"", expect:"0", status:VALIDATED,
     notes:"Physically confirmed: turning the calculator on shows a plain 0." });
+T({ id:"SPEC-07", category:"Special / Clear Behavior", name:"Backspace lifecycle (digits and a pending fraction)",
+    steps:[ {keys:"1234 ⌫", expect:"123"}, {keys:"⌫ ⌫", expect:"1"},
+            {keys:"C C 6 Feet 8 Inch 9 / 16 ⌫", expect:"6 ft 8-9/1 in"}, {keys:"⌫", expect:"6 ft 8-9/ in"}, {keys:"⌫", expect:"6 ft 8 in"} ],
+    status:BASELINE, notes:"V9.23.27: protects ⌫ behavior after the button moved above the display. Values are the V9.23.26 behavior (unchanged)." });
 T({ id:"SPEC-04", category:"Special / Clear Behavior", name:"C C then Diag (roof cleared)",
     keys:"12 Feet Run 5 Feet Rise C C Diag", expect:"DIAG 0", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
