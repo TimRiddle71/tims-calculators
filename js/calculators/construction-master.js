@@ -292,12 +292,12 @@ function areaUnitAfter(o,aKind,aUnit,bKind,bUnit,rKind){
 // The element's textContent stays EXACTLY the original text (labels are CSS,
 // the feet comma is shown through a data attribute), so history, memory
 // snapshots and the regression runner read the same canonical text as before.
-const MEASURE_RX=/^([-−])?(?:([\d,]+) ft )?(\d+(?:\.\d+)?)(?: (\d+)\/(\d+))? in$/;
+const MEASURE_RX=/^([-−])?(?:([\d,]+) ft )?(\d+(?:\.\d+)?)(?:([ -])(\d+)\/(\d+))? in$/; // V9.23.26: also the live pending-fraction form "8-9/16" (numerator and at least one denominator digit)
 const measureEsc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function measurementHTML(text,allowDecimal){
   const m=MEASURE_RX.exec(String(text).trim());
   if(!m) return null;
-  const [,sign,ft,inch,n,d]=m;
+  const [,sign,ft,inch,joiner,n,d]=m;
   if(inch.includes(".") && !allowDecimal) return null; // decimal inches only where the render path allows it
   const spokenInch=n ? `${inch} and ${n}/${d} inches` : `${inch} inches`;
   const spoken=(sign?"minus ":"")+(ft!==undefined?`${ft.replace(/,/g,"")} feet `:"")+spokenInch;
@@ -309,7 +309,7 @@ function measurementHTML(text,allowDecimal){
     h+=`<span class="ms-rule" aria-hidden="true"></span>`;
   }
   h+=`<span class="ms-part" data-label="INCH"><span class="ms-n">${inch}</span></span>`;
-  if(n) h+=`<span class="ms-sr"> </span><span class="ms-frac"><span class="ms-fn">${n}</span><span class="ms-sr">/</span><span class="ms-fd">${d}</span></span>`;
+  if(n) h+=`<span class="ms-sr">${joiner}</span><span class="ms-frac"><span class="ms-fn">${n}</span><span class="ms-sr">/</span><span class="ms-fd">${d}</span></span>`;
   h+=`<span class="ms-sr"> in</span></span>`;
   return h;
 }

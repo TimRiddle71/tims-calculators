@@ -507,3 +507,8 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - Implemented as an explicit display helper (measurementHTML / structureMainMeasurement) called by the display writers; no DOM watcher. The element text stays the calculator's canonical text (e.g. "8 ft 9 15/64 in"), so history, memory and the regression suite are unchanged. Screen readers hear e.g. "8 feet 9 and 15/64 inches".
 - A long measurement shrinks to fit one line when needed (never below 60%); it never wraps.
 - No calculation changes.
+
+## V9.23.26
+- Display polish (presentation only): a fraction being entered now uses the structured feet/inch display as soon as it has a numerator and at least one denominator digit (6 Feet 8 Inch 9 / 16 → 6 FEET │ 8 INCH 9/16), so pressing + − × ÷ = no longer changes the look. An incomplete fraction (9 /) stays ordinary text.
+- Only the renderer's pattern changed: it now also accepts the live "8-9/16" form and keeps that hyphen in the underlying text. liveOperandText(), finalizedOperandText(), the fraction parser, history and all calculator state are unchanged. No CSS change.
+- Regression suite: PREC-01, CONV-20, CIRC-02, MEM-06, MEM-07 graduated; added FRAC-05 and FRAC-06 (canonical live-fraction text).

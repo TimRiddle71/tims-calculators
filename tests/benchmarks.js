@@ -189,7 +189,7 @@ T({ id:"CORE-22", category:"Core Arithmetic", name:"Replay state updates to the 
 /* Physical LCD: seven digit positions; a displayed leading 0 counts; the minus sign
    does not; trailing zeros dropped; half rounds up. Internal precision is kept. */
 T({ id:"PREC-01", category:"Display Precision", name:"Halfway rounding: 777 ÷ 64 = (exact 12.140625)",
-    keys:"777 ÷ 64 =", expect:"12.14063", status:VALIDATED, knownFail:KF.lcdPrecision, notes:"Physically confirmed before V9.23.24 (7-position LCD rule)." });
+    keys:"777 ÷ 64 =", expect:"12.14063", status:VALIDATED, notes:"Physically confirmed before V9.23.24 (7-position LCD rule)." });
 T({ id:"PREC-02", category:"Display Precision", name:"Leading zeros use positions: 1 ÷ 3000 =",
     keys:"1 ÷ 3000 =", expect:"0.000333", status:VALIDATED, notes:"Physically confirmed before V9.23.24 (7-position LCD rule)." });
 T({ id:"PREC-03", category:"Display Precision", name:"Minus sign does not use a position: 2 − 7 = ÷ 3 =",
@@ -351,7 +351,7 @@ T({ id:"CONV-19", category:"Unit Conversions", name:"1 sq. m → Conv Feet",
     keys:"1 Sq m Conv Feet", expect:"10.76391 sq. ft.", status:BASELINE });
 T({ id:"CONV-20", category:"Unit Conversions", name:"Conversion chain 28 ft 2-19/32 in → ft → in → fractional in",
     steps:[ {keys:"28 Feet 2 Inch 19 / 32 Conv Feet", expect:"28.21615 ft"}, {keys:"Conv Inch", expect:"338.5938 in"}, {keys:"Conv Inch", expect:"338 19/32 in"} ],
-    status:VALIDATED, knownFail:KF.convPrecision, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
+    status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 T({ id:"CONV-21", category:"Unit Conversions", name:"Conv Feet on operand #2 keeps the pending ×: 10 ft × 2 Conv Feet =",
     keys:"10 Feet × 2 Conv Feet =", expect:"20 ft", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
@@ -370,6 +370,12 @@ T({ id:"CONV-22", category:"Unit Conversions", name:"Conv Feet completes the pen
 T({ id:"CONV-23", category:"Unit Conversions", name:"Conv Feet completes a plain-number calculation: 5 × 2 Conv Feet",
     steps:[ {keys:"5 × 2 Conv Feet", expect:"10 ft"}, {keys:"=", expect:"10 ft"} ], status:VALIDATED,
     notes:"Physically confirmed before V9.23.22." });
+T({ id:"FRAC-05", category:"Fractions", name:"Live feet + inch fraction keeps its text through +",
+    steps:[ {keys:"6 Feet 8 Inch 9 / 16", expect:"6 ft 8-9/16 in"}, {keys:"+", expect:"6 ft 8 9/16 in"} ], status:BASELINE,
+    notes:"V9.23.26: protects the canonical live and finalized text while the display shows the structured feet/inch layout." });
+T({ id:"FRAC-06", category:"Fractions", name:"Live inch-only fraction text",
+    keys:"8 Inch 9 / 16", expect:"8-9/16 in", status:BASELINE,
+    notes:"V9.23.26: canonical live text for the structured inch/fraction display." });
 T({ id:"FRAC-04", category:"Fractions", name:"Fraction finished with Inch: 3 / 32 Inch",
     keys:"3 / 32 Inch", expect:"0 3/32 in", status:VALIDATED, notes:"Physically confirmed Sept. 23, 2026 (V9.23.16 reclassification)." });
 
@@ -455,7 +461,7 @@ T({ id:"TRIG-12", category:"Trig", name:"Tan as operand #2: 10 ft × 45 Tan =",
 /* ============================== CIRCLE / ARC ============================= */
 T({ id:"CIRC-01", category:"Circle / Arc", name:"10 in Circ → DIA", keys:"10 Inch Circ", expect:"DIA 10 in", status:VALIDATED });
 T({ id:"CIRC-02", category:"Circle / Arc", name:"Circ → AREA", keys:"10 Inch Circ Circ", expect:"AREA 78.53982 sq. in.",
-    status:VALIDATED, knownFail:KF.precision7 });
+    status:VALIDATED });
 T({ id:"CIRC-03", category:"Circle / Arc", name:"Circ → CIRC", keys:"10 Inch Circ Circ Circ", expect:"CIRC 31 27/64 in", status:VALIDATED });
 T({ id:"CIRC-04", category:"Circle / Arc", name:"Circ cycles back to DIA", keys:"10 Inch Circ Circ Circ Circ", expect:"DIA 10 in", status:VALIDATED });
 T({ id:"CIRC-05", category:"Circle / Arc", name:"Arc 90°", keys:"10 Inch Circ 90 Conv Circ", expect:"ARC 7 55/64 in", status:VALIDATED });
@@ -480,10 +486,10 @@ T({ id:"MEM-04", category:"Memory", name:"C C keeps M-1",
 T({ id:"MEM-05", category:"Memory", name:"AC zeros M-1",
     keys:"25 Stor 1 Conv × 100 + Rcl 1 =", expect:"100", status:VALIDATED });
 T({ id:"MEM-06", category:"Memory", name:"Circle AREA stored to M-1",
-    keys:"10 Inch Circ Circ Stor 1", expect:"M-1 78.53982 sq. in.", status:VALIDATED, knownFail:KF.memAreaPrecision,
+    keys:"10 Inch Circ Circ Stor 1", expect:"M-1 78.53982 sq. in.", status:VALIDATED,
     notes:"Physically confirmed. Since V9.23.20 the AREA label is no longer stored; only R7 precision differs (78.539816 vs 78.53982)." });
 T({ id:"MEM-07", category:"Memory", name:"2 × stored circle area",
-    keys:"10 Inch Circ Circ Stor 1 C C 2 × Rcl 1 =", expect:"157.0796 sq. in.", status:VALIDATED, knownFail:KF.memAreaPrecision2,
+    keys:"10 Inch Circ Circ Stor 1 C C 2 × Rcl 1 =", expect:"157.0796 sq. in.", status:VALIDATED,
     notes:"Physically confirmed. Since V9.23.21 the square-inch unit is kept through Stor/Rcl and ×; only R7 precision differs (157.079633 vs 157.0796)." });
 T({ id:"MEM-09", category:"Memory", name:"Stored roof result keeps its value, not its label",
     keys:"12 Feet Run 5 Feet Rise Diag Stor 1 Rcl 1", expect:"M-1 13 ft 0 in", status:VALIDATED,
