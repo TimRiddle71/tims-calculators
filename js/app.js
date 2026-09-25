@@ -5,6 +5,7 @@ import { initAutoLoan } from "./calculators/auto-loan.js";
 import { initSocialSecurity } from "./calculators/social-security.js";
 import { initVolume } from "./calculators/volume.js";
 import { initConstruction } from "./calculators/construction-master.js";
+import { initTip } from "./calculators/tip.js";
 const home=document.querySelector("#homeView"),percentages=document.querySelector("#percentagesView");
 document.querySelector('[data-open="construction"]').addEventListener("click",()=>{home.classList.add("hidden");document.querySelector("#constructionView").classList.remove("hidden");window.scrollTo(0,0)});
 document.querySelector("[data-construction-home]").addEventListener("click",()=>{document.querySelector("#constructionView").classList.add("hidden");home.classList.remove("hidden");window.scrollTo(0,0)});
@@ -20,7 +21,9 @@ document.querySelector('[data-open="social"]').addEventListener("click",()=>{hom
 document.querySelector("[data-social-home]").addEventListener("click",()=>{document.querySelector("#socialView").classList.add("hidden");home.classList.remove("hidden");window.scrollTo(0,0)});
 document.querySelector('[data-open="volume"]').addEventListener("click",()=>{home.classList.add("hidden");document.querySelector("#volumeView").classList.remove("hidden");window.scrollTo(0,0)});
 document.querySelector("[data-volume-home]").addEventListener("click",()=>{document.querySelector("#volumeView").classList.add("hidden");home.classList.remove("hidden");window.scrollTo(0,0)});
-initPercentages(); initDaysUntil(); initMortgage(); initAutoLoan(); initSocialSecurity(); initVolume(); initConstruction();
+document.querySelector('[data-open="tip"]').addEventListener("click",()=>{home.classList.add("hidden");document.querySelector("#tipView").classList.remove("hidden");window.scrollTo(0,0)});
+document.querySelector("[data-tip-home]").addEventListener("click",()=>{document.querySelector("#tipView").classList.add("hidden");home.classList.remove("hidden");window.scrollTo(0,0)});
+initTip(); initPercentages(); initDaysUntil(); initMortgage(); initAutoLoan(); initSocialSecurity(); initVolume(); initConstruction();
 if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 // Toolbox-wide quick entry: tapping/clicking a numeric field selects its current value.
 document.querySelectorAll('input[type="number"]').forEach(el=>{

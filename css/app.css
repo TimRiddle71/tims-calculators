@@ -161,3 +161,21 @@ input::-webkit-date-and-time-value{text-align:left}
 .tile .tile-brand{font-size:1.45rem;font-weight:650;font-style:italic;letter-spacing:.035em;line-height:.9;color:#e7bd55;padding-top:.5em;align-self:flex-start}
 .tile .tile-brand .cm-trestle-mark,.tile .tile-brand .cm-trestle-mark span{font-size:inherit}
 .tile-trestle{border-color:#4a3f22}
+
+/* ===== Tip Calculator (V9.24.0) ===== */
+.tip-pct-label{margin:14px 0 6px;color:var(--muted);font-size:.9rem}
+.tip-pcts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.tip-pcts button{min-height:50px;padding:0 3px;border:1px solid var(--border);border-radius:12px;background:var(--panel2);color:var(--text);font:inherit;font-weight:650;font-size:1.05rem;cursor:pointer;touch-action:manipulation}
+.tip-pcts button.active{background:var(--accent);border-color:var(--accent);color:#07111f}
+.tip-pcts button[data-tip-pct="custom"]{font-size:.92rem}
+.tip-custom{margin-top:10px}
+.tip-answer{margin-top:16px;text-align:left}
+.tip-row{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.tip-row small{color:var(--muted);letter-spacing:.08em}
+.tip-row b{font-size:1.5rem}
+.tip-total{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px}
+.tip-total small{color:var(--muted);letter-spacing:.08em;font-weight:700}
+.tip-answer .tip-total strong{font-size:2.4rem;margin:0;white-space:nowrap}
+.tip-note{margin:8px 0 0;color:var(--muted);font-size:.8rem}
+@media(max-width:480px){.tip-pcts button[data-tip-pct="custom"]{font-size:.8rem;letter-spacing:-.01em}}
+@media(max-width:360px){.tip-pcts{gap:5px}.tip-pcts button{font-size:.95rem}.tip-pcts button[data-tip-pct="custom"]{font-size:.72rem;padding:0}}

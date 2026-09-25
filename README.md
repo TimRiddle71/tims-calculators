@@ -528,3 +528,13 @@ Construction Master, Mortgage, Auto Loan, Social Security, and Volume.
 - All Calculators: the Trestle tile uses the compact TRESTLE wordmark with "Field Trig Calculator" and "Dimensions, roof geometry & trig" (replaces the old Construction Master tile).
 - Percentages (Shopping): Original Price and Discount start empty with no example numbers; Sales Tax starts at a real 8.25% that the calculator uses when tax is enabled. Other calculators' defaults are unchanged.
 - Regression suite: the runner can now open other calculators for UI baseline tests (form actions + reading results; no formulas in the runner). Added PCTUI-01 and PCTUI-02.
+
+## V9.24.0
+- New calculator: Tip Calculator (🧾 "Restaurant tip & total" on All Calculators), in its own module js/calculators/tip.js.
+  - Subtotal and Tax start empty (no example numbers); tapping a field selects its value; iPhone shows the decimal keypad. Blank Tax counts as $0.
+  - Tip buttons 15% / 18% / 20% / 22% / Custom, with a real 18% default. Custom accepts decimal percentages such as 17.5.
+  - Tip is calculated on the pre-tax subtotal and always rounded DOWN to a whole cent. TOTAL = Subtotal + Tax + that same displayed tip. All math is exact integer (cents) arithmetic; no floating-point rounding.
+  - Currency entry accepts 10, 10.2, 10.25, $10.25, 1,250.50 and $1,250.50. An amount with more than two decimal places (e.g. 10.255) is rejected with "Check the amounts entered." and is never silently rounded.
+  - Round Total and Split Bill are deferred.
+- Offline: tip.js added to the service-worker cache; cache version bumped to tims-calculators-v9-24-0. Installed Home Screen app updates normally (close and reopen); icon unchanged.
+- Regression suite: added TIP-01 to TIP-14 (Tip UI, real calculator screen; no tip math in the runner). 210 tests.

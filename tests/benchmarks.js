@@ -608,3 +608,70 @@ T({ id:"PCTUI-02", category:"Percentages (UI)", view:"percentages", name:"79.99 
       { keys:"Price 79.99 · Discount 20", actions:[["fill","#price","79.99"],["fill","#discount","20"]], read:"#salePrice", expect:"$63.99" },
       { keys:"Add sales tax (8.25 default)", actions:[["click","#taxToggle"]], read:"#withTax", expect:"$69.27" } ],
     status:BASELINE, notes:"V9.23.28: the default 8.25% tax is used as soon as tax is enabled." });
+
+/* ======================= V9.24.0 — Tip Calculator ======================= */
+/* view:"tip" tests use the real Tip Calculator controls; the runner contains no tip math. */
+T({ id:"TIP-01", category:"Tip (UI)", view:"tip", name:"Starts empty with a real 18% selected",
+    steps:[ {keys:"Subtotal field", read:"field:#tipSubtotal", expect:"value=[] placeholder=[]"},
+            {keys:"Tax field", read:"field:#tipTax", expect:"value=[] placeholder=[]"},
+            {keys:"Tip label", read:"#tipLabel", expect:"18% TIP"},
+            {keys:"Total before entry", read:"#tipTotal", expect:"—"} ], status:BASELINE });
+T({ id:"TIP-02", category:"Tip (UI)", view:"tip", name:"Shortcut benchmark: 43.67 + 3.61 tax at 18% (exact tip 7.8606)",
+    steps:[ {keys:"43.67 · 3.61 · 18%", actions:[["fill","#tipSubtotal","43.67"],["fill","#tipTax","3.61"]], read:"#tipAmount", expect:"$7.86"},
+            {keys:"Total", read:"#tipTotal", expect:"$55.14"} ], status:BASELINE, notes:"Matches Tim's iPhone Tip Shortcut. Tim's Calculators rule: tip = pre-tax subtotal × %, truncated down to a whole cent; total uses that same tip." });
+T({ id:"TIP-03", category:"Tip (UI)", view:"tip", name:"Switching percentage updates immediately (20%, exact 8.734)",
+    steps:[ {keys:"43.67 · 3.61 · tap 20%", actions:[["fill","#tipSubtotal","43.67"],["fill","#tipTax","3.61"],["click",'[data-tip-pct="20"]']], read:"#tipLabel", expect:"20% TIP"},
+            {keys:"Tip", read:"#tipAmount", expect:"$8.73"}, {keys:"Total", read:"#tipTotal", expect:"$56.01"} ], status:BASELINE });
+T({ id:"TIP-04", category:"Tip (UI)", view:"tip", name:"Zero tax and blank tax",
+    steps:[ {keys:"43.67 · tax 0", actions:[["fill","#tipSubtotal","43.67"],["fill","#tipTax","0"]], read:"#tipTotal", expect:"$51.53"},
+            {keys:"tax cleared", actions:[["fill","#tipTax",""]], read:"#tipTotal", expect:"$51.53"} ], status:BASELINE });
+T({ id:"TIP-05", category:"Tip (UI)", view:"tip", name:"Custom 17.5% (exact 7.64225)",
+    steps:[ {keys:"43.67 · 3.61 · Custom 17.5", actions:[["fill","#tipSubtotal","43.67"],["fill","#tipTax","3.61"],["click",'[data-tip-pct="custom"]'],["fill","#tipCustom","17.5"]], read:"#tipAmount", expect:"$7.64"},
+            {keys:"Total", read:"#tipTotal", expect:"$54.92"} ], status:BASELINE });
+T({ id:"TIP-06", category:"Tip (UI)", view:"tip", name:"Tip truncates down: 10.25 at 18% (exact 1.845)",
+    steps:[ {keys:"10.25 · tax 0.00 · 18%", actions:[["fill","#tipSubtotal","10.25"],["fill","#tipTax","0.00"]], read:"#tipAmount", expect:"$1.84"},
+            {keys:"Total uses the same $1.84", read:"#tipTotal", expect:"$12.09"} ], status:BASELINE, notes:"Tim's required benchmark. Tim's Calculators rule: tip = pre-tax subtotal × %, truncated down to a whole cent; total uses that same tip." });
+T({ id:"TIP-07", category:"Tip (UI)", view:"tip", name:"Replacing a value and $/comma entry",
+    steps:[ {keys:"100 then $1,250.50", actions:[["fill","#tipSubtotal","100"],["fill","#tipSubtotal","$1,250.50"]], read:"#tipAmount", expect:"$225.09"},
+            {keys:"Total", read:"#tipTotal", expect:"$1,475.59"} ], status:BASELINE });
+T({ id:"TIP-08", category:"Tip (UI)", view:"tip", name:"Tip truncates down: 10.75 at 18% (exact 1.935)",
+    steps:[ {keys:"10.75 · tax 0.00 · 18%", actions:[["fill","#tipSubtotal","10.75"],["fill","#tipTax","0.00"]], read:"#tipAmount", expect:"$1.93"},
+            {keys:"Total uses the same $1.93", read:"#tipTotal", expect:"$12.68"} ], status:BASELINE, notes:"Tim's required benchmark. Tim's Calculators rule: tip = pre-tax subtotal × %, truncated down to a whole cent; total uses that same tip." });
+T({ id:"TIP-09", category:"Tip (UI)", view:"tip", name:"Never rounds up, even at 0.82 of a cent: 0.99 at 18% (exact 0.1782)",
+    steps:[ {keys:"0.99 · 18%", actions:[["fill","#tipSubtotal","0.99"]], read:"#tipAmount", expect:"$0.17"},
+            {keys:"Total", read:"#tipTotal", expect:"$1.16"} ], status:BASELINE, notes:"Tim's Calculators rule: tip = pre-tax subtotal × %, truncated down to a whole cent; total uses that same tip." });
+T({ id:"TIP-10", category:"Tip (UI)", view:"tip", name:"Exact whole-cent tip is not lost to floating point: 20.00 at 18% (exact 3.60)",
+    steps:[ {keys:"20.00 · 18%", actions:[["fill","#tipSubtotal","20.00"]], read:"#tipAmount", expect:"$3.60"},
+            {keys:"Total", read:"#tipTotal", expect:"$23.60"} ], status:BASELINE,
+    notes:"A binary floating-point floor would give $3.59 here; the calculator uses exact integer arithmetic." });
+
+/* V9.24.0 currency-precision rule: Subtotal and Tax accept at most two decimal places.
+   More than two is rejected ("Check the amounts entered.") — never silently rounded. */
+T({ id:"TIP-11", category:"Tip (UI)", view:"tip", name:"Currency entry forms accepted: 10 · 10.2 · $10.25 · 1,250.50 · $1,250.50",
+    steps:[ {keys:"Subtotal 10", actions:[["fill","#tipSubtotal","10"]], read:"#tipAmount", expect:"$1.80"},
+            {keys:"Total", read:"#tipTotal", expect:"$11.80"},
+            {keys:"Subtotal 10.2", actions:[["fill","#tipSubtotal","10.2"]], read:"#tipAmount", expect:"$1.83"},
+            {keys:"Total", read:"#tipTotal", expect:"$12.03"},
+            {keys:"Subtotal $10.25", actions:[["fill","#tipSubtotal","$10.25"]], read:"#tipAmount", expect:"$1.84"},
+            {keys:"Total", read:"#tipTotal", expect:"$12.09"},
+            {keys:"Subtotal 1,250.50", actions:[["fill","#tipSubtotal","1,250.50"]], read:"#tipAmount", expect:"$225.09"},
+            {keys:"Tax $1,250.50", actions:[["fill","#tipTax","$1,250.50"]], read:"#tipTotal", expect:"$2,726.09"} ], status:BASELINE });
+T({ id:"TIP-12", category:"Tip (UI)", view:"tip", name:"Subtotal with 3 decimals (10.255) is rejected, not rounded",
+    steps:[ {keys:"Subtotal 10.255", actions:[["fill","#tipSubtotal","10.255"]], read:"#tipAmount", expect:"—"},
+            {keys:"Total", read:"#tipTotal", expect:"—"},
+            {keys:"Message", read:"#tipNote", expect:"Check the amounts entered."},
+            {keys:"What Tim typed is left as typed", read:"field:#tipSubtotal", expect:"value=[10.255] placeholder=[]"},
+            {keys:"Corrected to 10.25", actions:[["fill","#tipSubtotal","10.25"]], read:"#tipAmount", expect:"$1.84"},
+            {keys:"Total", read:"#tipTotal", expect:"$12.09"} ], status:BASELINE,
+    notes:"Rounding 10.255 to 10.26 would give tip $1.84 / total $12.10; truncating to 10.25 would silently give $12.09. Neither is allowed." });
+T({ id:"TIP-13", category:"Tip (UI)", view:"tip", name:"Subtotal 43.678 and Tax 3.618 are each rejected, not rounded",
+    steps:[ {keys:"Subtotal 43.678 · Tax 3.61", actions:[["fill","#tipSubtotal","43.678"],["fill","#tipTax","3.61"]], read:"#tipTotal", expect:"—"},
+            {keys:"Message", read:"#tipNote", expect:"Check the amounts entered."},
+            {keys:"Subtotal 43.67 · Tax 3.618", actions:[["fill","#tipSubtotal","43.67"],["fill","#tipTax","3.618"]], read:"#tipTotal", expect:"—"},
+            {keys:"Message", read:"#tipNote", expect:"Check the amounts entered."},
+            {keys:"Tax corrected to 3.61", actions:[["fill","#tipTax","3.61"]], read:"#tipAmount", expect:"$7.86"},
+            {keys:"Total", read:"#tipTotal", expect:"$55.14"} ], status:BASELINE });
+T({ id:"TIP-14", category:"Tip (UI)", view:"tip", name:"Result note and Custom accepts a decimal percentage",
+    steps:[ {keys:"43.67 · 3.61 · 18%", actions:[["fill","#tipSubtotal","43.67"],["fill","#tipTax","3.61"]], read:"#tipNote", expect:"Tip is calculated on the pre-tax subtotal."},
+            {keys:"Custom 17.5 (percent may have decimals)", actions:[["click",'[data-tip-pct="custom"]'],["fill","#tipCustom","17.5"]], read:"#tipLabel", expect:"17.5% TIP"},
+            {keys:"Note unchanged", read:"#tipNote", expect:"Tip is calculated on the pre-tax subtotal."} ], status:BASELINE });

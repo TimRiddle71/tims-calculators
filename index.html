@@ -26,6 +26,7 @@
 <button class="tile" data-open="auto"><span>🚗</span><b>Auto Loan</b><small>Ready</small></button>
 <button class="tile" data-open="social"><span>👴</span><b>Social Security</b><small>Ready</small></button>
 <button class="tile" data-open="volume"><span>📦</span><b>Volume</b><small>Ready</small></button>
+<button class="tile" data-open="tip"><span>🧾</span><b>Tip Calculator</b><small>Restaurant tip &amp; total</small></button>
 </div></section>
 
 
@@ -86,6 +87,31 @@
     <div><small>EXACT INCHES</small><b id="cmExact">0 in</b></div>
     <div><small>DECIMAL FEET</small><b id="cmFeet">0 ft</b></div>
   </div>
+</div>
+</section>
+
+<section id="tipView" class="view hidden">
+<button class="back" data-tip-home>← All Calculators</button><h2>Tip Calculator</h2>
+<div class="calc-card">
+<div class="fields">
+<label>Subtotal<div class="input-affix"><span>$</span><input id="tipSubtotal" type="text" inputmode="decimal" autocomplete="off"></div></label>
+<label>Tax<div class="input-affix"><span>$</span><input id="tipTax" type="text" inputmode="decimal" autocomplete="off"></div></label>
+</div>
+<div class="tip-pct-label">Tip</div>
+<div class="tip-pcts" role="group" aria-label="Tip percentage">
+<button type="button" data-tip-pct="15" aria-pressed="false">15%</button>
+<button type="button" data-tip-pct="18" class="active" aria-pressed="true">18%</button>
+<button type="button" data-tip-pct="20" aria-pressed="false">20%</button>
+<button type="button" data-tip-pct="22" aria-pressed="false">22%</button>
+<button type="button" data-tip-pct="custom" aria-pressed="false">Custom</button>
+</div>
+<label id="tipCustomWrap" class="tip-custom hidden">Custom Tip<div class="input-affix suffix"><input id="tipCustom" type="number" inputmode="decimal" min="0" step="any"><span>%</span></div></label>
+<div class="answer tip-answer">
+<div class="tip-row"><small id="tipLabel">18% TIP</small><b id="tipAmount">—</b></div>
+<div class="tip-total"><small>TOTAL</small><strong id="tipTotal">—</strong></div>
+<p id="tipNote" class="tip-note">Enter the subtotal from the receipt.</p>
+</div>
+<button id="resetTip" class="reset-btn" type="button">Reset</button>
 </div>
 </section>
 
@@ -317,7 +343,7 @@
 </div>
 </section>
 
-<footer>V9.23.28</footer>
+<footer>V9.24.0</footer>
 </main>
 <script type="module" src="js/app.js"></script>
 </body></html>
